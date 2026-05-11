@@ -1,6 +1,13 @@
 <template>
 
-    <Navbar />
+    <MobileDrawer
+        :menu-open="menuOpen"
+        @close-menu="closeMenu"
+    />
+    <Navbar
+        :menu-open="menuOpen"
+        @toggle-menu="toggleMenu"
+    />
 
     <div class="min-h-screen bg-[#0D0D0D] font-[poppins]">
 
@@ -247,10 +254,28 @@
     <Footer />
 </template>
 
-<script setup>
-const hours = [
+<script setup lang="ts">
+import { ref } from 'vue'
+
+type Hour = {
+  day: string
+  time: string
+  closed?: boolean
+}
+
+const hours: Hour[] = [
   { day: 'Monday – Friday', time: '8:00 AM – 6:00 PM' },
   { day: 'Saturday', time: '9:00 AM – 5:00 PM' },
   { day: 'Sunday', time: 'Closed', closed: true },
 ]
+
+const menuOpen = ref(false)
+
+const toggleMenu = () => {
+    menuOpen.value = !menuOpen.value
+}
+
+const closeMenu = () => {
+    menuOpen.value = false
+}
 </script>

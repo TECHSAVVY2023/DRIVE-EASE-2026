@@ -72,11 +72,8 @@
                 Mobile hamburger
         ========================== -->
         <button 
-            @click="toggleMenu"
-            class="
-                md:hidden 
-                text-white
-            "
+            @click="emit('toggle-menu')"
+            class="md:hidden text-white"
         >
             <svg xmlns="http://www.w3.org/2000/svg" 
                 class="w-7 h-7" 
@@ -91,18 +88,11 @@
 
 </template>
 
-<script setup>
+<script setup lang="ts">
 
-import { ref } from 'vue'
-
-/* =========================
-   Navbar State
-========================= */
-const menuOpen = ref(false)
-
-const toggleMenu = () => {
-    menuOpen.value = !menuOpen.value
-}
+const emit = defineEmits<{
+    (e: 'toggle-menu'): void
+}>()
 
 </script>
 
