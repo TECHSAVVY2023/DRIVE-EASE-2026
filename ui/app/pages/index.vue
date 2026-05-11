@@ -5,5 +5,6 @@
     <LandingReviews />
     <Carcarousel />
     <FrequentlyQA />
+    <SigninBanner />
     <Footer />
 </template>

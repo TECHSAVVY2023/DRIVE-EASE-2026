@@ -1,90 +1,158 @@
 <template>
-    <section class="relative bg-[#111111] overflow-hidden font-[poppins]">
+    <section class="relative overflow-hidden bg-[#111111] font-[poppins]">
 
-        <!-- Red strip - desktop (right side) / mobile (bottom) -->
-        <div class="
-        hidden md:block
-        absolute top-0 right-0 w-[35%] h-full bg-[#C1121F]
-        "></div>
-        <div class="
-        md:hidden
-        absolute bottom-0 left-0 right-0 h-[192px] bg-[#C1121F]
-        "></div>
+        <!-- =========================
+             Reviews Section
+        ========================== -->
+        <div
+            class="
+                relative z-10
+                flex flex-col
+                px-8 py-16
 
-        <div class="flex justify-center">
-            <!-- Content -->
-            <div class="relative z-10 max-w-8xl px-8 py-16 flex flex-col md:flex-row lg:gap-32 md:gap-8 sm:gap-16">
+                sm:gap-16
+                md:flex-row md:gap-8
+                lg:gap-32
+            "
+        >
 
-                <div class="
-                    flex flex-col justify-center 
-                    sm:items-center sm:pl-4 
-                    md:items-start md:pl-8 md:w-2/5
-                    lg:pl-16 gap-4 w-full">
-                    <h2 class="
-                    text-white text-2xl sm:text-center 
-                    md:text-start md:text-3xl 
-                    font-extrabold uppercase leading-tight tracking-wide">
-                        What our customers<br />say about us
-                    </h2>
+            <!-- =========================
+                 Left Content
+            ========================== -->
+            <div
+                class="
+                    flex flex-col justify-center
+                    w-full gap-4 items-center text-center
 
-                    <div class="flex items-end gap-2 mt-4">
-                    <span class="text-[#C1121F] text-6xl font-extrabold leading-none">4.8</span>
-                    <span class="text-gray-400 text-sm mb-2">out of 5</span>
-                    </div>
+                    sm:pl-4
 
-                    <!-- Stars -->
-                    <div class="flex gap-1">
-                    <span v-for="i in 5" :key="i" class="text-[#C1121F] text-2xl">★</span>
-                    </div>
+                    md:w-2/5
+                    md:items-start md:text-left
+                    md:pl-8
 
-                    <p class="text-gray-400 text-sm">Based on 2,400+ reviews</p>
+                    lg:pl-16
+                "
+            >
+                <!-- Heading -->
+                <h2
+                    class="
+                        text-2xl md:text-3xl
+                        font-extrabold
+                        leading-tight tracking-wide
+                        uppercase text-white
+                    "
+                >
+                    What our customers<br />
+                    say about us
+                </h2>
 
-                    <button class="
-                        mt-4
-                        w-fit
-                        bg-[#C1121F] hover:bg-red-700
-                        text-white text-sm font-semibold
-                        px-6 py-3 rounded
-                        transition-colors duration-200
-                    ">
-                        View all reviews
-                    </button>
+                <!-- Rating -->
+                <div class="flex items-end gap-2 mt-4">
+
+                    <span class="text-6xl font-extrabold leading-none text-[#C1121F]">
+                        4.8
+                    </span>
+
+                    <span class="text-sm text-[#9E9E9E] mb-2">
+                        out of 5
+                    </span>
                 </div>
 
-                <!-- Right: Review Cards -->
-                <div class="flex flex-col gap-4 md:w-3/5 w-full">
-                    <div
-                    v-for="(review, index) in reviews"
-                    :key="index"
-                    class="bg-[#1a1a1a] rounded-xl p-5 flex flex-col gap-3"
+                <!-- Stars -->
+                <div class="flex gap-1">
+                    <span
+                        v-for="i in 5"
+                        :key="i"
+                        class="text-3xl text-[#C1121F]"
                     >
-                    <!-- Reviewer info + stars -->
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-[#C1121F] flex-shrink-0"></div>
-                        <span class="text-white font-semibold text-sm">{{ review.name }}</span>
-                        </div>
-                        <div class="flex gap-0.5">
-                        <span v-for="i in review.stars" :key="i" class="text-[#C1121F] text-base">★</span>
-                        </div>
-                    </div>
-
-                    <!-- Review text -->
-                    <p class="text-gray-400 text-sm leading-relaxed">{{ review.text }}</p>
-
-                    <!-- Divider + Car rented -->
-                    <div class="border-t border-[#2a2a2a] pt-2 flex justify-end">
-                        <span class="text-gray-500 text-xs italic">{{ review.car }}</span>
-                    </div>
-                    </div>
+                        ★
+                    </span>
                 </div>
 
+                <p class="text-sm text-[#9E9E9E]">
+                    Based on 2,400+ reviews
+                </p>
+
+                <!-- CTA -->
+                <button
+                    class="
+                        w-fit rounded bg-[#C1121F]
+                        px-8 py-4 mt-4 mb-8
+                        text-sm font-semibold text-white
+
+                        hover:bg-[#6B0A10]
+                        transition-colors duration-200
+                    "
+                >
+                    View all reviews
+                </button>
             </div>
 
+            <!-- =========================
+                 Review Cards
+            ========================== -->
+            <div class="flex flex-col w-full gap-4 md:w-3/5">
+
+                <div
+                    v-for="(review, index) in reviews"
+                    :key="index"
+                    class="flex flex-col gap-3 p-5 rounded-xl bg-[#1a1a1a]"
+                >
+
+                    <!-- Reviewer Info -->
+                    <div class="flex items-center justify-between">
+
+                        <div class="flex items-center gap-3">
+
+                            <div class="w-10 h-10 rounded-full flex-shrink-0 bg-[#C1121F]"></div>
+
+                            <span class="text-sm font-semibold text-white">
+                                {{ review.name }}
+                            </span>
+                        </div>
+
+                        <!-- Review Stars -->
+                        <div class="flex gap-0.5">
+                            <span
+                                v-for="i in review.stars"
+                                :key="i"
+                                class="text-base text-[#C1121F]"
+                            >
+                                ★
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Review Text -->
+                    <p class="text-sm leading-relaxed text-[#9E9E9E]">
+                        {{ review.text }}
+                    </p>
+
+                    <!-- Car Info -->
+                    <div class="flex justify-end pt-2 border-t border-[#2a2a2a]">
+
+                        <span class="text-xs italic text-[#797979]">
+                            {{ review.car }}
+                        </span>
+
+                    </div>
+                    
+                </div>
+            </div>
         </div>
+
+        <!-- Desktop Accent -->
+        <div class="absolute top-0 right-0 hidden md:block w-[35%] h-full bg-[#C1121F]"></div>
+
+        <!-- Mobile Accent -->
+        <div class="absolute bottom-0 left-0 right-0 h-[192px] md:hidden bg-[#C1121F]"></div>
+
     </section>
 </template>
 
 <script setup>
+/* =========================
+   Reviews Data
+========================= */
 const { reviews } = useLandingPage()
 </script>

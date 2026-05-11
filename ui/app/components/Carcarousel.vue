@@ -5,35 +5,43 @@
 
         <!-- Title -->
         <div class="text-center mb-10">
-        <h2 class="text-white text-2xl md:text-3xl font-extrabold uppercase tracking-wide">
-            Find the Right Car for Your Trip
-        </h2>
-        <p class="text-gray-400 text-sm mt-2">From budget-friendly to premium — we have it all</p>
+
+            <h2 class="text-white text-2xl md:text-3xl font-extrabold uppercase tracking-wide">
+                Find the Right Car for Your Trip
+            </h2>
+
+            <p class="text-[#9E9E9E] text-sm mt-2">From budget-friendly to premium — we have it all</p>
         </div>
 
         <!-- Carousel -->
         <div class="relative flex items-center justify-center max-w-4xl mx-auto">
 
-        <!-- Prev Button -->
-        <button
-            @click="prev"
-            class="
-            absolute left-0 z-10
-            w-10 h-10 rounded-full
-            bg-[#121212] hover:bg-[#C1121F]
-            text-white flex items-center justify-center
-            transition-colors duration-200
-            shadow-lg
-            "
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-        </button>
+            <!-- Prev Button -->
+            <button
+                @click="prev"
+                class="
+                absolute left-0 z-10
+                w-10 h-10 rounded-full
+                bg-[#121212] hover:bg-[#C1121F]
+                text-white flex items-center justify-center
+                transition-colors duration-200
+                shadow-lg
+                "
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
 
         <!-- Car Display -->
         <div class="flex flex-col items-center text-center px-16 w-full">
-            <Transition :name="transitionName" mode="out-in">
+            <Transition
+                enter-active-class="transition-all duration-300 ease-in-out"
+                leave-active-class="transition-all duration-300 ease-in-out"
+                :enter-from-class="transitionEnterFrom"
+                :leave-to-class="transitionLeaveTo"
+                mode="out-in"
+            >
             <div :key="current" class="flex flex-col items-center">
                 <!-- Car Image -->
                 <img
@@ -46,7 +54,7 @@
                 <h3 class="text-white text-xl font-extrabold uppercase tracking-wide mt-6">
                 {{ cars[current].name }}
                 </h3>
-                <p class="text-gray-400 text-sm mt-1">
+                <p class="text-[#9E9E9E] text-sm mt-1">
                 from <span class="text-white font-semibold">{{ cars[current].price }}</span>/day
                 </p>
             </div>
@@ -95,12 +103,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const { cars } = useLandingPage()
 
 const current = ref(0)
 const transitionName = ref('slide-left')
+
+// Computed transition classes
+const transitionEnterFrom = computed(() => 
+    transitionName.value === 'slide-left' 
+        ? 'opacity-0 translate-x-15' 
+        : 'opacity-0 -translate-x-15'
+)
+
+const transitionLeaveTo = computed(() => 
+    transitionName.value === 'slide-left' 
+        ? 'opacity-0 -translate-x-15' 
+        : 'opacity-0 translate-x-15'
+)
 
 const sectionRef = ref(null)
 
@@ -185,29 +206,3 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped>
-    .slide-left-enter-active,
-    .slide-left-leave-active,
-    .slide-right-enter-active,
-    .slide-right-leave-active {
-    transition: all 0.3s ease;
-    }
-
-    .slide-left-enter-from {
-    opacity: 0;
-    transform: translateX(60px);
-    }
-    .slide-left-leave-to {
-    opacity: 0;
-    transform: translateX(-60px);
-    }
-
-    .slide-right-enter-from {
-    opacity: 0;
-    transform: translateX(-60px);
-    }
-    .slide-right-leave-to {
-    opacity: 0;
-    transform: translateX(60px);
-    }
-</style>
