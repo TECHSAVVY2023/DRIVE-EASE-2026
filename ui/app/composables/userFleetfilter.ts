@@ -160,6 +160,27 @@ export function useCarFilters() {
         { label: 'Manual', count: 7 },
     ]
 
+    const fuelTypes: OptionItem[] = [
+        { label: 'Diesel', count: 67 },
+        { label: 'Gasoline', count: 7 },
+        { label: 'Hybrid', count: 7 },
+    ]
+
+    const seatOptions: OptionItem[] = [
+        { label: '4+ seats', count: 67 },
+        { label: '6+ seats', count: 7 },
+    ]
+
+    const featureOptions: OptionItem[] = [
+        { label: 'Air conditioned', count: 67 },
+        { label: 'Bluetooth', count: 7 },
+    ]
+
+    const insuranceOptions: OptionItem[] = [
+        { label: 'Insurance 1', count: 67 },
+        { label: 'Insurance 2', count: 7 },
+    ]
+
     const filteredCars = computed<Car[]>(() => {
         let result = [...cars]
 
@@ -198,6 +219,10 @@ export function useCarFilters() {
         open,
         categories,
         transmissions,
+        fuelTypes,
+        seatOptions,
+        featureOptions,
+        insuranceOptions,
         cars,
         filteredCars,
         totalPages,

@@ -426,7 +426,7 @@
             </div>
 
         </div>
-        
+
     </div>
 </template>
 
@@ -454,6 +454,10 @@ const {
     open,
     transmissions,
     categories,
+    fuelTypes,
+    seatOptions,
+    featureOptions,
+    insuranceOptions,
     cars,
     filteredCars,
     totalPages,
