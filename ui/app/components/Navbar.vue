@@ -28,7 +28,7 @@
         <ul class="hidden md:flex items-center gap-10 text-white text-sm font-medium tracking-wide">
 
             <li><a href="/" class="hover:text-[#c1121f] transition-colors duration-200">Home</a></li>
-            <li><a href="#" class="hover:text-[#c1121f] transition-colors duration-200">Fleet</a></li>
+            <li><a href="/fleet" class="hover:text-[#c1121f] transition-colors duration-200">Fleet</a></li>
             <li><a href="#" class="hover:text-[#c1121f] transition-colors duration-200">About</a></li>
             <li><a href="/contact" class="hover:text-[#c1121f] transition-colors duration-200">Contact</a></li>
         

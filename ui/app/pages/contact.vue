@@ -9,23 +9,9 @@
         @toggle-menu="toggleMenu"
     />
 
+    <Banner2 />
+
     <div class="min-h-screen bg-[#0D0D0D] font-[poppins]">
-
-        <!-- =========================
-                Page header
-        ========================== -->
-        <div class="bg-[#C1121F] px-8 py-8">
-
-            <p class="text-red-200 text-xs mb-1">We're here to help</p>
-            <h1 class="text-white text-2xl font-extrabold">Contact us</h1>
-
-            <div class="absolute top-8 right-8 flex items-center gap-2 text-xs">
-                <a href="#" class="text-red-200 hover:text-white transition-colors duration-200">Home</a>
-                <span class="text-red-300">/</span>
-                <span class="text-white font-semibold">Contact</span>
-            </div>
-
-        </div>
 
         <!-- =========================
                 Main content
