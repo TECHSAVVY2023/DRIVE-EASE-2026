@@ -196,6 +196,27 @@ export function useCarFilters() {
             )
         }
 
+        result = result.filter((c) =>
+            c.price >= priceRange.value[0] &&
+            c.price <= priceRange.value[1]
+        )
+
+        if (sortBy.value === 'price-asc') {
+            result.sort((a, b) => a.price - b.price)
+        }
+
+        if (sortBy.value === 'price-desc') {
+            result.sort((a, b) => b.price - a.price)
+        }
+
+        if (sortBy.value === 'name-asc') {
+            result.sort((a, b) => a.name.localeCompare(b.name))
+        }
+
+        if (sortBy.value === 'name-desc') {
+            result.sort((a, b) => b.name.localeCompare(a.name))
+        }
+
         return result
     })
 

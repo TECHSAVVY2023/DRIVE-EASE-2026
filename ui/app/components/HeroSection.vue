@@ -4,65 +4,68 @@
         <!-- =========================
              Hero Section
         ========================== -->
-        <section class="relative flex items-center min-h-[600px] overflow-hidden">
+        <section class="relative flex items-center min-h-[700px] overflow-hidden">
 
             <!-- Hero Content -->
-            <div
-                class="
-                    relative z-10
-                    flex flex-col justify-center items-center text-center
-                    w-full px-12 py-16 pb-[55%]
-
-                    md:w-1/2
-                    md:items-start md:text-left
-                    md:px-0 md:pb-16 md:pl-20
-
-                    lg:pl-16
-                    xl:pl-36
-                "
-            >
-                <h1
+             <Transition name="slide-left">
+                <div
+                    v-if="showContent"
                     class="
-                        text-5xl sm:text-5xl md:text-4xl lg:text-6xl
-                        font-[poppins] font-extrabold
-                        leading-tight tracking-tight uppercase text-white
+                        relative z-10
+                        flex flex-col justify-center items-center text-center
+                        w-full px-12 py-16 pb-[55%]
+
+                        md:w-1/2
+                        md:items-start md:text-left
+                        md:px-0 md:pb-16 md:pl-20
+
+                        lg:pl-16
+                        xl:pl-36
                     "
                 >
-                    Drive Smart<br />
-                    Drive Easy
-                </h1>
+                        <h1
+                            class="
+                                text-5xl sm:text-5xl md:text-4xl lg:text-6xl
+                                font-[poppins] font-extrabold
+                                leading-tight tracking-tight uppercase text-white
+                            "
+                        >
+                            Drive Smart<br />
+                            Drive Easy
+                        </h1>
 
-                <p class="mt-2 text-sm text-[#9E9E9E] font-[poppins]">
-                    "Affordable. Reliable. Ready when you are."
-                </p>
+                        <p class="mt-2 text-sm text-[#9E9E9E] font-[poppins]">
+                            "Affordable. Reliable. Ready when you are."
+                        </p>
 
-                <!-- CTA Buttons -->
-                <div class="mt-12 flex gap-4">
+                        <!-- CTA Buttons -->
+                        <div class="mt-12 flex gap-4">
 
-                    <button
-                        class="
-                            px-8 py-4 rounded-[10px]
-                            bg-[#C1121F] hover:bg-[#6B0A10]
-                            text-sm text-white font-[poppins]
-                            transition-colors duration-250
-                        "
-                    >
-                        View cars
-                    </button>
+                            <button
+                                class="
+                                    px-8 py-4 rounded-[10px]
+                                    bg-[#C1121F] hover:bg-[#6B0A10]
+                                    text-sm text-white font-[poppins]
+                                    transition-colors duration-250
+                                "
+                            >
+                                View cars
+                            </button>
 
-                    <button
-                        class="
-                            px-8 py-4 rounded-[10px]
-                            border border-white
-                            text-sm text-white font-[poppins]
-                            hover:bg-white hover:text-[#C1121F]
-                            transition-colors duration-200
-                        "
-                    >
-                        Sign up
-                    </button>
+                            <button
+                                class="
+                                    px-8 py-4 rounded-[10px]
+                                    border border-white
+                                    text-sm text-white font-[poppins]
+                                    hover:bg-white hover:text-[#C1121F]
+                                    transition-colors duration-200
+                                "
+                            >
+                                Sign up
+                            </button>
+                        </div>
                 </div>
-            </div>
+            </Transition>
 
             <!-- =========================
                  Desktop Hero Image
@@ -76,16 +79,19 @@
                     overflow-visible
                 "
             >
-                <img
-                    src="~/assets/images/car1.png"
-                    alt="Toyota Wigo"
-                    class="
+                <Transition name="slide-right">
+                    <img
+                        v-if="showImage"
+                        src="~/assets/images/car1.png"
+                        alt="Toyota Wigo"
+                        class="
                         absolute top-1/2 -translate-y-1/2
-                        md:-left-20 lg:-left-36
+                        md:-left-20 lg:-left-40
                         w-full scale-[1.3]
                         object-contain drop-shadow-2xl
                     "
-                />
+                    />
+                </Transition>
             </div>
 
             <!-- =========================
@@ -102,16 +108,65 @@
                 ></div>
 
                 <!-- Car Image -->
-                <img
-                    src="~/assets/images/car1.png"
-                    alt="Toyota Wigo"
-                    class="
+                 <Transition name="slide-right">
+                    <img
+                        v-if="showImage"
+                        src="~/assets/images/car1.png"
+                        alt="Toyota Wigo"
+                        class="
                         absolute bottom-2 left-1/2
                         w-[75%] -translate-x-1/2
                         object-contain drop-shadow-2xl z-10
                     "
-                />
+                    />
+                </Transition>
             </div>
         </section>
     </div>
 </template>
+
+<script setup lang="ts">
+
+import { ref, onMounted } from 'vue'
+
+const showImage = ref(false)
+const showContent = ref(false)
+
+onMounted(() => {
+    showImage.value = true
+    showContent.value = true
+})
+
+</script>
+
+<style scoped>
+
+.slide-right-enter-active {
+    transition: all 0.8s ease-out;
+}
+
+.slide-right-enter-from {
+    transform: translateX(50px);
+    opacity: 0;
+}
+
+.slide-right-enter-to {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.slide-left-enter-active {
+    transition: all 0.8s ease-out;
+}
+
+.slide-left-enter-from {
+    transform: translateX(-50px);
+    opacity: 0;
+}
+
+.slide-left-enter-to {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+</style>

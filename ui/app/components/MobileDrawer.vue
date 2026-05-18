@@ -76,8 +76,8 @@
             <!-- Navigation -->
             <ul class="flex flex-col text-sm font-medium text-white">
                 <li><a href="/" class="block py-4 text-center border-b border-[#2a2a2a] hover:text-[#c1121f]">Home</a></li>
-                <li><a href="#" class="block py-4 text-center border-b border-[#2a2a2a] hover:text-[#c1121f]">Fleet</a></li>
-                <li><a href="#" class="block py-4 text-center border-b border-[#2a2a2a] hover:text-[#c1121f]">About</a></li>
+                <li><a href="/fleet" class="block py-4 text-center border-b border-[#2a2a2a] hover:text-[#c1121f]">Fleet</a></li>
+                <li><a href="/about" class="block py-4 text-center border-b border-[#2a2a2a] hover:text-[#c1121f]">About</a></li>
                 <li><a href="/contact" class="block py-4 text-center border-b border-[#2a2a2a] hover:text-[#c1121f]">Contacts</a></li>
             </ul>
 

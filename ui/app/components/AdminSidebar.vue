@@ -19,7 +19,7 @@
         >
 
             <!-- Mobile Close Button -->
-            <div class="flex items-center justify-between md:hidden px-4">
+            <div class="flex items-center justify-between md:hidden px-4 py-2">
 
                 <p class="text-white text-lg font-semibold">Menu</p>
 
@@ -39,39 +39,40 @@
                 </button>
             </div>
 
+            <!-- Active -->
+            <a href="#" 
+                class="
+                    flex items-center gap-3 mb-4
+                    px-4 py-3 md:py-2.5
+                    rounded-lg
+                    text-white
+                    bg-[#C1121F]
+                    font-semibold
+                "
+            >
+                <svg
+                    class="w-5 h-5 md:w-4 md:h-4 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                    />
+
+                </svg>
+
+                <span>Dashboard</span>
+            </a>
+
             <!-- Section -->
             <p class="text-[#444] uppercase font-bold text-[10px] px-4 mb-1">
                 Main
             </p>
-
-            <!-- Active -->
-            <a
-                href="#"
-                class="
-                        flex items-center gap-3
-                        px-4 py-3 md:py-2.5
-                        rounded-lg
-                        text-white
-                        bg-[#C1121F]
-                        font-semibold
-                    "
-                >
-                    <svg
-                        class="w-5 h-5 md:w-4 md:h-4 flex-shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                        />
-                    </svg>
-
-                    <span>Dashboard</span>
-                </a>
 
                 <!-- Item -->
                 <a
