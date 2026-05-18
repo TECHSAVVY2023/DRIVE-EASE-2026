@@ -6,7 +6,7 @@
     >
         <!-- Header -->
         <div class="flex items-center justify-between px-5 py-8">
-            <span class="text-white font-bold text-sm">Filter by</span>
+            <span class="text-white font-bold">Filter by</span>
             <button @click="resetFilters" class="text-[#C1121F] text-xs hover:underline">Reset all</button>
         </div>
 
@@ -17,8 +17,8 @@
 
             <button @click="toggleSection('category')" class="flex items-center justify-between w-full px-5 py-4">
                 
-                <span class="text-white text-xs font-semibold">Category</span>
-                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="open.category ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <span class="text-white font-semibold">Category</span>
+                <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.category ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                 </svg>
 
@@ -37,13 +37,13 @@
                     <div class="flex items-center gap-2">
                         <span
                             class="text-xs transition-colors duration-200 cursor-pointer"
-                            :class="filters.category.includes(cat.label) ? 'text-white font-semibold' : 'text-gray-400 group-hover:text-white'"
+                            :class="filters.category.includes(cat.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'"
                         >{{ cat.label }}</span>
                     </div>
 
                     <span
-                        class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                        :class="filters.category.includes(cat.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-gray-400'"
+                        class="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                        :class="filters.category.includes(cat.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'"
                     >{{ cat.count }}</span>
                 </label>
 
@@ -58,20 +58,23 @@
 
             <button @click="toggleSection('price')" class="flex items-center justify-between w-full px-5 py-4">
                 
-                <span class="text-white text-xs font-semibold">Price range</span>
-                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="open.price ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <span class="text-white font-semibold">Price range</span>
+                <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.price ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                 </svg>
 
             </button>
 
             <div v-if="open.price" class="flex flex-col gap-2 px-5 pb-4">
-                <div class="flex justify-between text-[10px] text-gray-400">
-                <span>₱{{ priceRange[0] }}</span>
-                <span>₱{{ priceRange[1] }}</span>
+
+                <div class="flex justify-between text-xs text-[#7E7E7E]">
+                    <span>₱{{ priceRange[0] }}</span>
+                    <span>₱{{ priceRange[1] }}</span>
                 </div>
+
                 <input type="range" min="100" max="4700" v-model="priceRange[1]" class="w-full accent-[#C1121F] cursor-pointer" />
-                <p class="text-gray-500 text-[10px]">₱{{ priceRange[0] }} – ₱{{ priceRange[1] }}</p>
+                <p class="text-[#7E7E7E] text-[12px]">₱{{ priceRange[0] }} – ₱{{ priceRange[1] }}</p>
+
             </div>
 
         </div>
@@ -83,8 +86,8 @@
 
             <button @click="toggleSection('transmission')" class="flex items-center justify-between w-full px-5 py-4">
                 
-                <span class="text-white text-xs font-semibold">Transmission</span>
-                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="open.transmission ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <span class="text-white font-semibold">Transmission</span>
+                <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.transmission ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                 </svg>
 
@@ -103,10 +106,10 @@
                     <div class="flex items-center gap-2">
                         <span 
                             class="text-xs transition-colors duration-200 cursor-pointer" 
-                            :class="filters.transmission === t.label ? 'text-white font-semibold' : 'text-gray-400 group-hover:text-white'" 
+                            :class="filters.transmission === t.label ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
                         >{{ t.label }}</span>
                     </div>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.transmission === t.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-gray-400'">{{ t.count }}</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.transmission === t.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ t.count }}</span>
                 
                 </label>
 
@@ -121,7 +124,7 @@
             <button @click="toggleSection('fuel')" class="flex items-center justify-between w-full px-5 py-4">
                 
                 <span class="text-white text-xs font-semibold">Fuel type</span>
-                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="open.fuel ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.fuel ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                 </svg>
 
@@ -139,10 +142,10 @@
                     <div class="flex items-center gap-2">
                         <span 
                             class="text-xs transition-colors duration-200 cursor-pointer" 
-                            :class="filters.fuel === f.label ? 'text-white font-semibold' : 'text-gray-400 group-hover:text-white'" 
+                            :class="filters.fuel === f.label ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
                             >{{ f.label }}</span>
                     </div>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.fuel === f.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-gray-400'">{{ f.count }}</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.fuel === f.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ f.count }}</span>
                 
                 </label>
 
@@ -158,7 +161,7 @@
             <button @click="toggleSection('seats')" class="flex items-center justify-between w-full px-5 py-4">
                 
                 <span class="text-white text-xs font-semibold">Seats</span>
-                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="open.seats ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.seats ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                 </svg>
             
@@ -176,12 +179,12 @@
                     <div class="flex items-center gap-2">
 
                         <span class="text-xs transition-colors duration-200 cursor-pointer" 
-                            :class="filters.seats === s.label ? 'text-white font-semibold' : 'text-gray-400 group-hover:text-white'" 
+                            :class="filters.seats === s.label ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
                         >{{ s.label }}</span>
 
                     </div>
 
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.seats === s.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-gray-400'">{{ s.count }}</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.seats === s.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ s.count }}</span>
                 
                 </label>
 
@@ -197,7 +200,7 @@
                 
                 <span class="text-white text-xs font-semibold">Features</span>
 
-                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="open.features ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.features ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                 </svg>
             
@@ -214,11 +217,11 @@
                 <div class="flex items-center gap-2">
 
                     <span class="text-xs transition-colors duration-200 cursor-pointer" 
-                        :class="filters.feature === f.label ? 'text-white font-semibold' : 'text-gray-400 group-hover:text-white'" 
+                        :class="filters.feature === f.label ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
                     >{{ f.label }}</span>
 
                 </div>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.feature === f.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-gray-400'">{{ f.count }}</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.feature === f.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ f.count }}</span>
                 </label>
             
             </div>
@@ -233,7 +236,7 @@
             <button @click="toggleSection('insurance')" class="flex items-center justify-between w-full px-5 py-4">
                 
                 <span class="text-white text-xs font-semibold">Insurance?</span>
-                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="open.insurance ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.insurance ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                 </svg>
 
@@ -251,10 +254,10 @@
                 <div class="flex items-center gap-2">
                     <span 
                         class="text-xs transition-colors duration-200 cursor-pointer" 
-                        :class="filters.insurance === ins.label ? 'text-white font-semibold' : 'text-gray-400 group-hover:text-white'" 
+                        :class="filters.insurance === ins.label ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
                     >{{ ins.label }}</span>
                 </div>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.insurance === ins.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-gray-400'">{{ ins.count }}</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.insurance === ins.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ ins.count }}</span>
                 </label>
                 
             </div>

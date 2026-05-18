@@ -69,6 +69,7 @@
                 <span class="text-sm font-semibold text-white">
                     Login
                 </span>
+                
             </div>
 
             <div class="border-t border-[#2a2a2a] mb-4"></div>
@@ -83,6 +84,7 @@
 
         </aside>
     </Transition>
+
 </template>
 
 
@@ -96,4 +98,5 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close-menu'): void
 }>()
+
 </script>

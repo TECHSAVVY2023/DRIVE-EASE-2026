@@ -43,11 +43,11 @@
 
                 <!-- Results Header -->
                 <div>
-                    <h2 class="text-white font-bold text-lg">
+                    <h2 class="text-white font-bold text-xl">
                         Explore Our Fleet
                     </h2>
 
-                    <p class="text-gray-400 text-xs mt-0.5">
+                    <p class="text-[#7E7E7E] text-xs mt-0.5">
                         {{ filteredCars.length }} cars available
                     </p>
                 </div>
@@ -178,7 +178,7 @@
 
                             <div>
                                 <h3 class="text-white font-bold text-sm">{{ car.name }}</h3>
-                                <p class="text-gray-400 text-xs mt-0.5">{{ car.seats }} seats · {{ car.transmission }}</p>
+                                <p class="text-[#7E7E7E] text-xs mt-0.5">{{ car.seats }} seats · {{ car.transmission }}</p>
                             </div>
 
                             <p class="text-white font-bold text-sm">₱{{ car.price.toLocaleString() }}/day</p>
@@ -200,10 +200,10 @@
                 <!-- Empty state -->
                 <div v-if="filteredCars.length === 0" class="flex flex-col items-center justify-center py-20 gap-3">
 
-                    <svg class="w-10 h-10 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-10 h-10 text-[#7E7E7E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <p class="text-gray-500 text-sm">No cars match your filters.</p>
+                    <p class="text-[#7E7E7E] text-sm">No cars match your filters.</p>
                     <button @click="resetFilters" class="text-[#C1121F] text-xs hover:underline">Reset filters</button>
                 
                 </div>
@@ -216,7 +216,7 @@
                         class="
                             flex items-center gap-1
                             rounded-lg border border-[#2a2a2a]
-                            px-3 py-1.5 text-xs text-gray-400 
+                            px-3 py-1.5 text-xs text-[#7E7E7E] 
                             hover:border-white hover:text-white 
                             disabled:opacity-30 disabled:cursor-not-allowed 
                             transition-colors duration-200"
@@ -229,7 +229,7 @@
                         <button
                         @click="currentPage = p"
                         class="w-8 h-8 rounded-lg text-xs font-semibold transition-colors duration-200"
-                        :class="currentPage === p ? 'bg-[#C1121F] text-white' : 'border border-[#2a2a2a] text-gray-400 hover:border-white hover:text-white'"
+                        :class="currentPage === p ? 'bg-[#C1121F] text-white' : 'border border-[#2a2a2a] text-[#7E7E7E] hover:border-white hover:text-white'"
                         >
                         {{ p }}
                         </button>
@@ -241,7 +241,7 @@
                         class="
                             flex items-center gap-1
                             rounded-lg border border-[#2a2a2a]
-                            px-3 py-1.5 text-xs text-gray-400 
+                            px-3 py-1.5 text-xs text-[#7E7E7E] 
                             hover:border-white hover:text-white 
                             disabled:opacity-30 disabled:cursor-not-allowed 
                             transition-colors duration-200"

@@ -12,13 +12,16 @@
 
         </div>
 
-        <button class="
-            border border-white text-white text-sm font-semibold
-            px-6 py-3 rounded-full
-            hover:bg-white hover:text-[#C11F1F]
-            transition-colors duration-200
-            whitespace-nowrap
-        ">
+        <button 
+            @click="$router.push('/login')"
+            class="
+                border border-white text-white text-sm font-semibold
+                px-6 py-3 rounded-full
+                hover:bg-white hover:text-[#C11F1F]
+                transition-colors duration-200
+                whitespace-nowrap
+            "
+        >
             Sign in to rent
         </button>
 

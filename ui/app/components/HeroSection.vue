@@ -42,6 +42,7 @@
                         <div class="mt-12 flex gap-4">
 
                             <button
+                                @click="$router.push('/fleet')"
                                 class="
                                     px-8 py-4 rounded-[10px]
                                     bg-[#C1121F] hover:bg-[#6B0A10]
@@ -53,6 +54,7 @@
                             </button>
 
                             <button
+                                @click="$router.push('/login')"
                                 class="
                                     px-8 py-4 rounded-[10px]
                                     border border-white
