@@ -1,0 +1,212 @@
+import car3 from '~/assets/images/sample.png'
+import car4 from '~/assets/images/sample1.jpg'
+
+export const cars: Car[] = [
+    {
+        id: 1,
+        name: 'Toyota Wigo',
+        available: true,
+        seats: 5,
+        transmission: 'Automatic',
+        price: 1200,
+        category: 'Economy',
+        fuel: 'Gasoline',
+        reviews: 95,
+        rating: 4.6,
+        image: car3,
+        images: [
+            car3,
+            car3,
+            car3,
+            car3,
+        ],
+        specifications: [
+            { label: 'Engine', value: '1.0L DOHC' },
+            { label: 'Transmission', value: 'Automatic' },
+            { label: 'Year model', value: '2024' },
+            { label: 'Seats', value: '5' },
+        ],
+        ownerNote:
+            "Hi there! Thanks for choosing my Wigo. The car is in great condition — freshly detailed before every rental. Please return it with a full tank, as you'll receive it that way. No smoking inside the vehicle. Feel free to reach out if you need early pickup or have any questions. Enjoy your trip!",
+    },
+    {
+        id: 2,
+        name: 'Toyota Vios',
+        available: true,
+        seats: 5,
+        transmission: 'Automatic',
+        price: 1800,
+        category: 'Economy',
+        fuel: 'Gasoline',
+        reviews: 145,
+        rating: 4.7,
+        image: car4,
+        images: [
+            car4,
+            car4,
+            car4,
+            car4,
+        ],
+        specifications: [
+            { label: 'Engine', value: '1.0L DOHC' },
+            { label: 'Transmission', value: 'Automatic' },
+            { label: 'Year model', value: '2024' },
+            { label: 'Seats', value: '5' },
+        ],
+        ownerNote:
+            "Hi there! Thanks for choosing my Wigo. The car is in great condition — freshly detailed before every rental. Please return it with a full tank, as you'll receive it that way. No smoking inside the vehicle. Feel free to reach out if you need early pickup or have any questions. Enjoy your trip!",
+    },
+    {
+        id: 3,
+        name: 'Toyota Innova',
+        available: true,
+        seats: 7,
+        transmission: 'Automatic',
+        price: 2500,
+        category: 'Family',
+        fuel: 'Diesel',
+        reviews: 200,
+        rating: 4.8,
+        image: car3,
+        images: [
+            car3,
+            car3,
+            car3,
+            car3,
+        ],
+        specifications: [
+            { label: 'Engine', value: '1.0L DOHC' },
+            { label: 'Transmission', value: 'Automatic' },
+            { label: 'Year model', value: '2024' },
+        ],
+        ownerNote:
+            "Hi there! Thanks for choosing my Wigo. The car is in great condition — freshly detailed before every rental. Please return it with a full tank, as you'll receive it that way. No smoking inside the vehicle. Feel free to reach out if you need early pickup or have any questions. Enjoy your trip!",
+    },
+    {
+        id: 4,
+        name: 'Toyota Fortuner',
+        available: true,
+        seats: 7,
+        transmission: 'Automatic',
+        price: 3500,
+        category: 'SUV',
+        fuel: 'Diesel',
+        reviews: 175,
+        rating: 4.6,
+        image: car3,
+        images: [
+            car3,
+            car3,
+            car3,
+            car3,
+        ],
+        specifications: [
+            { label: 'Engine', value: '1.0L DOHC' },
+            { label: 'Transmission', value: 'Automatic' },
+            { label: 'Year model', value: '2024' },
+        ],
+        ownerNote:
+            "Hi there! Thanks for choosing my Wigo. The car is in great condition — freshly detailed before every rental. Please return it with a full tank, as you'll receive it that way. No smoking inside the vehicle. Feel free to reach out if you need early pickup or have any questions. Enjoy your trip!",
+    },
+    {
+        id: 5,
+        name: 'Toyota Camry',
+        available: true,
+        seats: 5,
+        transmission: 'Automatic',
+        price: 4000,
+        category: 'Luxury',
+        fuel: 'Hybrid',
+        reviews: 150,
+        rating: 4.7,
+        image: car3,
+        images: [
+            car3,
+            car3,
+            car3,
+            car3,
+        ],
+        specifications: [
+            { label: 'Engine', value: '1.0L DOHC' },
+            { label: 'Transmission', value: 'Automatic' },
+            { label: 'Year model', value: '2024' },
+        ],
+        ownerNote:
+            "Hi there! Thanks for choosing my Wigo. The car is in great condition — freshly detailed before every rental. Please return it with a full tank, as you'll receive it that way. No smoking inside the vehicle. Feel free to reach out if you need early pickup or have any questions. Enjoy your trip!",
+    },
+    {
+        id: 6,
+        name: 'Toyota Corolla',
+        available: true,
+        seats: 5,
+        transmission: 'Automatic',
+        price: 2200,
+        category: 'Economy',
+        fuel: 'Gasoline',
+        reviews: 120,
+        rating: 4.5,
+        image: car3,
+        images: [
+            car3,
+            car3,
+            car3,
+            car3,
+        ],
+        specifications: [
+            { label: 'Engine', value: '1.0L DOHC' },
+            { label: 'Transmission', value: 'Automatic' },
+            { label: 'Year model', value: '2024' },
+        ],
+        ownerNote:
+        "Hi there! Thanks for choosing my Wigo. The car is in great condition — freshly detailed before every rental. Please return it with a full tank, as you'll receive it that way. No smoking inside the vehicle. Feel free to reach out if you need early pickup or have any questions. Enjoy your trip!",
+    },
+    {
+        id: 7,
+        name: 'Toyota Hiace',
+        available: true,
+        seats: 12,
+        transmission: 'Manual',
+        price: 4700,
+        category: 'Family',
+        fuel: 'Diesel',
+        reviews: 89,
+        rating: 4.5,
+        image: car3,
+        images: [
+            car3,
+            car3,
+            car3,
+            car3,
+        ],
+        specifications: [
+            { label: 'Engine', value: '1.0L DOHC' },
+            { label: 'Transmission', value: 'Automatic' },
+            { label: 'Year model', value: '2024' },
+        ],
+        ownerNote:
+            "Hi there! Thanks for choosing my Wigo. The car is in great condition — freshly detailed before every rental. Please return it with a full tank, as you'll receive it that way. No smoking inside the vehicle. Feel free to reach out if you need early pickup or have any questions. Enjoy your trip!",
+    },
+]
+
+
+
+// const car: Car = {
+//     name: 'Toyota Wigo 2026',
+//     available: true,
+//     rating: 4.8,
+//     reviews: 120,
+//     pricePerDay: 1200,
+//     images: [
+//         car3,
+//         car3,
+//         car3,
+//         car3,
+//     ],
+//     specifications: [
+//         { label: 'Engine', value: '1.0L DOHC' },
+//         { label: 'Transmission', value: 'Automatic' },
+//         { label: 'Year model', value: '2024' },
+//     ],
+//     ownerNote:
+//         "Hi there! Thanks for choosing my Wigo. The car is in great condition — freshly detailed before every rental. Please return it with a full tank, as you'll receive it that way. No smoking inside the vehicle. Feel free to reach out if you need early pickup or have any questions. Enjoy your trip!",
+// }

@@ -49,6 +49,8 @@
 
                             <!-- Continue with Google -->
                             <button 
+                                @click="handleGoogleLogin"
+                                :disabled="isLoading"
                                 class="
                                     w-full flex items-center justify-center gap-3
                                     border border-white text-white text-sm font-medium
@@ -144,3 +146,34 @@
     </div>
 </template>
  
+<script setup lang="ts">
+import { ref, onMounted } from "vue"
+
+/* ================= STATE ================= */
+const isLoading = ref<boolean>(false)
+const errorMessage = ref<string>("")
+
+/* ================= ROUTE ================= */
+const route = useRoute()
+
+onMounted(() => {
+    const err = route.query.error as string | undefined
+
+    if (err === "unauthorized") {
+        errorMessage.value = "Access denied. Your Google account is not authorized."
+    } else if (err === "oauth_failed") {
+        errorMessage.value = "Google login failed. Please try again."
+    } else if (err === "no_code") {
+        errorMessage.value = "OAuth error: no authorization code received."
+    }
+})
+
+/* ================= AUTH ================= */
+const { login } = useAuth()
+
+const handleGoogleLogin = (): void => {
+    isLoading.value = true
+    errorMessage.value = ""
+    login()
+}
+</script>

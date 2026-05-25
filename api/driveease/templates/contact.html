@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>New Inquiry - Fabrics Plus</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #f5f5f5;
+      padding: 30px;
+      margin: 0;
+      color: #333;
+    }
+    .container {
+      max-width: 650px;
+      margin: auto;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 25px 30px;
+      border: 1px solid #e5e5e5;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      max-height: 80px; /* adjust as needed */
+    }
+    .header {
+      border-bottom: 2px solid #b32d2e;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 22px;
+      color: #b32d2e;
+    }
+    .info {
+      margin: 15px 0;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    .label {
+      font-weight: 600;
+      color: #444;
+    }
+    .message-box {
+      background: #fafafa;
+      border-left: 4px solid #b32d2e;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-size: 15px;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 12px;
+      text-align: center;
+      color: #777;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
+    }
+    .brand {
+      font-weight: bold;
+      color: #b32d2e;
+    }
+    .contact-id {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #999;
+    }
+    .powered {
+      margin-top: 5px;
+      font-size: 11px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Logo -->
+    <div class="logo">
+      <img src="https://fpstorage.sgp1.cdn.digitaloceanspaces.com/www.fabricspluscurtains.com/logos/HDLogoFabricsPlusV2.png" alt="Fabrics Plus Logo">
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+      <h2>📩 New Inquiry Received</h2>
+      <p>You have a new message from your <span class="brand">DriveEase</span> contact form</p>
+    </div>
+
+    <!-- Contact Info -->
+    <div class="info">
+      <p><span class="label">Name:</span> {{ firstname }} {{ lastname }}</p>
+      <p><span class="label">Email:</span> {{ contact_email }}</p>
+      <p><span class="label">Phone:</span> {{ contact_number }}</p>
+    </div>
+
+    <!-- Message -->
+    <div class="info">
+      <p><span class="label">Message:</span></p>
+      <div class="message-box">
+        {{ message }}
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>This email was automatically generated from your contact form at <span class="brand">DriveEase</span>.</p>
+      <p class="contact-id">Reference ID: {{ contact_id }}</p>
+      <p class="powered">Powered by <a href="https://www.techsavvies.space" target="_blank">www.techsavvies.space</a></p>
+    </div>
+  </div>
+</body>
+</html>

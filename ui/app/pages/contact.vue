@@ -1,5 +1,11 @@
 <template>
 
+    <Toast
+        :message="toastMessage"
+        :type="toastType"
+        :visible="showToast"
+    />
+
     <MobileDrawer
         :menu-open="menuOpen"
         @close-menu="closeMenu"
@@ -7,6 +13,8 @@
     <Navbar
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
+        @open-sidebar="handleOpenSidebar" 
+        @close-sidebar="handleCloseSidebar"
     />
 
     <Banner 
@@ -28,17 +36,21 @@
             <!-- Left: Contact Form -->
             <div class="md:col-span-3 bg-[#1a1a1a] rounded-xl p-6 flex flex-col gap-5">
                 <div>
-                <h2 class="text-white font-bold text-lg">How can we help you?</h2>
-                <p class="text-[#9E9E9E] text-xs mt-1">Fill out the form below and our team will get back to you within 24 hours.</p>
+                    <h2 class="text-white font-bold text-lg">How can we help you?</h2>
+                    <p class="text-[#9E9E9E] text-xs mt-1">Fill out the form below and our team will get back to you within 24 hours.</p>
                 </div>
 
                 <!-- Form -->
-                <div class="flex flex-col gap-4">
+                <form
+                    class="flex flex-col gap-4"
+                    @submit.prevent="submitForm"
+                >
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1.5">
                             <label class="text-[#9E9E9E] text-xs">First name</label>
                             <input
+                                v-model="formData.firstname"
                                 type="text"
                                 placeholder="Juan"
                                 class="
@@ -52,6 +64,7 @@
                         <div class="flex flex-col gap-1.5">
                             <label class="text-[#9E9E9E] text-xs">Last name</label>
                             <input
+                                v-model="formData.lastname"
                                 type="text"
                                 placeholder="Dela Cruz"
                                 class="
@@ -69,6 +82,7 @@
                         <div class="flex flex-col gap-1.5">
                             <label class="text-[#9E9E9E] text-xs">Email address</label>
                             <input
+                                v-model="formData.contact_email"
                                 type="email"
                                 placeholder="juan@email.com"
                                 class="
@@ -82,6 +96,7 @@
                         <div class="flex flex-col gap-1.5">
                             <label class="text-[#9E9E9E] text-xs">Contact number</label>
                             <input
+                                v-model="formData.contact_number"
                                 type="tel"
                                 placeholder="+63 912 345 6789"
                                 class="
@@ -95,21 +110,9 @@
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label class="text-[#9E9E9E] text-xs">Topic</label>
-                        <input
-                            type="text"
-                            placeholder="e.g. Booking inquiry, Complaint, General question"
-                            class="
-                                bg-[#111111] border border-[#2a2a2a] rounded-lg 
-                                px-3 py-2.5 text-white text-sm placeholder-[#444] 
-                                focus:outline-none focus:border-[#C1121F] 
-                                transition-colors duration-200"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-1.5">
                         <label class="text-[#9E9E9E] text-xs">Message</label>
                         <textarea
+                            v-model="formData.message"
                             rows="5"
                             placeholder="Write your message here..."
                             class="
@@ -124,7 +127,7 @@
                         Send message
                     </button>
 
-                </div>
+                </form>
 
             </div>
 
@@ -249,6 +252,81 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import moment from 'moment'
+
+const formData = ref({
+    contact_id: "CID" + moment().valueOf(),
+    firstname: '',
+    lastname: '',
+    contact_email: '',
+    contact_number: '',
+    message: ''
+})
+
+const loading = ref(false)
+const success = ref<string | null>(null)
+const error = ref<string | null>(null)
+const showToast = ref(false)
+const toastMessage = ref("")
+const toastType = ref("success")
+
+const serverIP = "http://127.0.0.1:8000"
+
+const submitForm = async () => {
+loading.value = true
+success.value = null
+error.value = null
+
+try {
+    await $fetch(`${serverIP}/api/driveease/contact/create/`, {
+        method: "POST",
+        body: formData.value,
+    })
+
+    await sendToGmail()
+
+    toastMessage.value = "Message sent successfully!"
+    toastType.value = "success"
+    showToast.value = true
+
+    formData.value = {
+        contact_id: "CID" + moment().valueOf(),
+        firstname: "",
+        lastname: "",
+        contact_email: "",
+        contact_number: "",
+        message: "",
+    }
+
+    setTimeout(() => {
+        showToast.value = false
+    }, 3000)
+} catch (err) {
+    console.error(err)
+
+    toastMessage.value = "Failed to send message"
+    toastType.value = "error"
+    showToast.value = true
+
+    setTimeout(() => {
+        showToast.value = false
+    }, 3000)
+} finally {
+    loading.value = false
+}
+}
+
+const sendToGmail = async () => {
+  try {
+    await $fetch(`${serverIP}/api/driveease/contact/gmail-notif/`, {
+      method: "POST",
+      body: formData.value,
+    })
+  } catch (err) {
+    console.error(err)
+    throw err
+  }
+}
 
 type Hour = {
   day: string
@@ -262,7 +340,11 @@ const hours: Hour[] = [
   { day: 'Sunday', time: 'Closed', closed: true },
 ]
 
+//Navbar + User Profile + Working login
+
 const menuOpen = ref(false)
+const route = useRoute()
+const { setAuth } = useAuth()
 
 const toggleMenu = () => {
     menuOpen.value = !menuOpen.value
@@ -270,5 +352,19 @@ const toggleMenu = () => {
 
 const closeMenu = () => {
     menuOpen.value = false
+}
+
+const sidebarOpen = ref<boolean>(false)
+
+const handleCloseSidebar = (): void => {
+    sidebarOpen.value = false
+}
+
+const handleOpenSidebar = (): void => {
+    sidebarOpen.value = true
+}
+
+if (route.query.token) {
+    await setAuth(route.query.token as string)
 }
 </script>

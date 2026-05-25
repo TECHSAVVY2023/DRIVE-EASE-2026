@@ -52,27 +52,42 @@
                     </svg>
                 </button>
 
-                <!-- User Icon -->
-                <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-2">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="w-8 h-8 text-gray-700"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                    >
-                        <path
-                            d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
-                        />
-                    </svg>
-                </div>
+                <button 
+                    @click="$router.push('/login')"
+                    class="flex flex-col items-center">
 
-                <span class="text-sm font-semibold text-white">
-                    Login
-                </span>
+                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center overflow-hidden mb-4">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="hidden w-8 h-8 text-gray-700"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                        >
+                            <path
+                                d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
+                            />
+                        </svg>
+
+                        <img
+                            :src="user?.picture || 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=400&auto=format&fit=crop'"
+                            alt="Profile"
+                            class="w-full h-full object-cover"
+                        />
+                    </div>
+
+                    <span v-if="isLoggedIn" class="text-sm font-semibold text-white">
+                        {{ user?.name?.split(' ')[0] }}
+                    </span>
+                    
+                    <span v-else class="text-sm font-semibold text-white">
+                        Login
+                    </span>
+                    
+                </button>
                 
             </div>
 
-            <div class="border-t border-[#2a2a2a] mb-4"></div>
+            <div class="border-t border-[#2a2a2a]"></div>
 
             <!-- Navigation -->
             <ul class="flex flex-col text-sm font-medium text-white">
@@ -80,6 +95,7 @@
                 <li><a href="/fleet" class="block py-4 text-center border-b border-[#2a2a2a] hover:text-[#c1121f]">Fleet</a></li>
                 <li><a href="/about" class="block py-4 text-center border-b border-[#2a2a2a] hover:text-[#c1121f]">About</a></li>
                 <li><a href="/contact" class="block py-4 text-center border-b border-[#2a2a2a] hover:text-[#c1121f]">Contacts</a></li>
+                <li v-if="isLoggedIn"><a href="/" class="block py-4 text-center border-b border-[#2a2a2a] hover:text-[#c1121f]" @click="logout()">Logout</a></li>
             </ul>
 
         </aside>
@@ -91,6 +107,8 @@
 
 <script setup lang="ts">
 
+const { logout, isLoggedIn, user } = useAuth()
+
 const props = defineProps<{
     menuOpen: boolean
 }>()
@@ -98,5 +116,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close-menu'): void
 }>()
+
+
 
 </script>

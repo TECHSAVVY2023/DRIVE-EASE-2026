@@ -99,17 +99,17 @@
                     v-for="t in transmissions"
                     :key="t.label" 
                     class="flex items-center justify-between cursor-pointer group py-1 px-3 rounded-md transition-all duration-200 ease-in-out"
-                    :class="filters.transmission === t.label ? 'bg-[#252525] border-l-4 border-[#C1121F]' : ''"
-                    @click="filters.transmission = filters.transmission === t.label ? '' : t.label"
+                    :class="filters.transmission.includes(t.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : ''"
+                    @click="filters.transmission = filters.transmission.includes(t.label) ? filters.transmission.filter((item) => item !== t.label) : [...filters.transmission, t.label]"
                 >
 
                     <div class="flex items-center gap-2">
                         <span 
                             class="text-xs transition-colors duration-200 cursor-pointer" 
-                            :class="filters.transmission === t.label ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
+                            :class="filters.transmission.includes(t.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
                         >{{ t.label }}</span>
                     </div>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.transmission === t.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ t.count }}</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.transmission.includes(t.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ t.count }}</span>
                 
                 </label>
 
@@ -273,7 +273,7 @@
         priceRange: [number, number]
         filters: {
             category: string[]
-            transmission: string
+            transmission: string[]
             fuel: string
             seats: string
             feature: string

@@ -7,6 +7,8 @@
    <Navbar
       :menu-open="menuOpen"
       @toggle-menu="toggleMenu"
+      @open-sidebar="handleOpenSidebar" 
+      @close-sidebar="handleCloseSidebar"
    />
 
    <div class="min-h-screen bg-[#121212] font-[poppins]">
@@ -220,6 +222,26 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+
+//Navbar + User Profile + Working login
+
+const route = useRoute()
+const { setAuth } = useAuth()
+
+const sidebarOpen = ref<boolean>(false)
+
+const handleCloseSidebar = (): void => {
+    sidebarOpen.value = false
+}
+
+const handleOpenSidebar = (): void => {
+    sidebarOpen.value = true
+}
+
+if (route.query.token) {
+    await setAuth(route.query.token as string)
+}
 
 const {  menuOpen,
          toggleMenu,

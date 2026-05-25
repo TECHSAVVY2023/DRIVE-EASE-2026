@@ -1,9 +1,8 @@
 import { ref, reactive, computed } from 'vue'
-import car3 from '~/assets/images/sample.png'
 
 export type FilterState = {
     category: string[]
-    transmission: string
+    transmission: string[]
     fuel: string
     seats: string
     feature: string
@@ -26,13 +25,20 @@ export type OptionItem = {
 }
 
 export type Car = {
+    id: number
     name: string
+    available: boolean
     seats: number
     transmission: string
     price: number
     category: string
     fuel: string
     image: string
+    reviews: number
+    rating: number
+    ownerNote: string
+    images: string[]
+    specifications: { label: string; value: string }[]
 }
 
 export function useCarFilters() {
@@ -47,7 +53,7 @@ export function useCarFilters() {
 
     const filters = reactive<FilterState>({
         category: [],
-        transmission: '',
+        transmission: [],
         fuel: '',
         seats: '',
         feature: '',
@@ -70,7 +76,7 @@ export function useCarFilters() {
 
     function resetFilters(): void {
         filters.category = []
-        filters.transmission = ''
+        filters.transmission = []
         filters.fuel = ''
         filters.seats = ''
         filters.feature = ''
@@ -87,72 +93,6 @@ export function useCarFilters() {
         { label: 'Family', count: 7 },
         { label: 'Luxury', count: 7 },
         { label: 'SUV', count: 7 },
-    ]
-
-    const cars: Car[] = [
-        {
-            name: 'Toyota Wigo',
-            seats: 5,
-            transmission: 'Automatic',
-            price: 1200,
-            category: 'Economy',
-            fuel: 'Gasoline',
-            image: car3,
-        },
-        {
-            name: 'Toyota Vios',
-            seats: 5,
-            transmission: 'Automatic',
-            price: 1800,
-            category: 'Economy',
-            fuel: 'Gasoline',
-            image: car3,
-        },
-        {
-            name: 'Toyota Innova',
-            seats: 7,
-            transmission: 'Automatic',
-            price: 2500,
-            category: 'Family',
-            fuel: 'Diesel',
-            image: car3,
-        },
-        {
-            name: 'Toyota Fortuner',
-            seats: 7,
-            transmission: 'Automatic',
-            price: 3500,
-            category: 'SUV',
-            fuel: 'Diesel',
-            image: car3,
-        },
-        {
-            name: 'Toyota Camry',
-            seats: 5,
-            transmission: 'Automatic',
-            price: 4000,
-            category: 'Luxury',
-            fuel: 'Hybrid',
-            image: car3,
-        },
-        {
-            name: 'Toyota Corolla',
-            seats: 5,
-            transmission: 'Automatic',
-            price: 2200,
-            category: 'Economy',
-            fuel: 'Gasoline',
-            image: car3,
-        },
-        {
-            name: 'Toyota Hiace',
-            seats: 12,
-            transmission: 'Manual',
-            price: 4700,
-            category: 'Family',
-            fuel: 'Diesel',
-            image: car3,
-        },
     ]
 
     const transmissions: OptionItem[] = [
@@ -193,6 +133,12 @@ export function useCarFilters() {
         if (filters.category.length) {
             result = result.filter((c) =>
                 filters.category.includes(c.category)
+            )
+        }
+
+        if (filters.transmission.length) {
+            result = result.filter((c) =>
+                filters.transmission.includes(c.transmission)
             )
         }
 

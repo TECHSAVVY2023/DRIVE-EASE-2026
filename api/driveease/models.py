@@ -1,0 +1,75 @@
+from django.db import models
+from django.template import defaultfilters
+
+# Create your models here.
+class Cars(models.Model):
+
+    CAR_STATUS = [
+        ('available', 'Available'),
+        ('rented', 'Rented'),
+        ('maintenance', 'Maintenance'),
+    ]
+    CAR_TYPE = [
+        ('sedan', 'Sedan'),
+        ('suv', 'SUV'),
+        ('truck', 'Truck'),
+        ('van', 'Van'),
+        ('hatchback', 'Hatchback'),
+        ('pickup', 'Pickup'),
+        ('other', 'Other'),
+    ]
+
+    car_id = models.CharField(max_length=50, unique=True)
+
+    brand = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+    year = models.IntegerField()
+
+    car_type = models.CharField(
+        max_length=50,
+        choices=CAR_TYPE,
+        default='other'
+    )
+
+    price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    transmission = models.CharField(max_length=50)
+    engine = models.CharField(max_length=100)
+    fuel_type = models.CharField(max_length=50)
+
+    seats = models.IntegerField()
+
+    features = models.TextField(blank=True, null=True)
+
+    note = models.TextField(blank=True, null=True)
+
+    image = models.ImageField(upload_to='fleet/images/', blank=True, null=True)
+    png_image = models.ImageField(upload_to='fleet/png/', blank=True, null=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=CAR_STATUS,
+        default='available'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.brand} {self.model} ({self.car_id})"
+
+class ContactListModel(models.Model):
+    contact_id = models.CharField(max_length=255, blank=True, null=True, default='')
+    firstname = models.CharField(max_length=255, blank=True, null=True, default='')
+    lastname = models.CharField(max_length=255, blank=True, null=True, default='')
+    contact_email = models.CharField(max_length=255, blank=True, null=True, default='')
+    contact_number = models.CharField(max_length=255, blank=True, null=True, default='')
+    message = models.CharField(max_length=500, blank=True, null=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+  
+    class Meta: 
+        ordering = ('-created_at',)
+
+    def created_at_formatted(self):
+        return defaultfilters.date(self.created_at, 'M d, Y')
