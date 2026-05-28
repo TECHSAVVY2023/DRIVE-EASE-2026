@@ -229,23 +229,19 @@ import { ref } from 'vue'
 const route = useRoute()
 const { setAuth } = useAuth()
 
-const sidebarOpen = ref<boolean>(false)
-
-const handleCloseSidebar = (): void => {
-    sidebarOpen.value = false
-}
-
-const handleOpenSidebar = (): void => {
-    sidebarOpen.value = true
-}
+const { 
+    menuOpen,
+    toggleMenu,
+    closeMenu,
+    handleCloseSidebar,
+    handleOpenSidebar
+} = useNavbar()
 
 if (route.query.token) {
     await setAuth(route.query.token as string)
 }
 
-const {  menuOpen,
-         toggleMenu,
-         closeMenu,
+const {  
          stats,
          team,
          journey,

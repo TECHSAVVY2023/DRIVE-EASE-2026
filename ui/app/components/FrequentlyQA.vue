@@ -49,13 +49,16 @@
                         Every question that is frequently asked by customers about Driveease
                     </p>
                     
-                    <button class="
-                        mt-4 mb-8
-                        bg-[#C1121F] hover:bg-red-700
-                        text-white text-sm font-semibold
-                        px-6 py-3 rounded
-                        transition-colors duration-200
-                    ">
+                    <button 
+                        @click="$router.push('/contact')"
+                        class="
+                            mt-4 mb-8
+                            bg-[#C1121F] hover:bg-[#6B0A10]
+                            text-white text-sm font-semibold
+                            px-6 py-3 rounded
+                            transition-colors duration-200
+                        "
+                    >
                         Ask more questions
                     </button>
                 </div>

@@ -105,12 +105,18 @@ class GoogleCallbackView(APIView):
             
             if not is_authorized(profile_res):
                 return redirect(f"{frontend_url}/login?error=unauthorized")
+
+            print(profile_res.get('given_name'))
+            print(profile_res.get('family_name'))
+            print(profile_res.get('email'))
+            print(profile_res.get('picture'))
                 
             user, _ = User.objects.get_or_create(
                 username=profile_res.get('email'),
                 defaults={
                     "email": profile_res.get('email'),
-                    "first_name": profile_res.get('name', '')
+                    "first_name": profile_res.get('given_name', ''),
+                    "last_name": profile_res.get('family_name', '')
                 }
             )
 
@@ -118,7 +124,8 @@ class GoogleCallbackView(APIView):
             access = refresh.access_token
 
             # attach google data into JWT
-            access["name"] = profile_res.get("name")
+            access["given_name"] = profile_res.get("given_name")
+            access["family_name"] = profile_res.get("family_name")
             access["email"] = profile_res.get("email")
             access["picture"] = profile_res.get("picture")
 
@@ -136,7 +143,8 @@ class AuthMeView(APIView):
     def get(self, request):
         return Response({
             "id": request.user.id,
-            "name": request.auth.get("name"),
+            "given_name": request.auth.get("given_name"),
+            "family_name": request.auth.get("family_name"),
             "email": request.auth.get("email"),
             "picture": request.auth.get("picture"),
         })

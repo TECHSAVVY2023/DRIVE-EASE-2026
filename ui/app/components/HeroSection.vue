@@ -54,6 +54,7 @@
                             </button>
 
                             <button
+                                v-if="!isLoggedIn"
                                 @click="$router.push('/login')"
                                 class="
                                     px-8 py-4 rounded-[10px]
@@ -128,8 +129,9 @@
 </template>
 
 <script setup lang="ts">
-
 import { ref, onMounted } from 'vue'
+
+const { isLoggedIn } = useAuth()
 
 const showImage = ref(false)
 const showContent = ref(false)

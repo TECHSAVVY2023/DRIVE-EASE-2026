@@ -8,7 +8,8 @@ import { useApiBase } from '~/utils/api/api';
 
 interface AuthUser {
     id: number | string;
-    name?: string;
+    given_name?: string;
+    family_name?: string;
     email?: string;
     picture?: string;
 }
@@ -57,7 +58,8 @@ export const useAuth = () => {
 
         const userData: AuthUser = {
             id: profile.id,
-            name: profile.name,
+            given_name: profile.given_name,
+            family_name: profile.family_name,
             email: profile.email,
             picture: profile.picture,
         };

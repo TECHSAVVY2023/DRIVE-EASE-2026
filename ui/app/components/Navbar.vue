@@ -7,7 +7,7 @@
             sticky top-0 
             flex h-[72px] items-center justify-between 
             px-8 py-4 
-            bg-black z-50 
+            bg-black z-100 
             font-[poppins]
         "
     >
@@ -71,7 +71,7 @@
 
             <!-- Name -->
             <span class="hidden sm:block truncate">
-                {{ user?.name?.split(' ')[0] }}
+                {{ user?.given_name }}
             </span>
 
             <!-- Dropdown Arrow -->

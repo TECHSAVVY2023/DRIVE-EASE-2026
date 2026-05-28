@@ -2,15 +2,6 @@ import { ref } from 'vue'
 
 
 export const useAboutPage = () => {
-    const menuOpen = ref(false)
-
-    const toggleMenu = () => {
-        menuOpen.value = !menuOpen.value
-    }
-
-    const closeMenu = () => {
-        menuOpen.value = false
-    }
 
     interface Stat {
         value: string
@@ -78,9 +69,6 @@ export const useAboutPage = () => {
     ]
 
     return {
-        menuOpen,
-        toggleMenu,
-        closeMenu,
         stats,
         team,
         journey,

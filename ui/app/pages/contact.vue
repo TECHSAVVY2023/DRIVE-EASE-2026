@@ -33,103 +33,10 @@
         ========================== -->
         <div class="max-w-5xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-5 gap-6">
 
-            <!-- Left: Contact Form -->
-            <div class="md:col-span-3 bg-[#1a1a1a] rounded-xl p-6 flex flex-col gap-5">
-                <div>
-                    <h2 class="text-white font-bold text-lg">How can we help you?</h2>
-                    <p class="text-[#9E9E9E] text-xs mt-1">Fill out the form below and our team will get back to you within 24 hours.</p>
-                </div>
-
-                <!-- Form -->
-                <form
-                    class="flex flex-col gap-4"
-                    @submit.prevent="submitForm"
-                >
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-1.5">
-                            <label class="text-[#9E9E9E] text-xs">First name</label>
-                            <input
-                                v-model="formData.firstname"
-                                type="text"
-                                placeholder="Juan"
-                                class="
-                                    bg-[#111111] border border-[#2a2a2a] rounded-lg 
-                                    px-3 py-2.5 text-white text-sm placeholder-[#444] 
-                                    focus:outline-none focus:border-[#C1121F] 
-                                    transition-colors duration-200"
-                            />
-                        </div>
-
-                        <div class="flex flex-col gap-1.5">
-                            <label class="text-[#9E9E9E] text-xs">Last name</label>
-                            <input
-                                v-model="formData.lastname"
-                                type="text"
-                                placeholder="Dela Cruz"
-                                class="
-                                    bg-[#111111] border border-[#2a2a2a] rounded-lg 
-                                    px-3 py-2.5 text-white text-sm placeholder-[#444] 
-                                    focus:outline-none focus:border-[#C1121F] 
-                                    transition-colors duration-200"
-                            />
-                        </div>
-
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-
-                        <div class="flex flex-col gap-1.5">
-                            <label class="text-[#9E9E9E] text-xs">Email address</label>
-                            <input
-                                v-model="formData.contact_email"
-                                type="email"
-                                placeholder="juan@email.com"
-                                class="
-                                    bg-[#111111] border border-[#2a2a2a] rounded-lg 
-                                    px-3 py-2.5 text-white text-sm placeholder-[#444] 
-                                    focus:outline-none focus:border-[#C1121F] 
-                                    transition-colors duration-200"
-                            />
-                        </div>
-
-                        <div class="flex flex-col gap-1.5">
-                            <label class="text-[#9E9E9E] text-xs">Contact number</label>
-                            <input
-                                v-model="formData.contact_number"
-                                type="tel"
-                                placeholder="+63 912 345 6789"
-                                class="
-                                    bg-[#111111] border border-[#2a2a2a] rounded-lg 
-                                    px-3 py-2.5 text-white text-sm placeholder-[#444] 
-                                    focus:outline-none focus:border-[#C1121F] 
-                                    transition-colors duration-200"
-                            />
-                        </div>
-
-                    </div>
-
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-[#9E9E9E] text-xs">Message</label>
-                        <textarea
-                            v-model="formData.message"
-                            rows="5"
-                            placeholder="Write your message here..."
-                            class="
-                                bg-[#111111] border border-[#2a2a2a] rounded-lg 
-                                px-3 py-2.5 text-white text-sm placeholder-[#444] 
-                                focus:outline-none focus:border-[#C1121F] 
-                                transition-colors duration-200 resize-none"
-                        ></textarea>
-                    </div>
-
-                    <button class="w-full bg-[#C1121F] hover:bg-red-700 text-white text-sm font-semibold py-3 rounded-lg transition-colors duration-200">
-                        Send message
-                    </button>
-
-                </form>
-
-            </div>
+            <ContactForm
+                :form-data="formData"
+                @submit="submitForm"
+            />
 
             <!-- Right: Info Cards -->
             <div class="md:col-span-2 flex flex-col gap-4">
@@ -289,14 +196,12 @@ try {
     toastType.value = "success"
     showToast.value = true
 
-    formData.value = {
-        contact_id: "CID" + moment().valueOf(),
-        firstname: "",
-        lastname: "",
-        contact_email: "",
-        contact_number: "",
-        message: "",
-    }
+    formData.value.contact_id = "CID" + moment().valueOf()
+    formData.value.firstname = ""
+    formData.value.lastname = ""
+    formData.value.contact_email = ""
+    formData.value.contact_number = ""
+    formData.value.message = ""
 
     setTimeout(() => {
         showToast.value = false
@@ -335,34 +240,23 @@ type Hour = {
 }
 
 const hours: Hour[] = [
-  { day: 'Monday – Friday', time: '8:00 AM – 6:00 PM' },
-  { day: 'Saturday', time: '9:00 AM – 5:00 PM' },
-  { day: 'Sunday', time: 'Closed', closed: true },
+    { day: 'Monday – Friday', time: '8:00 AM – 6:00 PM' },
+    { day: 'Saturday', time: '9:00 AM – 5:00 PM' },
+    { day: 'Sunday', time: 'Closed', closed: true },
 ]
 
 //Navbar + User Profile + Working login
 
-const menuOpen = ref(false)
 const route = useRoute()
 const { setAuth } = useAuth()
 
-const toggleMenu = () => {
-    menuOpen.value = !menuOpen.value
-}
-
-const closeMenu = () => {
-    menuOpen.value = false
-}
-
-const sidebarOpen = ref<boolean>(false)
-
-const handleCloseSidebar = (): void => {
-    sidebarOpen.value = false
-}
-
-const handleOpenSidebar = (): void => {
-    sidebarOpen.value = true
-}
+const { 
+    menuOpen,
+    toggleMenu,
+    closeMenu,
+    handleCloseSidebar,
+    handleOpenSidebar
+} = useNavbar()
 
 if (route.query.token) {
     await setAuth(route.query.token as string)
