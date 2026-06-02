@@ -1,4 +1,5 @@
 <template>
+    
     <div class="relative min-h-screen flex items-center justify-center font-[poppins]">
     
         <!-- =========================
@@ -144,6 +145,7 @@
         <div class="absolute inset-0 bg-gradient-to-b from-[#650B12]/40 to-black"></div>
     
     </div>
+
 </template>
  
 <script setup lang="ts">

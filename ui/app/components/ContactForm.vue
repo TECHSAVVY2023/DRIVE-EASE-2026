@@ -91,7 +91,7 @@
                 ></textarea>
             </div>
 
-            <button class="w-full bg-[#C1121F] hover:bg-[#6B0A10] text-white text-sm font-semibold py-3 rounded-lg transition-colors duration-200">
+            <button class="w-full bg-[#C1121F] hover:bg-[#9B0E18] text-white text-sm font-semibold py-3 rounded-lg transition-colors duration-200">
                 Send message
             </button>
 

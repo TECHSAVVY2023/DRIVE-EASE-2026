@@ -30,7 +30,7 @@
                     v-for="cat in categories" 
                     :key="cat.label" 
                     class="flex items-center justify-between cursor-pointer group rounded-md py-1 px-3 transition-all duration-200 ease-in-out"
-                    :class="filters.category.includes(cat.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : ''"
+                    :class="filters.category.includes(cat.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
                     @click="filters.category = filters.category.includes(cat.label) ? filters.category.filter(c => c !== cat.label) : [...filters.category, cat.label]"
                 >
 
@@ -38,7 +38,7 @@
                         <span
                             class="text-xs transition-colors duration-200 cursor-pointer"
                             :class="filters.category.includes(cat.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'"
-                        >{{ cat.label }}</span>
+                        >{{ cat.label.charAt(0).toUpperCase() + cat.label.slice(1) }}</span>
                     </div>
 
                     <span
@@ -93,13 +93,13 @@
 
             </button>
 
-            <div v-if="open.transmission" class="flex flex-col px-5 pb-4">
+            <div v-if="open.transmission" class="flex flex-col gap-1 px-5 pb-4">
                 
                 <label 
                     v-for="t in transmissions"
                     :key="t.label" 
                     class="flex items-center justify-between cursor-pointer group py-1 px-3 rounded-md transition-all duration-200 ease-in-out"
-                    :class="filters.transmission.includes(t.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : ''"
+                    :class="filters.transmission.includes(t.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
                     @click="filters.transmission = filters.transmission.includes(t.label) ? filters.transmission.filter((item) => item !== t.label) : [...filters.transmission, t.label]"
                 >
 
@@ -107,7 +107,7 @@
                         <span 
                             class="text-xs transition-colors duration-200 cursor-pointer" 
                             :class="filters.transmission.includes(t.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
-                        >{{ t.label }}</span>
+                        >{{ t.label.charAt(0).toUpperCase() + t.label.slice(1) }}</span>
                     </div>
                     <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.transmission.includes(t.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ t.count }}</span>
                 
@@ -130,22 +130,22 @@
 
             </button>
 
-            <div v-if="open.fuel" class="flex flex-col px-5 pb-4">
+            <div v-if="open.fuel" class="flex flex-col gap-1 px-5 pb-4">
 
                 <label v-for="f in fuelTypes" 
                     :key="f.label" 
                     class="flex items-center justify-between cursor-pointer group py-1 px-3 rounded-md transition-all duration-200 ease-in-out"
-                    :class="filters.fuel === f.label ? 'bg-[#252525] border-l-4 border-[#C1121F]' : ''" 
-                    @click="filters.fuel = filters.fuel === f.label ? '' : f.label"
+                    :class="filters.fuel.includes(f.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'" 
+                    @click="filters.fuel = filters.fuel.includes(f.label) ? filters.fuel.filter((item) => item !== f.label) : [...filters.fuel, f.label]"
                 >
                     
                     <div class="flex items-center gap-2">
                         <span 
                             class="text-xs transition-colors duration-200 cursor-pointer" 
-                            :class="filters.fuel === f.label ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
-                            >{{ f.label }}</span>
+                            :class="filters.fuel.includes(f.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
+                            >{{ f.label.charAt(0).toUpperCase() + f.label.slice(1) }}</span>
                     </div>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.fuel === f.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ f.count }}</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.fuel.includes(f.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ f.count }}</span>
                 
                 </label>
 
@@ -167,24 +167,24 @@
             
             </button>
 
-            <div v-if="open.seats" class="flex flex-col px-5 pb-4">
+            <div v-if="open.seats" class="flex flex-col gap-1 px-5 pb-4">
                 
                 <label v-for="s in seatOptions" 
                     :key="s.label" 
                     class="flex items-center justify-between cursor-pointer group py-1 px-3 rounded-md transition-all duration-200 ease-in-out"
-                    :class="filters.seats === s.label ? 'bg-[#252525] border-l-4 border-[#C1121F]' : ''"
-                    @click="filters.seats = filters.seats === s.label ? '' : s.label" 
+                    :class="filters.seats.includes(s.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
+                    @click="filters.seats = filters.seats.includes(s.label) ? filters.seats.filter((item) => item !== s.label) : [...filters.seats, s.label]"
                 >
 
                     <div class="flex items-center gap-2">
 
                         <span class="text-xs transition-colors duration-200 cursor-pointer" 
-                            :class="filters.seats === s.label ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
+                            :class="filters.seats.includes(s.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
                         >{{ s.label }}</span>
 
                     </div>
 
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.seats === s.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ s.count }}</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.seats.includes(s.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ s.count }}</span>
                 
                 </label>
 
@@ -206,61 +206,30 @@
             
             </button>
 
-            <div v-if="open.features" class="flex flex-col px-5 pb-4">
+            <div v-if="open.features" class="flex flex-col gap-1 px-5 pb-4">
 
                 <label 
                     v-for="f in featureOptions" :key="f.label" 
                     class="flex items-center justify-between cursor-pointer group py-1 px-3 rounded-md transition-all duration-200 ease-in-out"
-                    :class="filters.feature === f.label ? 'bg-[#252525] border-l-4 border-[#C1121F]' : ''"
-                    @click="filters.feature = filters.feature === f.label ? '' : f.label"
+                    :class="filters.feature.includes(f.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
+                    @click="filters.feature = filters.feature.includes(f.label)
+                    ? filters.feature.filter(item => item !== f.label)
+                    : [...filters.feature, f.label]"
                 >
                 <div class="flex items-center gap-2">
 
                     <span class="text-xs transition-colors duration-200 cursor-pointer" 
-                        :class="filters.feature === f.label ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
-                    >{{ f.label }}</span>
+                        :class="filters.feature.includes(f.label)
+                        ? 'text-white font-semibold'
+                        : 'text-[#7E7E7E] group-hover:text-white'"
+                    >{{ f.label.charAt(0).toUpperCase() + f.label.slice(1) }}</span>
 
                 </div>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.feature === f.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ f.count }}</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.seats.includes(f.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ f.count }}</span>
                 </label>
             
             </div>
 
-        </div>
-
-        <div class="border-t border-[#3F3F3F]"></div>
-
-        <!-- Insurance -->
-        <div class="flex flex-col">
-            
-            <button @click="toggleSection('insurance')" class="flex items-center justify-between w-full px-5 py-4">
-                
-                <span class="text-white text-xs font-semibold">Insurance?</span>
-                <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.insurance ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                </svg>
-
-            </button>
-
-            <div v-if="open.insurance" class="flex flex-col px-5 pb-4">
-
-                <label 
-                    v-for="ins in insuranceOptions" 
-                    :key="ins.label" 
-                    class="flex items-center justify-between cursor-pointer group py-1 px-3 rounded-md transition-all duration-200 ease-in-out"
-                    :class="filters.insurance === ins.label ? 'bg-[#252525] border-l-4 border-[#C1121F]' : ''"
-                    @click="filters.insurance = filters.insurance === ins.label ? '' : ins.label"
-                >
-                <div class="flex items-center gap-2">
-                    <span 
-                        class="text-xs transition-colors duration-200 cursor-pointer" 
-                        :class="filters.insurance === ins.label ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
-                    >{{ ins.label }}</span>
-                </div>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.insurance === ins.label ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ ins.count }}</span>
-                </label>
-                
-            </div>
         </div>
 
     </aside>
@@ -274,10 +243,9 @@
         filters: {
             category: string[]
             transmission: string[]
-            fuel: string
-            seats: string
-            feature: string
-            insurance: string
+            fuel: string[]
+            seats: string[]
+            feature: string[]
         }
         open: {
             category: boolean
@@ -286,21 +254,19 @@
             fuel: boolean
             seats: boolean
             features: boolean
-            insurance: boolean
         }
         transmissions: { label: string; count: number }[]
         categories: { label: string; count: number }[]
         fuelTypes: { label: string; count: number }[]
         seatOptions: { label: string; count: number }[]
         featureOptions: { label: string; count: number }[]
-        insuranceOptions: { label: string; count: number }[]
     }>()
 
     const emit = defineEmits<{
-        toggleSection: [key: 'category' | 'price' | 'transmission' | 'fuel' | 'seats' | 'features' | 'insurance']
+        toggleSection: [key: 'category' | 'price' | 'transmission' | 'fuel' | 'seats' | 'features']
         resetFilters: []
     }>()
 
-    const toggleSection = (key: 'category' | 'price' | 'transmission' | 'fuel' | 'seats' | 'features' | 'insurance') => emit('toggleSection', key)
+    const toggleSection = (key: 'category' | 'price' | 'transmission' | 'fuel' | 'seats' | 'features') => emit('toggleSection', key)
     const resetFilters = () => emit('resetFilters')
 </script>

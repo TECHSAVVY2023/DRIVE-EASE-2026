@@ -2,6 +2,7 @@
 from django.urls import path
 from . import views_auth
 from . import views
+from .views import CarListView, CarDetailView
 
 urlpatterns = [
     # Auth endpoints
@@ -16,4 +17,7 @@ urlpatterns = [
     path('contact/edit/<int:pk>/', views.ContactCreateView.as_view()),
     path('contact/create/', views.ContactCreateView.as_view()),
     path('contact/gmail-notif/', views.SubmitToGmail.as_view()),
+
+    path("cars/", CarListView.as_view(), name="car-list"),
+    path("cars/<str:car_id>/", views.CarDetailView.as_view())
 ]

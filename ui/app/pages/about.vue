@@ -4,6 +4,7 @@
       :menu-open="menuOpen"
       @close-menu="closeMenu"
    />
+
    <Navbar
       :menu-open="menuOpen"
       @toggle-menu="toggleMenu"
@@ -11,16 +12,16 @@
       @close-sidebar="handleCloseSidebar"
    />
 
-   <div class="min-h-screen bg-[#121212] font-[poppins]">
+   <Banner 
+      subtitle="About Us"
+      title="About Drive Ease"
+      :breadcrumbs="[
+         { label: 'Home', to: '/' },
+         { label: 'About' }
+      ]"
+   />
 
-      <Banner 
-         subtitle="About Us"
-         title="About Drive Ease"
-         :breadcrumbs="[
-            { label: 'Home', to: '/' },
-            { label: 'About' }
-         ]"
-      />
+   <div class="min-h-screen bg-[#121212] font-[poppins]">
 
       <div class="max-w-5xl mx-auto px-6 py-10 flex flex-col gap-5">
 
@@ -222,7 +223,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 
 //Navbar + User Profile + Working login
 

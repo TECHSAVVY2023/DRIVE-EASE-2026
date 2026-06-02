@@ -10,6 +10,7 @@ import urllib.parse
 import base64
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
+from .models import UserProfile
 
 from .utils.auth import is_authorized
 
@@ -105,11 +106,6 @@ class GoogleCallbackView(APIView):
             
             if not is_authorized(profile_res):
                 return redirect(f"{frontend_url}/login?error=unauthorized")
-
-            print(profile_res.get('given_name'))
-            print(profile_res.get('family_name'))
-            print(profile_res.get('email'))
-            print(profile_res.get('picture'))
                 
             user, _ = User.objects.get_or_create(
                 username=profile_res.get('email'),
@@ -141,12 +137,21 @@ class AuthMeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
         return Response({
             "id": request.user.id,
             "given_name": request.auth.get("given_name"),
             "family_name": request.auth.get("family_name"),
             "email": request.auth.get("email"),
             "picture": request.auth.get("picture"),
+            "date_joined": request.user.date_joined.isoformat(),
+
+            "contact_number": profile.contact_number,
+            "address": profile.address,
+            "profile_picture": request.build_absolute_uri(profile.profile_picture.url) if profile.profile_picture else None,
+            "license_image": request.build_absolute_uri(profile.license_image.url) if profile.license_image else None,
+            "id_image": request.build_absolute_uri(profile.id_image.url) if profile.id_image else None,
         })
 
 class AuthLogoutView(APIView):

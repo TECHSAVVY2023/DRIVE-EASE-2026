@@ -68,7 +68,7 @@
                     <button 
                         @click="$router.push('/fleet')"
                         class="
-                        mt-6 bg-[#C1121F] hover:bg-[#6B0A10]
+                        mt-6 bg-[#C1121F] hover:bg-[#9B0E18]
                         text-white text-sm font-semibold
                         px-8 py-3 rounded
                         transition-colors duration-200

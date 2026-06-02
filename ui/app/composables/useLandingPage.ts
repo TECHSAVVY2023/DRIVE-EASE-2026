@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import car1 from '~/assets/images/car1.png'
 import car2 from '~/assets/images/car2.png'
+import car3 from '~/assets/images/car3.png'
 
 export const useLandingPage = () => {
 
@@ -42,6 +43,11 @@ export const useLandingPage = () => {
         name: 'Mitsubishi Xforce',
         price: '₱1,800',
         image: car2,
+    },
+    {
+        name: 'Ford Raptor',
+        price: '₱2,500',
+        image: car3,
     },
   ]
 

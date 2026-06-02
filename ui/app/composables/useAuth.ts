@@ -12,6 +12,12 @@ interface AuthUser {
     family_name?: string;
     email?: string;
     picture?: string;
+    contact_number?: string;
+    address?: string;
+    profile_picture?: string;
+    license_image?: string;
+    id_image?: string;
+    date_joined?: string;
 }
 
 export const useAuth = () => {
@@ -62,13 +68,20 @@ export const useAuth = () => {
             family_name: profile.family_name,
             email: profile.email,
             picture: profile.picture,
+            date_joined: profile.date_joined,
+            contact_number: profile.contact_number,
+            address: profile.address,
+            profile_picture: profile.profile_picture,
+            license_image: profile.license_image,
+            id_image: profile.id_image,
         };
 
         localStorage.setItem('auth_user', JSON.stringify(userData));
         user.value = userData;
         console.log('User profile:', userData);
+        
         } catch (err) {
-        console.error('Failed to fetch user profile:', err);
+            console.error('Failed to fetch user profile:', err);
         }
     };
 

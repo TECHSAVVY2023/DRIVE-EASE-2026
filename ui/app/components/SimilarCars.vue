@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-[#1B1B1B] font-[poppins] py-6 px-6 rounded-lg">
+    <div class="bg-[#1B1B1B] font-[poppins] py-6 px-6 w-full rounded-lg">
 
         <!-- Header -->
         <div class="flex items-center justify-between mb-4">

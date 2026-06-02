@@ -45,7 +45,7 @@
                                 @click="$router.push('/fleet')"
                                 class="
                                     px-8 py-4 rounded-[10px]
-                                    bg-[#C1121F] hover:bg-[#6B0A10]
+                                    bg-[#C1121F] hover:bg-[#9B0E18]
                                     text-sm text-white font-[poppins]
                                     transition-colors duration-250
                                 "

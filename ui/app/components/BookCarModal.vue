@@ -73,17 +73,29 @@
                     <!-- Car summary card -->
                     <div class="flex items-center gap-3 bg-[#1a1a1a] border border-[#C1121F]/50 rounded-xl overflow-hidden">
                         <div class="w-24 h-16 flex-shrink-0 bg-[#141414] overflow-hidden">
-                        <img :src="car?.image" :alt="car?.name" class="w-full h-full object-cover" />
+                            <img
+                                :src="`${useApiBase()}${car?.images[0]?.image}`"
+                                :alt="`${car?.brand} ${car?.model}`"
+                                class="w-full h-full object-cover"
+                            />
                         </div>
+
                         <div class="flex-1 min-w-0 py-2">
-                        <p class="text-white text-sm font-bold">{{ car?.name }}</p>
-                        <p class="text-gray-400 text-xs">₱{{ car?.price}} / day</p>
+                            <p class="text-white text-sm font-bold">
+                                {{ car?.brand }} {{ car?.model }}
+                            </p>
+                            <p class="text-gray-400 text-xs">
+                                ₱{{ car?.price_per_day }} / day
+                            </p>
                         </div>
+
                         <div class="pr-3 flex-shrink-0">
-                        <span class="flex items-center gap-1 text-[10px] font-semibold text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-full">
-                            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                            AVAILABLE
-                        </span>
+                            <span
+                                class="flex items-center gap-1 text-[10px] font-semibold text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-full"
+                            >
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                                AVAILABLE
+                            </span>
                         </div>
                     </div>
 
@@ -230,7 +242,7 @@
                         {{ currentStep === steps.length ? 'Confirm booking' : 'Next step' }}
                         </button>
                         <button
-                        @click="$emit('update:modelValue', false)"
+                        @click="closeModal"
                         class="w-full border border-[#2a2a2a] hover:border-white text-white text-sm font-semibold py-3 rounded-lg transition-colors duration-200"
                         >
                         Cancel
@@ -249,46 +261,36 @@
 
 <script setup lang="ts">
 import { ref, reactive, onUnmounted } from 'vue'
+import { useApiBase } from '~/utils/api/api'
+import type { Car } from '~/utils/api/api'
+
+const closeModal = () => {
+    if (import.meta.client) {
+        document.documentElement.style.overflow = 'hidden'
+    }
+
+    emit('update:modelValue', false)
+}
 
 interface Step {
   title: string
   subtitle: string
 }
 
-interface Car {
-  name: string
-  pricePerDay: number
-  image: string
+interface BookingForm {
+    firstName: string
+    lastName: string
+    address: string
+    contact: string
+    pickupDate: string
+    returnDate: string
+    location: string
 }
 
-interface BookingForm {
-  firstName: string
-  lastName: string
-  address: string
-  contact: string
-  pickupDate: string
-  returnDate: string
-  location: string
-}
 
 const props = defineProps<{
-    modelValue: boolean
-    car?: {
-        id: number
-        name: string
-        available: boolean
-        seats: number
-        transmission: string
-        price: number
-        category: string
-        fuel: string
-        image: string
-        reviews: number
-        rating: number
-        ownerNote: string
-        images: string[]
-        specifications: { label: string; value: string }[]
-    }
+  modelValue: boolean
+  car: Car | null
 }>()
 
 const emit = defineEmits<{
@@ -344,17 +346,17 @@ function handleFileChange(e: Event): void {
 }
 
 function handleDrop(e: DragEvent): void {
-  const files = e.dataTransfer?.files
-  if (!files) return
-  Array.from(files).forEach(file => {
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      if (ev.target?.result) {
-        uploadedImages.value.push(ev.target.result as string)
-      }
-    }
-    reader.readAsDataURL(file)
-  })
+    const files = e.dataTransfer?.files
+    if (!files) return
+    Array.from(files).forEach(file => {
+        const reader = new FileReader()
+        reader.onload = (ev) => {
+        if (ev.target?.result) {
+            uploadedImages.value.push(ev.target.result as string)
+        }
+        }
+        reader.readAsDataURL(file)
+    })
 }
 
 function removeImage(index: number): void {
@@ -369,26 +371,26 @@ watch(
         if (!import.meta.client) return
 
         if (open) {
-            scrollY = window.scrollY
+            const scrollbarWidth =
+                window.innerWidth - document.documentElement.clientWidth
 
-            document.body.style.position = 'fixed'
-            document.body.style.top = `-${scrollY}px`
-            document.body.style.width = '100%'
+            document.documentElement.style.overflow = 'hidden'
+
+            // prevent layout shift
+            document.body.style.paddingRight = `${scrollbarWidth}px`
         } else {
-            document.body.style.position = ''
-            document.body.style.top = ''
-            document.body.style.width = ''
-
-            window.scrollTo(0, scrollY)
+            setTimeout(() => {
+                document.documentElement.style.overflow = ''
+                document.body.style.paddingRight = ''
+            }, 200)
         }
     },
     { immediate: true }
 )
 
-onUnmounted(() => {
-    if (import.meta.client) {
-        document.body.style.overflow = ''
-        document.documentElement.style.overflow = ''
-    }
-})
+// onUnmounted(() => {
+//     if (import.meta.client) {
+//         document.documentElement.style.overflow = ''
+//     }
+// })
 </script>

@@ -104,6 +104,7 @@
 
             <!-- Profile -->
             <button
+                @click="$router.push('/profile')"
                 class="
                     w-full flex items-center gap-3
                     px-4 py-3
@@ -119,12 +120,30 @@
                 <span>Profile</span>
             </button>
 
+            <!-- Transactions -->
+            <button
+                @click="$router.push('/transaction')"
+                class="
+                    w-full flex items-center gap-3
+                    px-4 py-3
+                    text-sm text-white
+                    hover:bg-[#1A1A1A]
+                    transition-colors duration-200
+                "
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 640 640">
+                    <path d="M160 96C142.3 96 128 110.3 128 128L128 576L192 544L256 576L320 544L384 576L448 544L512 576L512 128C512 110.3 497.7 96 480 96L160 96zM224 192L416 192C429.3 192 440 202.7 440 216C440 229.3 429.3 240 416 240L224 240C210.7 240 200 229.3 200 216C200 202.7 210.7 192 224 192zM224 288L416 288C429.3 288 440 298.7 440 312C440 325.3 429.3 336 416 336L224 336C210.7 336 200 325.3 200 312C200 298.7 210.7 288 224 288zM224 384L352 384C365.3 384 376 394.7 376 408C376 421.3 365.3 432 352 432L224 432C210.7 432 200 421.3 200 408C200 394.7 210.7 384 224 384z"/>
+                </svg>
+                
+                <span>Transactions</span>
+            </button>
+
             <!-- Divider -->
             <div class="border-t border-[#222222]"></div>
 
             <!-- Logout -->
             <button
-                 @click="logout"
+                @click="logout"
                 class="
                     w-full px-4 py-3 flex items-center gap-3
                     text-sm text-red-400

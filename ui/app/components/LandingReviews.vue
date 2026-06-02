@@ -82,11 +82,11 @@
                         <button
                             @click="$router.push('/reviews')"
                             class="
-                                w-fit rounded bg-[#C1121F]
+                                w-fit rounded
                                 px-8 py-4 mt-4 mb-8
                                 text-sm font-semibold text-white
 
-                                hover:bg-[#6B0A10]
+                                bg-[#C1121F] hover:bg-[#9B0E18] 
                                 transition-colors duration-200
                             "
                         >

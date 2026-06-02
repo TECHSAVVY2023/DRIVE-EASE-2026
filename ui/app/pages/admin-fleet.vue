@@ -1,10 +1,10 @@
 <template>
 
-    <div class="flex h-screen bg-[#0D0D0D] font-[poppins] overflow-hidden">
+    <div class="flex min-h-screen bg-[#0D0D0D] font-[poppins]">
         <AdminSidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
         <!-- Main -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 flex flex-col">
 
             <AdminTopbar @open-sidebar="handleOpenSidebar" @close-sidebar="handleCloseSidebar" />
 

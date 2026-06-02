@@ -1,8 +1,9 @@
+from django.db.models.fields import capfirst
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import ContactListModel
+from .models import ContactListModel, Cars
 from .serializers import ContactListSerializer
 from .forms import ContactListForm
 
@@ -13,6 +14,14 @@ from django.core import mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 import traceback
+
+from .serializers import CarSerializer
+
+class CarListView(APIView):
+    def get(self, request):
+        cars = Cars.objects.all()
+        serializer = CarSerializer(cars, many=True)
+        return Response(serializer.data)
 
 class ContactListView(APIView):
   def get(self, request, format=None):
@@ -136,3 +145,8 @@ class SubmitToGmail(APIView):
         'message': 'Internal server error'
       }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
+class CarDetailView(APIView):
+    def get(self, request, car_id):
+        car = Cars.objects.get(car_id=car_id)
+        serializer = CarSerializer(car)
+        return Response(serializer.data)

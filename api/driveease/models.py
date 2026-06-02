@@ -1,5 +1,6 @@
 from django.db import models
 from django.template import defaultfilters
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Cars(models.Model):
@@ -9,6 +10,7 @@ class Cars(models.Model):
         ('rented', 'Rented'),
         ('maintenance', 'Maintenance'),
     ]
+
     CAR_TYPE = [
         ('sedan', 'Sedan'),
         ('suv', 'SUV'),
@@ -19,7 +21,10 @@ class Cars(models.Model):
         ('other', 'Other'),
     ]
 
-    car_id = models.CharField(max_length=50, unique=True)
+    car_id = models.CharField(
+        max_length=50,
+        primary_key=True
+    )
 
     brand = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
@@ -32,7 +37,6 @@ class Cars(models.Model):
     )
 
     price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
 
     transmission = models.CharField(max_length=50)
     engine = models.CharField(max_length=100)
@@ -40,11 +44,10 @@ class Cars(models.Model):
 
     seats = models.IntegerField()
 
-    features = models.TextField(blank=True, null=True)
+    features = models.JSONField(default=list, blank=True)
 
     note = models.TextField(blank=True, null=True)
 
-    image = models.ImageField(upload_to='fleet/images/', blank=True, null=True)
     png_image = models.ImageField(upload_to='fleet/png/', blank=True, null=True)
 
     status = models.CharField(
@@ -53,11 +56,54 @@ class Cars(models.Model):
         default='available'
     )
 
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    approval_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('approved', 'Approved'),
+            ('rejected', 'Rejected'),
+        ],
+        default='pending'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name = "Car"
+        verbose_name_plural = "Cars"
+
     def __str__(self):
         return f"{self.brand} {self.model} ({self.car_id})"
+
+class CarImage(models.Model):
+    car = models.ForeignKey(
+        Cars,
+        on_delete=models.CASCADE,
+        related_name='images'
+    )
+    image = models.ImageField(upload_to='fleet/images/')
+    is_primary = models.BooleanField(default=False)
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    contact_number = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+
+    profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    license_image = models.ImageField(upload_to='licenses/', blank=True, null=True)
+    id_image = models.ImageField(upload_to='ids/', blank=True, null=True)
+
+    def __str__(self):
+        return self.user.username
 
 class ContactListModel(models.Model):
     contact_id = models.CharField(max_length=255, blank=True, null=True, default='')

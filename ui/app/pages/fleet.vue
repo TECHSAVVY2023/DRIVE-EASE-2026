@@ -1,17 +1,23 @@
 <template>
+    <BookCarModal
+        v-if="selectedCar"
+        v-model="showBookingModal"
+        :car="selectedCar"
+    />
+
+    <MobileDrawer
+        :menu-open="menuOpen"
+        @close-menu="closeMenu"
+    />
+
+    <Navbar
+        :menu-open="menuOpen"
+        @toggle-menu="toggleMenu"
+        @open-sidebar="handleOpenSidebar" 
+        @close-sidebar="handleCloseSidebar"
+    />
+
     <div class="min-h-screen bg-[#121212] font-[poppins]">
-
-        <MobileDrawer
-            :menu-open="menuOpen"
-            @close-menu="closeMenu"
-        />
-
-        <Navbar
-            :menu-open="menuOpen"
-            @toggle-menu="toggleMenu"
-            @open-sidebar="handleOpenSidebar" 
-            @close-sidebar="handleCloseSidebar"
-        />
 
         <Banner 
             subtitle="Find Your Perfect Ride"
@@ -25,18 +31,17 @@
         <div class="max-w-7xl px-4 py-8 flex flex-col mx-auto md:flex-row gap-6">
 
             <SidebarFilters
-                :show-filters="showFilters"
-                :price-range="priceRange"
-                :filters="filters"
-                :open="open"
+                :show-filters="filterState.showFilters.value"
+                :price-range="filterState.priceRange.value"
+                :filters="filterState.filters"
+                :open="filterState.open"
                 :transmissions="transmissions"
                 :categories="categories"
                 :fuel-types="fuelTypes"
                 :seat-options="seatOptions"
                 :feature-options="featureOptions"
-                :insurance-options="insuranceOptions"
-                @toggle-section="toggleSection"
-                @reset-filters="resetFilters"
+                @toggle-section="filterState.toggleSection"
+                @reset-filters="filterState.resetFilters"
             />
 
             <!-- =========================
@@ -61,15 +66,15 @@
                 <div class="flex flex-col justify-between md:flex-row md:items-center gap-3 w-full">
 
                     <FleetSort
-                        :sort-by="sortBy"
-                        :show-filters="showFilters"
-                        @update:sortBy="sortBy = $event"
-                        @toggleFilters="showFilters = !showFilters"
+                        :sort-by="filterState.sortBy.value"
+                        :show-filters="filterState.showFilters.value"
+                        @update:sortBy="filterState.sortBy.value = $event"
+                        @toggleFilters="filterState.showFilters.value = !filterState.showFilters.value"
                     />
 
                     <FleetSearch
-                        :search="search"
-                        @update:search="search = $event"
+                        :search="filterState.search.value"
+                        @update:search="filterState.search.value = $event"
                     />
 
                 </div>
@@ -79,32 +84,49 @@
 
                     <NuxtLink
                         v-for="car in paginatedCars"
-                        :key="car.id"
-                        :to="`/car-details/${car.id}`"
-                        class="bg-[#1a1a1a] rounded-xl overflow-hidden border border-[#222] hover:border-[#C1121F] transition-colors duration-200 flex flex-col"
+                        :key="car.car_id"
+                        :to="`/car-details/${car.car_id}`"
+                        class="
+                            bg-[#1a1a1a] rounded-xl border border-[#222] hover:border-[#C1121F]
+                            transition-colors duration-200 flex flex-col overflow-hidden"
                     >
                         <!-- Car Image -->
                         <div class="bg-[#141414] h-40 flex items-center justify-center overflow-hidden">
-                            <img :src="car.image" :alt="car.name" class="w-full h-full object-cover" />
+                            <img :src="`${useApiBase()}${getPrimaryImage(car)}`" class="w-full h-full object-cover" />
                         </div>
 
                         <!-- Info -->
                         <div class="p-4 flex flex-col gap-3 flex-1">
 
                             <div>
-                                <h3 class="text-white font-bold text-sm">{{ car.name }}</h3>
+                                <h3 class="text-white font-bold text-sm">{{ car.brand }} {{ car.model }}</h3>
                                 <p class="text-[#7E7E7E] text-xs mt-0.5">{{ car.seats }} seats · {{ car.transmission }}</p>
                             </div>
 
-                            <p class="text-white font-bold text-sm">₱{{ car.price.toLocaleString() }}/day</p>
+                            <p class="text-white font-bold text-sm">₱{{ car.price_per_day.toLocaleString() }}/day</p>
 
                             <div class="flex flex-col gap-2 mt-auto">
-                                <button class="w-full bg-[#C1121F] hover:bg-[#6B0A10] text-white text-xs font-semibold py-2 rounded-lg transition-colors duration-200">
+
+                                <button 
+                                    @click.stop.prevent="openBookingModal(car)"
+                                    class="
+                                        w-full bg-[#C1121F] hover:bg-[#9B0E18] py-2 
+                                        text-white text-xs font-semibold
+                                        rounded-lg transition-colors duration-200
+                                    "
+                                >
                                     Book
                                 </button>
-                                <button class="w-full border border-white hover:bg-white text-white text-xs font-semibold hover:text-[#C1121F] py-2 rounded-lg transition-colors duration-200">
+
+                                <button class="
+                                    w-full border border-white hover:bg-white rounded-lg
+                                    text-white text-xs font-semibold hover:text-[#C1121F] py-2
+                                    transition-colors duration-200
+                                    "
+                                >
                                     View
                                 </button>
+
                             </div>
 
                         </div>
@@ -117,11 +139,11 @@
                     v-if="filteredCars.length === 0"
                     message="No cars match your filters."
                     button-text="Reset filters"
-                    @action="resetFilters"
+                    @action="filterState.resetFilters"
                 />
 
                 <Pagination
-                    v-model:currentPage="currentPage"
+                    v-model:currentPage="filterState.currentPage.value"
                     :totalPages="totalPages"
                 />
 
@@ -135,6 +157,8 @@
 </template>
 
 <script setup lang="ts">
+import { useApiBase, getPrimaryImage } from '~/utils/api/api'
+
 
 const { setAuth } = useAuth()
 const route = useRoute()
@@ -151,25 +175,32 @@ if (route.query.token) {
     await setAuth(route.query.token as string)
 }
 
+/* ✅ SINGLE SOURCE OF TRUTH */
+const filterState = useCarFilters()
+
+/* cars */
+const { cars } = useCars()
+
+/* filtered logic */
+const { totalPages, paginatedCars, filteredCars } =
+    useFilteredCars(cars, filterState)
+
+/* options */
 const {
-    showFilters,
-    search,
-    sortBy,
-    currentPage,
-    priceRange,
-    filters,
-    open,
     categories,
     transmissions,
     fuelTypes,
     seatOptions,
-    featureOptions,
-    insuranceOptions,
-    filteredCars,
-    totalPages,
-    paginatedCars,
-    toggleSection,
-    resetFilters,
-} = useCarFilters()
+    featureOptions
+} = useCarOptions(cars)
+
+
+const showBookingModal = ref(false)
+const selectedCar = ref(null)
+
+const openBookingModal = (car: any) => {
+    selectedCar.value = car
+    showBookingModal.value = true
+}
 
 </script>

@@ -3,13 +3,32 @@
 /**
  * Types
  */
-export interface CMSPost {
-  id: number;
-  title?: string;
-  content?: string;
-  created_at?: string;
-  updated_at?: string;
-  [key: string]: unknown;
+export interface Car {
+  car_id: string
+  brand: string
+  model: string
+  year: number
+  car_type: string
+  price_per_day: string
+  transmission: string
+  engine: string
+  fuel_type: string
+  seats: number
+  features: string[]
+  note: string | null
+  png_image: string | null
+  status: string
+  approval_status: string
+  created_at: string
+  created_by: number
+  updated_at: string
+  images: CarImage[]
+}
+
+export interface CarImage {
+  id: number
+  image: string
+  is_primary: boolean
 }
 
 export interface UploadedFile {
@@ -35,48 +54,17 @@ export const useApiBase = (): string => {
 };
 
 /**
- * Base URL for S3 assets
- */
-export const BASE_ASSETS_URL =
-  "https://fpstorage.sgp1.cdn.digitaloceanspaces.com/fabricsplus";
-
-/**
  * Cache config
  */
-const CMS_POSTS_CACHE_TTL_MS = 60 * 1000;
+let carsCache: Car[] | null = null;
+let carsCacheExpiresAt = 0;
+let carsRequest: Promise<Car[]> | null = null;
+const CARS_CACHE_TTL_MS = 60 * 1000;
 
-let cmsPostsCache: CMSPost[] | null = null;
-let cmsPostsCacheExpiresAt = 0;
-let cmsPostsRequest: Promise<CMSPost[]> | null = null;
-
-/**
- * Normalize CMS response
- */
-const normalizeCMSPostsResponse = (response: unknown): CMSPost[] => {
-  if (Array.isArray(response)) {
-    return response as CMSPost[];
-  }
-
-  if (
-    typeof response === "object" &&
-    response !== null &&
-    "results" in response &&
-    Array.isArray((response as any).results)
-  ) {
-    return (response as { results: CMSPost[] }).results;
-  }
-
-  if (
-    typeof response === "object" &&
-    response !== null &&
-    "data" in response &&
-    Array.isArray((response as any).data)
-  ) {
-    return (response as { data: CMSPost[] }).data;
-  }
-
-  return [];
-};
+let carCache = new Map<string, Car>()
+let carCacheExpiresAt = new Map<string, number>()
+let carRequests = new Map<string, Promise<Car>>()
+const CAR_CACHE_TTL_MS = 60 * 1000
 
 /**
  * Construct full API URL
@@ -96,156 +84,94 @@ export const getApiUrl = (endpoint: string): string => {
  * API Endpoints
  */
 export const API_ENDPOINTS = {
-  CMS: {
-    LIST: "cms/list/",
-    DETAIL: (id: number) => `cms/${id}/`,
-    CREATE: "cms/create/",
-    EDIT: (id: number) => `cms/edit/${id}/`,
-    DELETE: (id: number) => `cms/delete/${id}/`,
-  },
-  UPLOAD: "cms/upload/",
-} as const;
-
-/**
- * Clear cache
- */
-export const clearCMSPostsCache = (): void => {
-  cmsPostsCache = null;
-  cmsPostsCacheExpiresAt = 0;
-  cmsPostsRequest = null;
-};
-
-/**
- * Upload files
- */
-export const uploadFiles = async (
-  files: File[]
-): Promise<UploadResponse> => {
-  const formData = new FormData();
-
-  files.forEach((file) => {
-    formData.append("file", file);
-  });
-
-  const uploadUrl = getApiUrl(API_ENDPOINTS.UPLOAD);
-
-  try {
-    const response = await $fetch<UploadResponse>(uploadUrl, {
-      method: "POST",
-      body: formData,
-    });
-
-    return response;
-  } catch (error) {
-    console.error("❌ File upload error:", error);
-    throw error;
+  CARS: {
+    LIST: 'api/driveease/cars/',
+    DETAIL: (id: string) => `api/driveease/cars/${id}/`,
+    CREATE: 'api/driveease/cars/create/',
+    UPDATE: (id: string) => `api/driveease/cars/${id}/update/`,
+    DELETE: (id: string) => `api/driveease/cars/${id}/delete/`,
   }
-};
+}
 
 /**
- * Fetch all CMS posts
+ * Fetch all cars
  */
-export const fetchCMSPosts = async (
+export const fetchCars = async (
   { force = false }: { force?: boolean } = {}
-): Promise<CMSPost[]> => {
+): Promise<Car[]> => {
   const now = Date.now();
 
-  if (!force && cmsPostsCache && now < cmsPostsCacheExpiresAt) {
-    return cmsPostsCache;
+  if (!force && carsCache && now < carsCacheExpiresAt) {
+    return carsCache;
   }
 
-  if (!force && cmsPostsRequest) {
-    return cmsPostsRequest;
+  if (!force && carsRequest) {
+    return carsRequest;
   }
 
-  cmsPostsRequest = $fetch<unknown>(
-    getApiUrl(API_ENDPOINTS.CMS.LIST)
+  carsRequest = $fetch<Car[]>(
+    getApiUrl(API_ENDPOINTS.CARS.LIST)
   )
-    .then((response) => {
-      const normalized = normalizeCMSPostsResponse(response);
-      cmsPostsCache = normalized;
-      cmsPostsCacheExpiresAt = Date.now() + CMS_POSTS_CACHE_TTL_MS;
-      return normalized;
+    .then((cars) => {
+      carsCache = cars;
+      carsCacheExpiresAt = Date.now() + CARS_CACHE_TTL_MS;
+      return cars;
     })
     .finally(() => {
-      cmsPostsRequest = null;
+      carsRequest = null;
     });
 
-  return cmsPostsRequest;
+  return carsRequest;
 };
 
 /**
- * Fetch single CMS post
+ * Get primary image for a car
  */
-export const fetchCMSPost = async (
-  id: number
-): Promise<CMSPost> => {
-  try {
-    return await $fetch<CMSPost>(
-      getApiUrl(API_ENDPOINTS.CMS.DETAIL(id))
-    );
-  } catch (error) {
-    console.error(`Error fetching CMS post ${id}:`, error);
-    throw error;
-  }
-};
+export const getPrimaryImage = (car: Car): string => {
+  return (
+    car.images.find(img => img.is_primary)?.image ??
+    car.images[0]?.image ??
+    ''
+  )
+}
 
 /**
- * Create CMS post
+ * Fetch single car
  */
-export const createCMSPost = async (
-  data: Partial<CMSPost>
-): Promise<CMSPost> => {
-  try {
-    return await $fetch<CMSPost>(
-      getApiUrl(API_ENDPOINTS.CMS.CREATE),
-      {
-        method: "POST",
-        body: data, // Nuxt $fetch auto JSON
-      }
-    );
-  } catch (error) {
-    console.error("Error creating CMS post:", error);
-    throw error;
-  }
-};
+export const fetchCar = async (
+  carId: string,
+  { force = false }: { force?: boolean } = {}
+): Promise<Car> => {
+  const now = Date.now()
 
-/**
- * Update CMS post
- */
-export const updateCMSPost = async (
-  id: number,
-  data: Partial<CMSPost>
-): Promise<CMSPost> => {
-  try {
-    return await $fetch<CMSPost>(
-      getApiUrl(API_ENDPOINTS.CMS.EDIT(id)),
-      {
-        method: "PUT",
-        body: data,
-      }
-    );
-  } catch (error) {
-    console.error(`Error updating CMS post ${id}:`, error);
-    throw error;
-  }
-};
+  // 1. Cache check
+  const cached = carCache.get(carId)
+  const expiresAt = carCacheExpiresAt.get(carId)
 
-/**
- * Delete CMS post
- */
-export const deleteCMSPost = async (
-  id: number
-): Promise<DeleteResponse> => {
-  try {
-    return await $fetch<DeleteResponse>(
-      getApiUrl(API_ENDPOINTS.CMS.DELETE(id)),
-      {
-        method: "DELETE",
-      }
-    );
-  } catch (error) {
-    console.error(`Error deleting CMS post ${id}:`, error);
-    throw error;
+  if (!force && cached && expiresAt && now < expiresAt) {
+    return cached
   }
-};
+
+  // 2. Deduplicate request
+  const existingRequest = carRequests.get(carId)
+  if (!force && existingRequest) {
+    return existingRequest
+  }
+
+  // 3. Fetch
+  const request = $fetch<Car>(
+    getApiUrl(API_ENDPOINTS.CARS.DETAIL(carId))
+  )
+    .then((car) => {
+      carCache.set(carId, car)
+      carCacheExpiresAt.set(carId, Date.now() + CAR_CACHE_TTL_MS)
+      return car
+    })
+    .finally(() => {
+      carRequests.delete(carId)
+    })
+
+  carRequests.set(carId, request)
+
+  return request
+}
