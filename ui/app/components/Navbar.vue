@@ -38,6 +38,7 @@
             v-if="isLoggedIn"
             @click="toggleDropdown"
             class="
+                relative
                 hidden md:flex items-center gap-2
                 bg-[#0D0D0D] border border-[#323232] hover:border-[#C1121F]
                 text-white text-sm
@@ -45,6 +46,23 @@
                 transition-colors duration-200
             "
         >
+            <!-- Notification Badge -->
+            <span
+                v-if="unreadCount > 0 && !isDropdownOpen"
+                class="
+                    absolute -top-1 -right-1
+                    min-w-[18px] h-[18px]
+                    px-1
+                    flex items-center justify-center
+                    rounded-full
+                    bg-[#C1121F]
+                    text-[10px] font-bold text-white
+                    leading-none
+                    z-10
+                "
+            >
+                {{ unreadCount > 99 ? '99+' : unreadCount }}
+            </span>
 
             <!-- Avatar -->
             <div
@@ -56,25 +74,12 @@
                     alt="Profile"
                     class="w-7 h-7 rounded-full object-cover"
                 />
-
-                <svg
-                    v-else
-                    class="w-4 h-4 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
-                    />
-                </svg>
             </div>
 
-            <!-- Name -->
             <span class="hidden sm:block truncate">
                 {{ user?.given_name }}
             </span>
 
-            <!-- Dropdown Arrow -->
             <svg
                 class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200"
                 :class="{ 'rotate-180': isDropdownOpen }"
@@ -89,7 +94,6 @@
                     d="M19 9l-7 7-7-7"
                 />
             </svg>
-
         </button>
 
         <!-- Dropdown Menu -->
@@ -136,6 +140,52 @@
                 </svg>
                 
                 <span>Transactions</span>
+            </button>
+
+            <button
+                @click="$router.push('/notifications')"
+                class="
+                    w-full flex items-center gap-3
+                    px-4 py-3
+                    text-sm text-white
+                    hover:bg-[#1A1A1A]
+                    transition-colors duration-200
+                "
+            >
+                <div class="relative">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-5 h-5 text-white shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                        />
+                    </svg>
+
+                    <span
+                        v-if="unreadCount > 0"
+                        class="
+                            absolute -top-2 -right-2
+                            min-w-[18px] h-[18px]
+                            px-1
+                            flex items-center justify-center
+                            rounded-full
+                            bg-[#C1121F]
+                            text-[10px] font-bold text-white
+                            leading-none
+                        "
+                    >
+                        {{ unreadCount > 99 ? '99+' : unreadCount }}
+                    </span>
+                </div>
+
+                <span>Notifications</span>
             </button>
 
             <!-- Divider -->
@@ -226,6 +276,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
+
 const { logout, isLoggedIn, user } = useAuth()
 
 const emit = defineEmits<{
@@ -239,6 +291,17 @@ const isDropdownOpen = ref(false)
 const toggleDropdown = (): void => {
     isDropdownOpen.value = !isDropdownOpen.value
 }
+
+// Example notifications
+const notifications = ref([
+    { id: 1, is_read: false },
+    { id: 2, is_read: true },
+    { id: 3, is_read: false }
+])
+
+const unreadCount = computed(() => {
+    return notifications.value.filter(n => !n.is_read).length
+})
 
 </script>
 
