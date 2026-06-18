@@ -11,6 +11,8 @@
     />
 
     <Navbar
+        :user="user"
+        :is-logged-in="isLoggedIn"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
         @open-sidebar="handleOpenSidebar" 
@@ -92,7 +94,10 @@
                     >
                         <!-- Car Image -->
                         <div class="bg-[#141414] h-40 flex items-center justify-center overflow-hidden">
-                            <img :src="`${useApiBase()}${getPrimaryImage(car)}`" class="w-full h-full object-cover" />
+                            <img
+                                :src="car.meta.primary_image || ''"
+                                class="w-full h-full object-cover"
+                            />
                         </div>
 
                         <!-- Info -->
@@ -157,11 +162,19 @@
 </template>
 
 <script setup lang="ts">
-import { useApiBase, getPrimaryImage } from '~/utils/api/api'
 
+const { isLoggedIn } = useAuth()
+const { apiFetch } = useApiFetch()
 
-const { setAuth } = useAuth()
-const route = useRoute()
+const user = ref<any>(null)
+
+watch(isLoggedIn, async (val) => {
+    if (val) {
+        user.value = await apiFetch('/auth/me/')
+    } else {
+        user.value = null
+    }
+}, { immediate: true })
 
 const { 
     menuOpen,
@@ -170,10 +183,6 @@ const {
     handleCloseSidebar,
     handleOpenSidebar
 } = useNavbar()
-
-if (route.query.token) {
-    await setAuth(route.query.token as string)
-}
 
 /* ✅ SINGLE SOURCE OF TRUTH */
 const filterState = useCarFilters()

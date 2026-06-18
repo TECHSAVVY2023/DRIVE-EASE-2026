@@ -19,13 +19,6 @@ export const useNavbar = () => {
         sidebarOpen.value = true
     }
 
-    const route = useRoute()
-    const { setAuth } = useAuth()
-
-    if (route.query.token) {
-        setAuth(route.query.token as string)
-    }
-
     return {
         menuOpen,
         toggleMenu,

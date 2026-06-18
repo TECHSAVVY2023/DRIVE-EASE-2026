@@ -6,7 +6,7 @@ export default defineNuxtRouteMiddleware((to) => {
   // with a token in the URL — onMounted in dashboard will save it
   if (to.query.token) return
 
-  const token = localStorage.getItem('auth_token')
+  const token = localStorage.getItem('access_token')
     if (!token) {
       return navigateTo('/login')
     }

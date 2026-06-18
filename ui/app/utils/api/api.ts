@@ -3,6 +3,21 @@
 /**
  * Types
  */
+
+export interface User {
+  id: number
+  email: string
+  given_name: string
+  family_name: string
+  contact_number: string
+  profile_picture: string | null
+  address: string
+  date_created: string
+  id_images: {
+    images: string[]
+  }
+}
+
 export interface Car {
   car_id: string
   brand: string
@@ -22,13 +37,10 @@ export interface Car {
   created_at: string
   created_by: number
   updated_at: string
-  images: CarImage[]
-}
-
-export interface CarImage {
-  id: number
-  image: string
-  is_primary: boolean
+  meta: {
+    primary_image: string | null
+    images: string[]
+  }
 }
 
 export interface UploadedFile {
@@ -51,6 +63,11 @@ export interface DeleteResponse {
 export const useApiBase = (): string => {
   const config = useRuntimeConfig();
   return (config.public.apiBase as string).replace(/\/+$/, "");
+};
+
+export const useApiApp = (): string => {
+  const config = useRuntimeConfig();
+  return (config.public.apiApp as string).replace(/\/+$/, "");
 };
 
 /**
@@ -85,9 +102,9 @@ export const getApiUrl = (endpoint: string): string => {
  */
 export const API_ENDPOINTS = {
   CARS: {
-    LIST: 'api/driveease/cars/',
-    DETAIL: (id: string) => `api/driveease/cars/${id}/`,
-    CREATE: 'api/driveease/cars/create/',
+    LIST: 'cars/',
+    DETAIL: (id: string) => `cars/${id}/`,
+    CREATE: 'cars/create/',
     UPDATE: (id: string) => `api/driveease/cars/${id}/update/`,
     DELETE: (id: string) => `api/driveease/cars/${id}/delete/`,
   }
@@ -127,13 +144,6 @@ export const fetchCars = async (
 /**
  * Get primary image for a car
  */
-export const getPrimaryImage = (car: Car): string => {
-  return (
-    car.images.find(img => img.is_primary)?.image ??
-    car.images[0]?.image ??
-    ''
-  )
-}
 
 /**
  * Fetch single car

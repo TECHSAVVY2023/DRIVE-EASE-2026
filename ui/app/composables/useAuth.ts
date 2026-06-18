@@ -1,7 +1,6 @@
 /**
- * Thin auth composable — all logic lives in Central-API (Django).
- * The UI only stores the JWT returned by the API callback and calls
- * API endpoints for login / logout / user info.
+ * Thin auth composable — Django is source of truth.
+ * Frontend stores JWT + reactive user state only.
  */
 
 import { useApiBase } from '~/utils/api/api';
@@ -9,114 +8,144 @@ import { useApiBase } from '~/utils/api/api';
 interface AuthUser {
     id: number | string;
     given_name?: string;
-    family_name?: string;
-    email?: string;
-    picture?: string;
-    contact_number?: string;
-    address?: string;
     profile_picture?: string;
-    license_image?: string;
-    id_image?: string;
-    date_joined?: string;
 }
 
+interface UserProfile extends AuthUser {
+    family_name?: string;
+    email?: string;
+    contact_number?: string;
+    address?: string;
+}
+
+type RefreshResponse = {
+    access: string;
+};
+
 export const useAuth = () => {
-    const user = useState<AuthUser | null>('auth_user', () => null);
-    const token = useState<string | null>('auth_token', () => null);
+    //const user = useState<any>('user', () => null)
+    const token = useState<string | null>('token', () => null)
 
-    const isLoggedIn = computed(() => !!token.value);
+    const isLoggedIn = computed(() => !!token.value)
 
-    /**
-     * Initialise auth state from localStorage (client-side only).
-     */
-    const init = (): void => {
-        if (!import.meta.client) return;
+    const apiBase = useApiBase()
 
-        const storedToken = localStorage.getItem('auth_token');
-        const storedUser = localStorage.getItem('auth_user');
-
-        if (storedToken) token.value = storedToken;
-
-        if (storedUser) {
-        try {
-            user.value = JSON.parse(storedUser) as AuthUser;
-        } catch {
-            user.value = null;
-        }
-        }
-    };
-
-    /**
-     * Persist the JWT that the Django callback appends as ?token=…
-     * and fetch the user profile from the API.
-     */
-    const setAuth = async (jwt: string): Promise<void> => {
-        if (!import.meta.client) return;
-
-        localStorage.setItem('auth_token', jwt);
-        token.value = jwt;
-
-        try {
-        const apiBase = useApiBase();
-        const profile = await $fetch<AuthUser>(`${apiBase}/api/driveease/auth/me/`, {
-            headers: { Authorization: `Bearer ${jwt}` },
-        });
-
-        const userData: AuthUser = {
-            id: profile.id,
-            given_name: profile.given_name,
-            family_name: profile.family_name,
-            email: profile.email,
-            picture: profile.picture,
-            date_joined: profile.date_joined,
-            contact_number: profile.contact_number,
-            address: profile.address,
-            profile_picture: profile.profile_picture,
-            license_image: profile.license_image,
-            id_image: profile.id_image,
-        };
-
-        localStorage.setItem('auth_user', JSON.stringify(userData));
-        user.value = userData;
-        console.log('User profile:', userData);
+    // LOGIN CALLBACK
+    const setAuth = async (access: string, refresh: string) => {
+        console.log('setting auth with access:', access, 'and refresh:', refresh)
         
-        } catch (err) {
-            console.error('Failed to fetch user profile:', err);
-        }
-    };
+        token.value = access
 
-    /**
-     * Redirect to the Django Google OAuth endpoint.
-     */
+        localStorage.setItem('access_token', access)
+        localStorage.setItem('refresh_token', refresh)
+
+    }
+
+    // INIT APP
+    const init = async () => {
+        if (!import.meta.client) return
+        console.log('starting init...')
+        const access = localStorage.getItem('access_token')
+
+        if (!access) return
+
+        token.value = access
+        console.log('token set to:', access)
+        //console.log('token user value:', !user.value)
+
+        // if (!user.value) {
+        //     console.log('user state:', user.value)
+        //     //await refreshUser()
+        // }
+    }
+
+    // GET USER
+    // const refreshUser = async () => {
+    //     console.log('starting refreshUser...')
+    //     console.log('token:', token.value)
+    //     try {
+    //         if (!token.value) {
+    //             console.log('no token, returning')
+    //             return
+    //         }
+
+    //         const data = await $fetch(`${apiBase}/auth/me/`, {
+    //             headers: {
+    //                 Authorization: `Bearer ${token.value}`
+    //             }
+    //         })
+
+    //         user.value = data
+    //         console.log('user set to:', data)
+    //     } catch (err: any) {
+    //         console.log('User fetch failed:', err?.response?.status)
+
+    //         const newToken = await refreshAccessToken()
+
+    //         if (!newToken) {
+    //             logout()
+    //             return
+    //         }
+
+    //         // 🔥 retry request after refresh
+    //         const data = await $fetch(`${apiBase}/auth/me/`, {
+    //             headers: {
+    //                 Authorization: `Bearer ${newToken}`
+    //             }
+    //         })
+
+    //         user.value = data
+    //     }
+    // }
+
+    // REFRESH ACCESS TOKEN
+    const refreshAccessToken = async () => {
+        console.log(
+            'activating refresh token:',
+            localStorage.getItem('refresh_token')
+        )
+        try {
+            const res = await $fetch<RefreshResponse>(`${apiBase}/auth/token/refresh/`, {
+                method: 'POST',
+                body: { refresh: localStorage.getItem('refresh_token') }
+            })
+
+            token.value = res.access
+            localStorage.setItem('access_token', res.access)
+
+            return res.access
+        } catch {
+            return null
+        }
+    }
+
     const login = (): void => {
         if (!import.meta.client) return;
         const apiBase = useApiBase();
         const origin = window.location.origin;
-        window.location.href = `${apiBase}/api/driveease/auth/google/?origin=${encodeURIComponent(origin)}`;
+        window.location.href = `${apiBase}/auth/google/?origin=${encodeURIComponent(origin)}`;
     };
 
-    /**
-     * Clear local auth state and redirect to the home page.
-     */
-    const logout = (): void => {
+    const logout = () => {
         if (import.meta.client) {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('refresh_token')
         }
 
-        token.value = null;
-        user.value = null;
+        token.value = null
 
-        navigateTo('/');
-    };
+        if (import.meta.client) {
+            navigateTo('/')
+        }
+    }
 
     return {
-        user,
         token,
         isLoggedIn,
         init,
         setAuth,
-        login,
+        refreshAccessToken,
         logout,
-    };
-};
+        login
+    }
+}

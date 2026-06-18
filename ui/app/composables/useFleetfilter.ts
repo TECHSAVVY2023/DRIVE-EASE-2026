@@ -38,8 +38,11 @@ export type Car = {
     reviews: number
     rating: number
     ownerNote: string
-    images: string[]
     specifications: { label: string; value: string }[]
+    meta: {
+        primary_image: string | null
+        images: string[]
+    }
 }
 
 export function useCars() {

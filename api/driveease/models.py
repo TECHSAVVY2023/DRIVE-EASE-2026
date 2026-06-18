@@ -1,6 +1,17 @@
 from django.db import models
 from django.template import defaultfilters
 from django.contrib.auth.models import User
+from storages.backends.s3boto3 import S3Boto3Storage
+
+def default_car_meta():
+    return {
+        "primary_image": "",
+        "images": []
+    }
+def default_user_id():
+    return {
+        "images": []
+    }
 
 # Create your models here.
 class Cars(models.Model):
@@ -48,7 +59,7 @@ class Cars(models.Model):
 
     note = models.TextField(blank=True, null=True)
 
-    png_image = models.ImageField(upload_to='fleet/png/', blank=True, null=True)
+    meta = models.JSONField(default=default_car_meta, blank=True)
 
     status = models.CharField(
         max_length=20,
@@ -83,27 +94,32 @@ class Cars(models.Model):
     def __str__(self):
         return f"{self.brand} {self.model} ({self.car_id})"
 
-class CarImage(models.Model):
-    car = models.ForeignKey(
-        Cars,
-        on_delete=models.CASCADE,
-        related_name='images'
-    )
-    image = models.ImageField(upload_to='fleet/images/')
-    is_primary = models.BooleanField(default=False)
+class FileUploadModel(models.Model):
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    file = models.FileField(storage=S3Boto3Storage(), upload_to='app/fleet/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.file.name
+
+class Profile(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="profile"
+    )
 
     contact_number = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)
 
-    profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
-    license_image = models.ImageField(upload_to='licenses/', blank=True, null=True)
-    id_image = models.ImageField(upload_to='ids/', blank=True, null=True)
+    profile_picture = models.URLField(blank=True, null=True)
+    id_images = models.JSONField(default=default_user_id, blank=True)
+
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.get_full_name()} ({self.user.email})"
 
 class ContactListModel(models.Model):
     contact_id = models.CharField(max_length=255, blank=True, null=True, default='')

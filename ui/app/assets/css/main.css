@@ -4,6 +4,10 @@ html {
     overflow-y: scroll;
 }
 
+.scroll-container {
+    scrollbar-gutter: stable;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
     width: 12px;

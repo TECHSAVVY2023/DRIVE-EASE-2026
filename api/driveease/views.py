@@ -1,7 +1,9 @@
 from django.db.models.fields import capfirst
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
 from .models import ContactListModel, Cars
 from .serializers import ContactListSerializer
@@ -15,12 +17,18 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 import traceback
 
-from .serializers import CarSerializer
+from .serializers import CarSerializer, FileUploadSerializer
 
 class CarListView(APIView):
     def get(self, request):
         cars = Cars.objects.all()
         serializer = CarSerializer(cars, many=True)
+        return Response(serializer.data)
+
+class CarDetailView(APIView):
+    def get(self, request, car_id):
+        car = Cars.objects.get(car_id=car_id)
+        serializer = CarSerializer(car)
         return Response(serializer.data)
 
 class ContactListView(APIView):
@@ -144,9 +152,20 @@ class SubmitToGmail(APIView):
         'status': 'error',
         'message': 'Internal server error'
       }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-class CarDetailView(APIView):
-    def get(self, request, car_id):
-        car = Cars.objects.get(car_id=car_id)
-        serializer = CarSerializer(car)
-        return Response(serializer.data)
+        
+class FileUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = FileUploadSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        upload = serializer.save()
+
+        return Response({
+            "id": upload.id,
+            "url": upload.file.url
+        })

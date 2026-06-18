@@ -24,6 +24,7 @@ export default defineNuxtConfig({
     // Public keys (exposed to client)
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE,
+      apiApp: process.env.NUXT_PUBLIC_APP_URL,
     }
   }
 });

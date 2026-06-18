@@ -10,6 +10,8 @@
     />
     
     <Navbar
+        :user="user"
+        :isLoggedIn="isLoggedIn"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
         @open-sidebar="handleOpenSidebar" 
@@ -38,11 +40,11 @@
                         <!-- Left: Image Gallery -->
                         <div class="flex flex-1 flex-col justify-center gap-2 w-full h-full">
                             <!-- Main Image -->
-                            <div class="relative bg-[#1a1a1a] rounded-xl overflow-hidden h-52 md:h-fit flex items-center justify-center border border-[#222]">
+                            <div class="relative bg-[#1a1a1a] rounded-xl overflow-hidden aspect-[16/10] flex items-center justify-center border border-[#222]">
                                 <img
-                                :src="`${useApiBase()}${car.images[activeImage]?.image}`"
+                                :src="galleryImages[activeImage] as string"
                                 :alt="car.model"
-                                class="w-full h-full object-cover"
+                                class="absolute inset-0 w-full h-full object-cover"
                                 />
                                 <!-- Prev -->
                                 <button
@@ -67,14 +69,14 @@
                             <!-- Thumbnails -->
                             <div class="flex gap-2">
                             <button
-                                v-for="(img, i) in car.images"
-                                :key="img.id"
+                                v-for="(img, i) in galleryImages"
+                                :key="i"
                                 @click="activeImage = i"
                                 class="w-16 h-12 rounded-lg overflow-hidden border-2 transition-colors duration-200 flex-shrink-0"
                                 :class="activeImage === i ? 'border-[#C1121F]' : 'border-[#222] hover:border-[#444]'"
                             >
                                 <img
-                                :src="`${useApiBase()}${img.image}`"
+                                :src="img as string"
                                 :alt="`Thumbnail ${i + 1}`"
                                 class="w-full h-full object-cover"
                                 />
@@ -215,7 +217,7 @@
                 </div>
         
                 <!-- Owner's Note Section -->
-                <div class="bg-[#2A1616] border-l-4 border-[#C1121F] rounded-xl overflow-hidden">
+                <div class="bg-[#2A1616] border-l-4 border-[#C1121F] rounded-xl overflow-hidden w-full">
 
                     <div class="flex items-center gap-2 px-5 py-5 border-b border-[#C1121F]/20">
                         <svg class="w-4 h-4 text-[#C1121F]" fill="currentColor" viewBox="0 0 24 24">
@@ -253,10 +255,22 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useApiBase, getPrimaryImage } from '~/utils/api/api'
 
-const { setAuth } = useAuth()
 const route = useRoute()
+
+const { isLoggedIn } = useAuth()
+const { apiFetch } = useApiFetch()
+
+const user = ref<any>(null)
+
+watch(isLoggedIn, async (val) => {
+    if (val) {
+        user.value = await apiFetch('/auth/me/')
+    } else {
+        user.value = null
+    }
+}, { immediate: true })
+
 
 const { 
     menuOpen,
@@ -265,10 +279,6 @@ const {
     handleCloseSidebar,
     handleOpenSidebar
 } = useNavbar()
-
-if (route.query.token) {
-    await setAuth(route.query.token as string)
-}
 
 const showBookingModal = ref(false)
 
@@ -319,21 +329,32 @@ const specifications = computed(() => {
     { label: 'Seats', value: car.value.seats.toString() },
   ]
 })
+
+const galleryImages = computed(() => {
+    if (!car.value?.meta) return []
+
+    return [
+        car.value.meta.primary_image,
+        ...car.value.meta.images
+    ].filter(Boolean)
+})
  
 function prevImage(): void {
-  if (!car.value) return
+  const total = galleryImages.value.length
+
+  if (total === 0) return
 
   activeImage.value =
-    (activeImage.value - 1 + car.value.images.length) %
-    car.value.images.length
+    (activeImage.value - 1 + total) % total
 }
- 
+
 function nextImage(): void {
-  if (!car.value) return
+  const total = galleryImages.value.length
+
+  if (total === 0) return
 
   activeImage.value =
-    (activeImage.value + 1) %
-    car.value.images.length
+    (activeImage.value + 1) % total
 }
 
 const { car, getCar } = useCarDetail()

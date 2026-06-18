@@ -11,22 +11,26 @@
         @close-menu="closeMenu"
     />
     <Navbar
+        :user="user"
+        :is-logged-in="isLoggedIn"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
         @open-sidebar="handleOpenSidebar" 
         @close-sidebar="handleCloseSidebar"
     />
 
-    <Banner 
-        subtitle="We're here to help"
-        title="Contact Us"
-        :breadcrumbs="[
-            { label: 'Home', to: '/' },
-            { label: 'Contact' }
-        ]"
-    />
+    <Messenger />
 
-    <div class="min-h-screen bg-[#0D0D0D] font-[poppins]">
+    <div class="h-fit bg-[#0D0D0D] font-[poppins]">
+
+        <Banner 
+            subtitle="We're here to help"
+            title="Contact Us"
+            :breadcrumbs="[
+                { label: 'Home', to: '/' },
+                { label: 'Contact' }
+            ]"
+        />
 
         <!-- =========================
                 Main content
@@ -49,31 +53,31 @@
                     <div class="flex flex-col gap-3">
 
                         <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 rounded-lg border border-white flex items-center justify-center flex-shrink-0">
+                            <div class="w-8 h-8 bg-[#C1121F] rounded-md flex items-center justify-center flex-shrink-0">
                                 <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                                 </svg>
                             </div>
                             <div>
                                 <p class="text-[#9E9E9E] text-xs">Phone</p>
-                                <p class="text-white text-sm font-medium">+63 912 345 6789</p>
+                                <p class="text-white text-sm font-medium">0960 064 4095</p>
                             </div>
                         </div>
 
                         <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 rounded-lg border border-white flex items-center justify-center flex-shrink-0">
+                            <div class="w-8 h-8 bg-[#C1121F] rounded-md flex items-center justify-center flex-shrink-0">
                                 <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                 </svg>
                             </div>
                             <div>
                                 <p class="text-[#9E9E9E] text-xs">Email</p>
-                                <p class="text-white text-sm font-medium">drive-ease@gmail.com</p>
+                                <p class="text-white text-sm font-medium">driveease.biz@gmail.com</p>
                             </div>
                         </div>
                         
                         <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 rounded-lg border border-white flex items-center justify-center flex-shrink-0">
+                            <div class="w-8 h-8 bg-[#C1121F] rounded-md flex items-center justify-center flex-shrink-0">
                                 <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -81,7 +85,9 @@
                             </div>
                             <div>
                                 <p class="text-[#9E9E9E] text-xs">Address</p>
-                                <p class="text-white text-sm font-medium">Cagayan De Oro City, Philippines</p>
+                                <p class="text-white text-sm font-medium">
+                                    Tipolo, Mandaue City, Philippines, 6014
+                                </p>
                             </div>
                         </div>
 
@@ -116,7 +122,7 @@
                     <div class="flex gap-3">
 
                         <!-- Facebook -->
-                        <a href="#" class="w-9 h-9 rounded-lg bg-[#232323] hover:bg-[#C1121F] flex items-center justify-center transition-colors duration-200">
+                        <a href="https://www.facebook.com/drive.easee" class="w-9 h-9 rounded-lg bg-[#232323] hover:bg-[#C1121F] flex items-center justify-center transition-colors duration-200">
                         <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
                         </svg>
@@ -160,15 +166,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import moment from 'moment'
-
-const formData = ref({
-    contact_id: "CID" + moment().valueOf(),
-    firstname: '',
-    lastname: '',
-    contact_email: '',
-    contact_number: '',
-    message: ''
-})
 
 const loading = ref(false)
 const success = ref<string | null>(null)
@@ -245,10 +242,28 @@ const hours: Hour[] = [
     { day: 'Sunday', time: 'Closed', closed: true },
 ]
 
-//Navbar + User Profile + Working login
+//Navbar + User Profile + Working login // Line 244-272 //
+const { isLoggedIn } = useAuth()
+const { apiFetch } = useApiFetch()
 
-const route = useRoute()
-const { setAuth } = useAuth()
+const user = ref<any>(null)
+
+watch(isLoggedIn, async (val) => {
+    if (val) {
+        user.value = await apiFetch('/auth/me/')
+    } else {
+        user.value = null
+    }
+}, { immediate: true })
+
+const formData = ref({
+    contact_id: "CID" + moment().valueOf(),
+    firstname: '',
+    lastname: '',
+    contact_email: '',
+    contact_number: '',
+    message: ''
+})
 
 const { 
     menuOpen,
@@ -258,7 +273,4 @@ const {
     handleOpenSidebar
 } = useNavbar()
 
-if (route.query.token) {
-    await setAuth(route.query.token as string)
-}
 </script>

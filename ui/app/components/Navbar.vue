@@ -42,7 +42,7 @@
                 hidden md:flex items-center gap-2
                 bg-[#0D0D0D] border border-[#323232] hover:border-[#C1121F]
                 text-white text-sm
-                px-4 py-2 rounded-full
+                pl-2 pr-3 py-2 rounded-full
                 transition-colors duration-200
             "
         >
@@ -70,7 +70,7 @@
             >
                 <img
                     v-if="isLoggedIn"
-                    :src="user?.picture"
+                    :src="user?.profile_picture"
                     alt="Profile"
                     class="w-7 h-7 rounded-full object-cover"
                 />
@@ -224,27 +224,20 @@
             v-if="!isLoggedIn"
             @click="$router.push('/login')"
             class="
-                hidden md:flex justify-between items-center gap-2
+                hidden md:flex justify-between items-center gap-3
                 bg-[#0D0D0D] border border-[#323232] hover:border-[#C1121F]
                 text-white text-sm
-                px-4 py-2 rounded-full
+                pl-2 pr-4 py-2 rounded-full
                 transition-colors duration-200
             "
         >
 
             <!-- Avatar -->
             <div
-                class="w-7 h-7 rounded-full bg-gray-500 flex items-center justify-center flex-shrink-0"
+                class="w-7 h-7 rounded-full bg-[#C1121F] flex items-center justify-center flex-shrink-0"
             >
-
-                <svg
-                    class="w-4 h-4 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
-                    />
+                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                 </svg>
             </div>
 
@@ -277,8 +270,15 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+const { logout, token } = useAuth()
 
-const { logout, isLoggedIn, user } = useAuth()
+defineProps<{ 
+    user: { 
+        given_name?: string 
+        profile_picture?: string 
+    } | null,
+    isLoggedIn: boolean 
+}>()
 
 const emit = defineEmits<{
     (e: 'toggle-menu'): void
@@ -304,4 +304,5 @@ const unreadCount = computed(() => {
 })
 
 </script>
+
 

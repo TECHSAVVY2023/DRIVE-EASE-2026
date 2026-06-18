@@ -3,12 +3,16 @@
         :menu-open="menuOpen"
         @close-menu="closeMenu"
     />
+
     <Navbar
+        :user="user"
+        :is-logged-in="isLoggedIn"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
         @open-sidebar="handleOpenSidebar" 
         @close-sidebar="handleCloseSidebar"
     />
+    
     <HeroSection />
     <HeroTrust />
     <LandingReviews />
@@ -22,6 +26,17 @@
 <script setup lang="ts">
 
 const { isLoggedIn } = useAuth()
+const { apiFetch } = useApiFetch()
+
+const user = ref<any>(null)
+
+watch(isLoggedIn, async (val) => {
+    if (val) {
+        user.value = await apiFetch('/auth/me/')
+    } else {
+        user.value = null
+    }
+}, { immediate: true })
 
 const { 
     menuOpen,

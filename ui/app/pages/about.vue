@@ -6,6 +6,8 @@
    />
 
    <Navbar
+      :user="user"
+      :is-logged-in="isLoggedIn"
       :menu-open="menuOpen"
       @toggle-menu="toggleMenu"
       @open-sidebar="handleOpenSidebar" 
@@ -224,10 +226,19 @@
 
 <script setup lang="ts">
 
-//Navbar + User Profile + Working login
+//Navbar + User Profile + Working login // line 227-247 is for navbar //
+const { isLoggedIn } = useAuth()
+const { apiFetch } = useApiFetch()
 
-const route = useRoute()
-const { setAuth } = useAuth()
+const user = ref<any>(null)
+
+watch(isLoggedIn, async (val) => {
+    if (val) {
+        user.value = await apiFetch('/auth/me/')
+    } else {
+        user.value = null
+    }
+}, { immediate: true })
 
 const { 
     menuOpen,
@@ -236,10 +247,6 @@ const {
     handleCloseSidebar,
     handleOpenSidebar
 } = useNavbar()
-
-if (route.query.token) {
-    await setAuth(route.query.token as string)
-}
 
 const {  
          stats,

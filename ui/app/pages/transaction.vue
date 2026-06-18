@@ -181,9 +181,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-const route = useRoute()
-const { setAuth } = useAuth()
-
 const { 
     menuOpen,
     toggleMenu,
@@ -191,10 +188,6 @@ const {
     handleCloseSidebar,
     handleOpenSidebar
 } = useNavbar()
-
-if (route.query.token) {
-    await setAuth(route.query.token as string)
-}
 
 type TabType = 'All' | 'Paid' | 'Pending' | 'Refunded'
 type StatusType = 'Done' | 'Pending' | 'Refunded' | 'Failed'

@@ -8,14 +8,14 @@ from rest_framework import status
 from django.shortcuts import redirect
 import urllib.parse
 import base64
+
+from .models import Profile
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
-from .models import UserProfile
-
 from .utils.auth import is_authorized
-
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
+from rest_framework_simplejwt.views import TokenRefreshView
+from .models import FileUploadModel
 
 User = get_user_model()
 
@@ -55,7 +55,9 @@ class GoogleLoginView(APIView):
 
 class GoogleCallbackView(APIView):
     permission_classes = [AllowAny]
+
     def get(self, request):
+
         error = request.GET.get('error')
         code = request.GET.get('code')
 
@@ -68,92 +70,157 @@ class GoogleCallbackView(APIView):
         # Missing code
         if not code:
             return redirect(f"{frontend_url}/login?error=no_code")
-            
+
         client_id = os.getenv("GOOGLE_CLIENT_ID")
         client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
-        secret = os.getenv("AUTH_SECRET", getattr(settings, 'AUTH_SECRET', ''))
-        
-        frontend_url = get_frontend_url()
-        redirect_uri = f"{get_backend_url(request)}/api/driveease/auth/google/callback/"
+
+        redirect_uri = f"{get_backend_url(request)}/auth/google/callback/"
 
         state_param = request.GET.get('state')
+
         if state_param:
             try:
                 import json
                 state_data = json.loads(base64.b64decode(state_param).decode('utf-8'))
+
                 redirect_uri = state_data.get('redirect_uri', redirect_uri)
                 frontend_url = state_data.get('frontend_url', frontend_url)
+
             except Exception:
                 pass
 
         try:
-            # Exchange auth code for access token
-            token_res = requests.post('https://oauth2.googleapis.com/token', data={
-                'code': code,
-                'client_id': client_id,
-                'client_secret': client_secret,
-                'redirect_uri': redirect_uri,
-                'grant_type': 'authorization_code',
-            }).json()
-            
+
+            token_res = requests.post(
+                'https://oauth2.googleapis.com/token',
+                data={
+                    'code': code,
+                    'client_id': client_id,
+                    'client_secret': client_secret,
+                    'redirect_uri': redirect_uri,
+                    'grant_type': 'authorization_code',
+                }
+            ).json()
+
             if 'access_token' not in token_res:
+                print("[ERROR] No access token received")
                 return redirect(f"{frontend_url}/login?error=oauth_failed")
-                
-            # Get user profile
-            profile_res = requests.get('https://www.googleapis.com/oauth2/v3/userinfo', headers={
-                'Authorization': f"Bearer {token_res['access_token']}"
-            }).json()
-            
+
+            profile_res = requests.get(
+                'https://www.googleapis.com/oauth2/v3/userinfo',
+                headers={
+                    'Authorization': f"Bearer {token_res['access_token']}"
+                }
+            ).json()
+
             if not is_authorized(profile_res):
                 return redirect(f"{frontend_url}/login?error=unauthorized")
-                
-            user, _ = User.objects.get_or_create(
-                username=profile_res.get('email'),
+
+            # Get or create Django user
+            auth_user, created = User.objects.get_or_create(
+                username=profile_res["email"],
                 defaults={
-                    "email": profile_res.get('email'),
-                    "first_name": profile_res.get('given_name', ''),
-                    "last_name": profile_res.get('family_name', '')
+                    "email": profile_res["email"],
+                    "first_name": profile_res.get("given_name", ""),
+                    "last_name": profile_res.get("family_name", ""),
                 }
             )
 
-            refresh = RefreshToken.for_user(user)
-            access = refresh.access_token
+            # Create/update profile
+            profile, profile_created = Profile.objects.get_or_create(
+                user=auth_user,
+                defaults={
+                    "profile_picture": profile_res.get("picture", ""),
+                }
+            )
 
-            # attach google data into JWT
-            access["given_name"] = profile_res.get("given_name")
-            access["family_name"] = profile_res.get("family_name")
-            access["email"] = profile_res.get("email")
-            access["picture"] = profile_res.get("picture")
+            refresh = RefreshToken.for_user(auth_user)
 
-            access_token = str(access)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
 
-            # redirect to frontend
-            return redirect(f"{frontend_url}/?token={access_token}")
-            
-        except Exception as e:
+            return redirect(
+                f"{frontend_url}/?access={access_token}&refresh={refresh_token}"
+            )
+
+        except Exception:
             return redirect(f"{frontend_url}/login?error=oauth_failed")
 
 class AuthMeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        user = request.user
+        profile = user.profile
 
         return Response({
-            "id": request.user.id,
-            "given_name": request.auth.get("given_name"),
-            "family_name": request.auth.get("family_name"),
-            "email": request.auth.get("email"),
-            "picture": request.auth.get("picture"),
-            "date_joined": request.user.date_joined.isoformat(),
+            "id": user.id,
+            "given_name": user.first_name,
+            "family_name": user.last_name,
+            "email": user.email,
 
             "contact_number": profile.contact_number,
             "address": profile.address,
-            "profile_picture": request.build_absolute_uri(profile.profile_picture.url) if profile.profile_picture else None,
-            "license_image": request.build_absolute_uri(profile.license_image.url) if profile.license_image else None,
-            "id_image": request.build_absolute_uri(profile.id_image.url) if profile.id_image else None,
+            "profile_picture": profile.profile_picture,
+            "id_images": profile.id_images,
+
+            "date_created": profile.date_created.isoformat(),
         })
+    
+    def patch(self, request):
+        user = request.user
+        profile = user.profile
+
+        data = request.data
+
+        # Update User fields
+        user.first_name = data.get("given_name", user.first_name)
+        user.last_name = data.get("family_name", user.last_name)
+        user.email = data.get("email", user.email)
+        user.save()
+
+        # Update Profile fields
+        profile.contact_number = data.get("contact_number", profile.contact_number)
+        profile.address = data.get("address", profile.address)
+
+        profile.profile_picture = data.get(
+            "profile_picture",
+            profile.profile_picture
+        )
+
+        profile.id_images = data.get(
+            "id_images",
+            profile.id_images
+        )
+
+        deleted_images = request.data.get("deleted_images", [])
+        
+        print("deleted_images:", deleted_images)
+        for upload in FileUploadModel.objects.all():
+            print("DB URL:", upload.file.url)
+
+            if upload.file and upload.file.url in deleted_images:
+                upload.file.delete(save=False)
+                upload.delete()
+
+        profile.save()
+
+        return Response({"message": "Profile updated successfully"})
 
 class AuthLogoutView(APIView):
     def post(self, request):
         return Response({"status": "logged_out"})
+
+class CookieTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.data.get("refresh")
+
+        if not refresh_token:
+            return Response({"detail": "No refresh token"}, status=401)
+
+        serializer = self.get_serializer(data={"refresh": refresh_token})
+        serializer.is_valid(raise_exception=True)
+
+        return Response({
+            "access": serializer.validated_data["access"]
+        })

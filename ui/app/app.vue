@@ -5,9 +5,17 @@
 </template>
 
 <script setup lang="ts">
-const { init } = useAuth()
+const route = useRoute()
+const { setAuth, init } = useAuth()
 
-onMounted(() => {
-    init()
+onMounted(async () => {
+    const access = route.query.access
+    const refresh = route.query.refresh
+
+    if (access && refresh) {
+        await setAuth(access as string, refresh as string)
+    }
+    
+    await init()
 })
 </script>
