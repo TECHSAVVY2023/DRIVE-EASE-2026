@@ -43,6 +43,55 @@ export interface Car {
   }
 }
 
+export interface Review {
+  id: number
+  car: string
+  user: {
+    id: number
+    first_name: string
+    last_name: string
+    profile_picture?: string | null
+  }
+  rating: number
+  text: string
+  created_at: string
+  images: string[]
+  helpful_count: number
+}
+
+export interface ReviewForm {
+    rating: number
+    review: string
+    images: string[]
+}
+
+
+export interface RatingBreakdown {
+  star: number
+  percent: number
+}
+
+export interface ReviewsResponse {
+  count: number
+  next?: string | null
+  previous?: string | null
+  results: Review[]
+  avg_rating: number
+  rating_breakdown: Record<number, number>
+  total_reviews: number
+}
+
+export interface CarReviewsResponse {
+  results: Review[]
+  count: number
+  avg_rating: number
+  rating_breakdown: Record<number, number>
+  next?: string | null
+  previous?: string | null
+  total_reviews: number
+  my_review: Review | null
+}
+
 export interface UploadedFile {
   name: string;
   url: string;
@@ -83,6 +132,11 @@ let carCacheExpiresAt = new Map<string, number>()
 let carRequests = new Map<string, Promise<Car>>()
 const CAR_CACHE_TTL_MS = 60 * 1000
 
+const reviewsCache: Record<string, CarReviewsResponse> = {}
+const reviewsCacheExpiresAt: Record<string, number> = {}
+const reviewsRequests = new Map<string, Promise<CarReviewsResponse>>()
+const REVIEWS_CACHE_TTL_MS = 60 * 1000
+
 /**
  * Construct full API URL
  */
@@ -105,8 +159,13 @@ export const API_ENDPOINTS = {
     LIST: 'cars/',
     DETAIL: (id: string) => `cars/${id}/`,
     CREATE: 'cars/create/',
-    UPDATE: (id: string) => `api/driveease/cars/${id}/update/`,
-    DELETE: (id: string) => `api/driveease/cars/${id}/delete/`,
+    UPDATE: (id: string) => `cars/${id}/update/`,
+    DELETE: (id: string) => `cars/${id}/delete/`,
+  },
+  REVIEWS: {
+    LIST: '/reviews/',
+    CAR: (carId: string) => `/cars/${carId}/reviews/`,
+    CREATE: (carId: string) => `/reviews/cars/${carId}/create/`,
   }
 }
 
@@ -118,6 +177,8 @@ export const fetchCars = async (
 ): Promise<Car[]> => {
   const now = Date.now();
 
+  //if this condition is true, return the cached car so the system doesn't have to make request again
+  //if this condition is false, proceed to fetch the car so that the data will be updated
   if (!force && carsCache && now < carsCacheExpiresAt) {
     return carsCache;
   }
@@ -158,11 +219,14 @@ export const fetchCar = async (
   const cached = carCache.get(carId)
   const expiresAt = carCacheExpiresAt.get(carId)
 
+  //if this condition is true, return the cached car so the system doesn't have to make request again
+  //if this condition is false, proceed to fetch the car so that the data will be updated
   if (!force && cached && expiresAt && now < expiresAt) {
     return cached
   }
 
-  // 2. Deduplicate request
+  // prevents the same request from being being made again and returns an ongoing Promise, 
+  // which is the first request, for other components that need the same data
   const existingRequest = carRequests.get(carId)
   if (!force && existingRequest) {
     return existingRequest

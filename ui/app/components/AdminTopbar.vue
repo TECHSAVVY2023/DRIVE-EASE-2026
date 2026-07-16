@@ -35,23 +35,25 @@
                     />
                 </svg>
             </button>
+            <div class="flex flex-col">
+                <h1 class="text-white text-lg font-semibold">
+                    {{ props.title }}
+                </h1>
 
-            <!-- Logo -->
-            <div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                <img
-                    src="~/assets/images/logo.png"
-                    alt="Logo"
-                    class="w-full h-full object-cover"
-                />
+                <p
+                    v-if="props.subtitle"
+                    class="text-gray-400 text-sm"
+                >
+                    {{ props.subtitle }}
+                </p>
             </div>
-
         </div>
 
         <!-- Right Side -->
         <div class="flex items-center gap-2 sm:gap-4">
 
             <!-- User Dropdown Wrapper -->
-            <div class="relative">
+            <div class="flex justify-between items-center w-full">
 
                 <!-- User Button -->
                 <button
@@ -60,29 +62,34 @@
                         flex items-center gap-2 max-w-[180px]
                         bg-[#0D0D0D] border border-[#323232] hover:border-[#C1121F]
                         text-white text-sm
-                        px-2 sm:px-4 py-2 rounded-full
+                        px-2 py-2 rounded-full
                         transition-colors duration-200
                     "
                 >
 
+
                     <!-- Avatar -->
-                    <div
-                        class="w-7 h-7 rounded-full bg-gray-500 flex items-center justify-center flex-shrink-0"
-                    >
-                        <svg
-                            class="w-4 h-4 text-white"
-                            fill="currentColor"
+                    <div class="w-7 h-7 rounded-full bg-[#C1121F] flex items-center justify-center flex-shrink-0">
+                        <img
+                            v-if="user?.profile_picture"
+                            :src="user?.profile_picture"
+                            alt="Profile"
+                            class="w-7 h-7 rounded-full object-cover"
+                        />
+                        
+                        <svg 
+                            v-else
+                            class="w-4 h-4 text-white" 
+                            fill="currentColor" 
                             viewBox="0 0 24 24"
                         >
-                            <path
-                                d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
-                            />
+                            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                         </svg>
                     </div>
 
                     <!-- Name -->
                     <span class="hidden sm:block truncate">
-                        Hi, Juber
+                        Hi, {{ user?.given_name }}
                     </span>
 
                     <!-- Dropdown Arrow -->
@@ -107,7 +114,7 @@
                 <div
                     v-if="isDropdownOpen"
                     class="
-                        absolute right-0 mt-2 w-52 z-50
+                        absolute right-4 sm:right-6 lg:right-8 top-15 md:top-15 mt-2 w-52 z-50
                         bg-[#0D0D0D] border border-[#323232] rounded-xl shadow-lg
                         overflow-hidden
                     "
@@ -135,6 +142,7 @@
 
                     <!-- Logout -->
                     <button
+                        @click="logout"
                         class="
                             w-full px-4 py-3 flex items-center gap-3
                             text-sm text-red-400
@@ -143,6 +151,7 @@
                         "
                     >
                         <svg
+                        
                             class="w-5 h-5"
                             fill="none"
                             stroke="currentColor"
@@ -169,21 +178,32 @@
 </template>
 
 <script setup lang="ts">
-    import { ref } from 'vue'
+import { ref } from 'vue'
+const { isLoggedIn, logout } = useAuth()
 
-    const emit = defineEmits<{
-        (e: 'close-sidebar'): void
-        (e: 'open-sidebar'): void
-    }>()
+const props = defineProps<{
+    user: {
+        given_name?: string
+        profile_picture?: string
+    } | null
+    title: string
+    subtitle?: string
+    isLoggedIn: boolean
+}>()
 
-    const handleOpenSidebar = (): void => {
-        console.log('Menu button clicked')
-        emit('open-sidebar')
-    }
+const emit = defineEmits<{
+    (e: 'close-sidebar'): void
+    (e: 'open-sidebar'): void
+}>()
 
-    const isDropdownOpen = ref(false)
+const handleOpenSidebar = (): void => {
+    console.log('Menu button clicked')
+    emit('open-sidebar')
+}
 
-    const toggleDropdown = (): void => {
-        isDropdownOpen.value = !isDropdownOpen.value
-    }
+const isDropdownOpen = ref(false)
+
+const toggleDropdown = (): void => {
+    isDropdownOpen.value = !isDropdownOpen.value
+}
 </script>

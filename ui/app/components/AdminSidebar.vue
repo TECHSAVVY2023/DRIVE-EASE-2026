@@ -2,18 +2,40 @@
     <!-- Sidebar -->
     <aside
         :class="[
-            'fixed top-0 left-0 z-50 h-screen w-80 md:static sm:w-80 md:w-56 bg-[#1B1B1B] border-r border-[#1f1f1f] flex flex-col transition-transform duration-300',
+            'fixed top-0 left-0 z-50 md:static sm:w-64 md:w-56 bg-[#1B1B1B] border-r border-[#1f1f1f] flex flex-col transition-transform duration-300',
             sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         ]"
     >
 
         <!-- Nav -->
-        <nav class="flex flex-col flex-1 gap-1 py-6 gap-1 text-xs overflow-y-auto">
+        <nav class="flex flex-col flex-1 gap-1 gap-1 text-xs overflow-y-auto">
+
+            <div class="hidden md:flex flex-row items-center px-4 pt-4 pb-4 gap-2">
+                <!-- Logo -->
+                <div class="w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
+                    <img
+                        src="~/assets/images/logo(1).png"
+                        alt="Logo"
+                        class="w-full h-full object-cover"
+                    />
+                </div>
+                <p class="text-white text-xl w-fit font-semibold">DRIVEEASE</p>
+            </div>
             
             <!-- Mobile Close Button -->
-            <div class="flex items-center justify-between md:hidden px-4 py-2">
+            <div class="flex items-center justify-between md:hidden px-4 my-3">
 
-                <p class="text-white text-lg font-semibold">Menu</p>
+                <div class="flex flex-row items-center gap-2">
+                    <!-- Logo -->
+                    <div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                        <img
+                            src="~/assets/images/logo(1).png"
+                            alt="Logo"
+                            class="w-full h-full object-cover"
+                        />
+                    </div>
+                    <p class="text-white text-xl w-fit font-semibold">DRIVEEASE</p>
+                </div>
 
                 <button
                     @click="$emit('close-sidebar')"
@@ -25,7 +47,7 @@
                         transition-colors duration-200
                     "
                 >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>

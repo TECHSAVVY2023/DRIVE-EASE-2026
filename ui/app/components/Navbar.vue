@@ -28,9 +28,9 @@
         <ul class="hidden md:flex items-center gap-10 text-white text-sm font-medium tracking-wide">
 
             <li><a href="/" class="hover:text-[#c1121f] transition-colors duration-200">Home</a></li>
-            <li><a href="/fleet" class="hover:text-[#c1121f] transition-colors duration-200">Fleet</a></li>
-            <li><a href="/about" class="hover:text-[#c1121f] transition-colors duration-200">About</a></li>
-            <li><a href="/contact" class="hover:text-[#c1121f] transition-colors duration-200">Contact</a></li>
+            <li><a href="/client/fleet" class="hover:text-[#c1121f] transition-colors duration-200">Fleet</a></li>
+            <li><a href="/client/about" class="hover:text-[#c1121f] transition-colors duration-200">About</a></li>
+            <li><a href="/client/contact" class="hover:text-[#c1121f] transition-colors duration-200">Contact</a></li>
         
         </ul>
 
@@ -108,7 +108,7 @@
 
             <!-- Profile -->
             <button
-                @click="$router.push('/profile')"
+                @click="$router.push('/client/profile')"
                 class="
                     w-full flex items-center gap-3
                     px-4 py-3
@@ -126,7 +126,7 @@
 
             <!-- Transactions -->
             <button
-                @click="$router.push('/transaction')"
+                @click="$router.push('/client/transaction')"
                 class="
                     w-full flex items-center gap-3
                     px-4 py-3
@@ -143,7 +143,7 @@
             </button>
 
             <button
-                @click="$router.push('/notifications')"
+                @click="$router.push('/client/notifications')"
                 class="
                     w-full flex items-center gap-3
                     px-4 py-3
@@ -222,7 +222,7 @@
 
         <button
             v-if="!isLoggedIn"
-            @click="$router.push('/login')"
+            @click="$router.push('/client/login')"
             class="
                 hidden md:flex justify-between items-center gap-3
                 bg-[#0D0D0D] border border-[#323232] hover:border-[#C1121F]
@@ -233,9 +233,7 @@
         >
 
             <!-- Avatar -->
-            <div
-                class="w-7 h-7 rounded-full bg-[#C1121F] flex items-center justify-center flex-shrink-0"
-            >
+            <div class="w-7 h-7 rounded-full bg-[#C1121F] flex items-center justify-center flex-shrink-0">
                 <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                 </svg>

@@ -1,5 +1,6 @@
 export function useProfileEdit() {
     const { apiFetch } = useApiFetch()
+    const { $swal } = useNuxtApp()
 
     const profileImage = ref<File | null>(null)
     const profilePreview = ref<string | null>(null)
@@ -54,22 +55,36 @@ export function useProfileEdit() {
         uploadedIdFiles.value.splice(index, 1)
     }
 
-    const validateFile = (file: File): boolean => {
-        
-        const MAX_FILE_SIZE = 50 * 1024 * 1024 //
-        const ALLOWED_TYPES = [
-            'image/jpeg',
-            'image/png',
-            'image/jpg'
-        ]
+    const validateFile = async (file: File): Promise<boolean> => {
+        const MAX_FILE_SIZE = 50 * 1024 * 1024
+        const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png']
 
-        if (!ALLOWED_TYPES.includes(file.type)) {
-            alert('Only JPG, PNG, and WEBP images are allowed.')
+        const extension = file.name.split('.').pop()?.toLowerCase()
+
+        if (!extension || !ALLOWED_EXTENSIONS.includes(extension)) {
+            $swal.close()
+            await $swal.fire({
+                icon: 'error',
+                title: 'Invalid File',
+                text: 'Only JPG and PNG images are allowed.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#C1121F',
+                background: '#1a1a1a',
+                color: '#ffffff'
+            })
             return false
         }
 
         if (file.size > MAX_FILE_SIZE) {
-            alert('Image size must not exceed 50 MB.')
+            await $swal.fire({
+                icon: 'error',
+                title: 'File Too Large',
+                text: 'Image size must not exceed 50 MB.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#C1121F',
+                background: '#1a1a1a',
+                color: '#ffffff'
+            })
             return false
         }
 
@@ -86,8 +101,8 @@ export function useProfileEdit() {
             return null
         }
 
-        if (!validateFile(profileImage.value)) {
-            return
+        if (!(await validateFile(profileImage.value))) {
+            return false
         }
 
         const fd = new FormData()

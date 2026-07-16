@@ -8,7 +8,8 @@ export const useApiFetch = () => {
         url: string,
         options: any = {}
     ): Promise<T> => {
-
+        console.log('apiBase:', apiBase)
+        
         const makeRequest = (jwt?: string) => {
             console.log('making request with token:', jwt)
             console.log('url:', `${apiBase}${url}`)

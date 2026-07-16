@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-white font-extrabold text-lg">Similar cars you might like</h2>
-            <NuxtLink to="/fleet" class="text-[#C1121F] text-xs font-semibold hover:underline flex items-center gap-1">
+            <NuxtLink to="/client/fleet" class="text-[#C1121F] text-xs font-semibold hover:underline flex items-center gap-1">
                 View all
                 <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>

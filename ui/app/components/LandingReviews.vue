@@ -55,7 +55,7 @@
                         <div class="flex items-end gap-2 mt-4">
 
                             <span class="text-6xl font-extrabold leading-none text-[#C1121F]">
-                                4.8
+                                {{ avgRating.toFixed(1) }}
                             </span>
 
                             <span class="text-sm text-[#9E9E9E] mb-2">
@@ -68,19 +68,22 @@
                             <span
                                 v-for="i in 5"
                                 :key="i"
-                                class="text-3xl text-[#C1121F]"
+                                class="text-3xl"
+                                :class="i <= Math.round(avgRating)
+                                    ? 'text-[#C1121F]'
+                                    : 'text-[#333]'"
                             >
                                 ★
                             </span>
                         </div>
 
                         <p class="text-sm text-[#9E9E9E]">
-                            Based on 2,400+ reviews
+                            Based on {{ totalReviews }}+ reviews
                         </p>
 
                         <!-- CTA -->
                         <button
-                            @click="$router.push('/reviews')"
+                            @click="$router.push('/client/reviews')"
                             class="
                                 w-fit rounded
                                 px-8 py-4 mt-4 mb-8
@@ -106,8 +109,9 @@
                         class="flex flex-col w-full gap-4 md:w-3/5"
                     >
                         <div
-                            v-for="(review, index) in LandingVisibleReviews"
-                            :key="index"
+                            v-for="(review, i) in reviews"
+                            :key="i"
+                            :review="review"
                             class="flex flex-col gap-3 p-5 rounded-xl bg-[#1a1a1a]"
                         >
                             
@@ -118,20 +122,20 @@
 
                                     <div class="w-10 h-10 rounded-full bg-[#C1121F] flex-shrink-0 overflow-hidden flex items-center justify-center">
                                         <img
-                                            v-if="review.avatar"
-                                            :src="review.avatar"
-                                            :alt="review.name"
+                                            v-if="review.user.profile_picture"
+                                            :src="review.user.profile_picture"
+                                            :alt="review.user.first_name + ' ' + review.user.last_name"
                                             class="w-full h-full object-cover"
                                         />
 
                                         <span v-else class="text-white text-sm font-bold">
-                                            {{ review.name.charAt(0) }}
+                                            {{ review.user.first_name.charAt(0) }}
                                         </span>
                                     </div>
 
                                     <div>
-                                        <p class="text-white text-sm font-semibold"> {{ review.name }} </p>
-                                        <p class="text-[#929292] text-xs"> {{ review.date }} </p>
+                                        <p class="text-white text-sm font-semibold"> {{ review.user.first_name }} {{ review.user.last_name }} </p>
+                                        <p class="text-[#929292] text-xs"> {{ formatDate(review.created_at) }} </p>
                                     </div>
 
                                 </div>
@@ -176,15 +180,7 @@
                             <!-- Helpful -->
                             <div class="flex justify-end">
 
-                                <button
-                                    @click="review.helpfulClicked = !review.helpfulClicked"
-                                    class="flex items-center gap-1.5 text-xs transition-colors duration-200"
-                                    :class="
-                                    review.helpfulClicked
-                                        ? 'text-[#C1121F]'
-                                        : 'text-gray-400 hover:text-[#C1121F]'
-                                    "
-                                >
+                                <button class="flex items-center gap-1.5 text-xs text-gray-400">
 
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path
@@ -195,22 +191,18 @@
                                     />
                                     </svg>
 
-                                    Helpful ({{ review.helpfulCount }})
+                                    Helpful ({{ review.helpful_count }})
 
                                 </button>
 
-        </div>
+                            </div>
 
-
-                            
                         </div>
                     </div>
 
                 </Transition>
 
             </div>
-
-
 
         <!-- Desktop Accent -->
         <div class="absolute top-0 right-0 hidden md:block w-[35%] h-full bg-[#C1121F]"></div>
@@ -222,11 +214,39 @@
 
 </template>
 
-<script setup>
-/* =========================
-   Reviews Data
-========================= */
-const { reviews, LandingVisibleReviews } = useReviews()
+<script setup lang="ts">
+import type { Review } from '~/utils/api/api'
+
+const { fetchFeaturedReviews } = useReviews()
+
+const reviews = ref<Review[]>([])
+const totalReviews = ref(0)
+const avgRating = ref(0)
+const ratingBreakdown = ref<Record<number, number>>({})
+
+const loading = ref(false)
+
+const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    })
+
+onMounted(async () => {
+    loading.value = true
+    try {
+        const res = await fetchFeaturedReviews()
+
+        reviews.value = res.results
+        totalReviews.value = res.total_reviews
+        avgRating.value = res.avg_rating
+        ratingBreakdown.value = res.rating_breakdown
+
+    } finally {
+        loading.value = false
+    }
+})
 
 const sectionRef = ref(null)
 const isVisible = ref(false)

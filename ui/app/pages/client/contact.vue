@@ -174,48 +174,70 @@ const showToast = ref(false)
 const toastMessage = ref("")
 const toastType = ref("success")
 
+const { $swal } = useNuxtApp()
+
 const serverIP = "http://127.0.0.1:8000"
 
 const submitForm = async () => {
-loading.value = true
-success.value = null
-error.value = null
+    loading.value = true
+    success.value = null
+    error.value = null
 
-try {
-    await $fetch(`${serverIP}/api/driveease/contact/create/`, {
-        method: "POST",
-        body: formData.value,
+    $swal.fire({
+        title: 'Sending message...',
+        text: 'Please wait.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        background: '#1a1a1a',
+        color: '#ffffff',
+        heightAuto: false,
+        didOpen: () => {
+            $swal.showLoading()
+        }
     })
 
-    await sendToGmail()
+    try {
+        await $fetch(`${serverIP}/api/driveease/contact/create/`, {
+            method: "POST",
+            body: formData.value,
+        })
 
-    toastMessage.value = "Message sent successfully!"
-    toastType.value = "success"
-    showToast.value = true
+        await sendToGmail()
 
-    formData.value.contact_id = "CID" + moment().valueOf()
-    formData.value.firstname = ""
-    formData.value.lastname = ""
-    formData.value.contact_email = ""
-    formData.value.contact_number = ""
-    formData.value.message = ""
+        await $swal.fire({
+            title: 'Success!',
+            text: 'Message sent successfully!',
+            icon: 'success',
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            heightAuto: false
+        })
 
-    setTimeout(() => {
-        showToast.value = false
-    }, 3000)
-} catch (err) {
-    console.error(err)
+        formData.value.contact_id = "CID" + moment().valueOf()
+        formData.value.firstname = ""
+        formData.value.lastname = ""
+        formData.value.contact_email = ""
+        formData.value.contact_number = ""
+        formData.value.message = ""
 
-    toastMessage.value = "Failed to send message"
-    toastType.value = "error"
-    showToast.value = true
+    } catch (err) {
+        console.error(err)
 
-    setTimeout(() => {
-        showToast.value = false
-    }, 3000)
-} finally {
-    loading.value = false
-}
+        await $swal.fire({
+            title: 'Error',
+            text: 'Failed to send message.',
+            icon: 'error',
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            heightAuto: false
+        })
+
+    } finally {
+        loading.value = false
+        $swal.close()
+    }
 }
 
 const sendToGmail = async () => {

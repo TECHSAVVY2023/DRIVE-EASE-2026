@@ -51,52 +51,7 @@ export const useAuth = () => {
 
         token.value = access
         console.log('token set to:', access)
-        //console.log('token user value:', !user.value)
-
-        // if (!user.value) {
-        //     console.log('user state:', user.value)
-        //     //await refreshUser()
-        // }
     }
-
-    // GET USER
-    // const refreshUser = async () => {
-    //     console.log('starting refreshUser...')
-    //     console.log('token:', token.value)
-    //     try {
-    //         if (!token.value) {
-    //             console.log('no token, returning')
-    //             return
-    //         }
-
-    //         const data = await $fetch(`${apiBase}/auth/me/`, {
-    //             headers: {
-    //                 Authorization: `Bearer ${token.value}`
-    //             }
-    //         })
-
-    //         user.value = data
-    //         console.log('user set to:', data)
-    //     } catch (err: any) {
-    //         console.log('User fetch failed:', err?.response?.status)
-
-    //         const newToken = await refreshAccessToken()
-
-    //         if (!newToken) {
-    //             logout()
-    //             return
-    //         }
-
-    //         // 🔥 retry request after refresh
-    //         const data = await $fetch(`${apiBase}/auth/me/`, {
-    //             headers: {
-    //                 Authorization: `Bearer ${newToken}`
-    //             }
-    //         })
-
-    //         user.value = data
-    //     }
-    // }
 
     // REFRESH ACCESS TOKEN
     const refreshAccessToken = async () => {

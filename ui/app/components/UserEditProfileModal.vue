@@ -234,8 +234,7 @@
                             </div>
 
                             <!-- Drop zone -->
-                            <div
-                                v-if="uploadedIdFiles.length < 1 && existingIdImages.length < 2"
+                            <div v-if="uploadedIdFiles.length < 2 && existingIdImages.length < 2"
                                 class="border-2 border-dashed border-[#C1121F]/40 hover:border-[#C1121F] rounded-xl h-24 flex flex-col items-center justify-center cursor-pointer transition-colors duration-200"
                                 @click="triggerIdUpload"
                                 @dragover.prevent
@@ -319,6 +318,7 @@
 <script setup lang="ts">
 import type { User } from '~/utils/api/api'
 const { apiFetch } = useApiFetch()
+const { $swal } = useNuxtApp()
 
 const props = defineProps<{
     modelValue: boolean
@@ -433,87 +433,121 @@ watch(
         originalIdImages.value = [...images]
         console.log('original images', originalIdImages.value)
         existingIdImages.value = [...images]
+        console.log('existing images', existingIdImages.value)
 
     },
     { immediate: true }
 )
 
 const saveChanges = async () => {
+    try {
+        const removedImages = originalIdImages.value.filter(
+            (url) => !existingIdImages.value.includes(url)
+        )
 
-    const removedImages = originalIdImages.value.filter(
-        (url) => !existingIdImages.value.includes(url)
-    )
+        // Validate total ID images first
+        const totalIdImages =
+            existingIdImages.value.length +
+            uploadedIdFiles.value.length
 
-    const newProfileImage = await uploadProfilePicture()
-
-    // if (profileImage.value) {
-    //     if (!validateFile(profileImage.value)) {
-    //         return
-    //     }
-
-    //     const formData = new FormData()
-
-    //     formData.append('file', profileImage.value)
-
-    //     const response = await apiFetch<{
-    //         id: number
-    //         url: string
-    //     }>('/uploads/', {
-    //         method: 'POST',
-    //         body: formData
-    //     })
-
-    //     profilePictureUrl = response.url
-    // }
-
-    for (const file of uploadedIdFiles.value) {
-        if (!validateFile(file)) {
+        if (totalIdImages !== 2) {
+            await $swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'You must have exactly 2 ID images.',
+                confirmButtonColor: '#C1121F',
+                background: '#1a1a1a',
+                color: '#ffffff'
+            })
             return
         }
 
-        if (uploadedIdFiles.value.length !== 2 && existingIdImages.value.length > 2) {
-            alert('Please upload exactly 2 ID images.')
-            return
+        // Validate files before showing loading state
+        for (const file of uploadedIdFiles.value) {
+            if (!(await validateFile(file))) {
+                return
+            }
         }
+
+        let newProfileImage = null
+
+        if (profileInput.value) {
+            newProfileImage = await uploadProfilePicture()
+
+            if (newProfileImage === false) {
+                $swal.close()
+                return
+            }
+        }
+
+        $swal.fire({
+            title: 'Saving changes...',
+            text: 'Please wait.',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                $swal.showLoading()
+            }
+        })
+
+        const newIdUrls = await uploadIdFiles()
+
+        const idUrls: string[] = [
+            ...existingIdImages.value,
+            ...newIdUrls
+        ]
+
+        const body: any = {
+            given_name: form.given_name,
+            family_name: form.family_name,
+            email: form.email,
+            contact_number: form.contact_number,
+            address: form.address,
+            id_images: {
+                images: idUrls
+            }
+        }
+
+        if (newProfileImage) {
+            body.profile_picture = newProfileImage
+        }
+
+        if (removedImages.length > 0) {
+            body.deleted_images = removedImages
+        }
+
+        const res = await apiFetch<{ message: string }>('/auth/me/', {
+            method: 'PATCH',
+            body
+        })
+
+        $swal.close()
+
+        await $swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: res.message,
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff'
+        })
+
+        emit('update:modelValue', false)
+        emit('updated')
+    } catch (error) {
+        $swal.close()
+
+        await $swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to save changes.',
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff'
+        })
     }
-
-    const newIdUrls = await uploadIdFiles()
-
-    const idUrls: string[] = [
-        ...existingIdImages.value,
-        ...newIdUrls
-    ]
-
-    const body: any = {
-        given_name: form.given_name,
-        family_name: form.family_name,
-        email: form.email,
-        contact_number: form.contact_number,
-        address: form.address,
-    }
-
-    if (newProfileImage) {
-        body.profile_picture = newProfileImage
-    }
-
-    body.id_images = {
-        images: idUrls
-    }
-
-    if (removedImages.length > 0) {
-        body.deleted_images = removedImages
-    }
-
-    const res = await apiFetch<{ message: string }>('/auth/me/', {
-        method: 'PATCH',
-        body
-    })
-
-    alert(res.message)
-
-    emit('update:modelValue', false)
-    emit('updated')
-    
 }
 
 </script>

@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 const route = useRoute()
-const { setAuth, init } = useAuth()
+const { setAuth } = useAuth()
 
 onMounted(async () => {
     const access = route.query.access
@@ -15,7 +15,5 @@ onMounted(async () => {
     if (access && refresh) {
         await setAuth(access as string, refresh as string)
     }
-    
-    await init()
 })
 </script>
