@@ -1,118 +1,279 @@
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>New Inquiry - Fabrics Plus</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Inquiry - DriveEase</title>
   <style>
     body {
+      margin: 0;
+      padding: 20px;
+      background-color: #111111;
       font-family: 'Segoe UI', Arial, sans-serif;
-      background-color: #f5f5f5;
-      padding: 30px;
-      margin: 0;
-      color: #333;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
     }
-    .container {
-      max-width: 650px;
-      margin: auto;
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 25px 30px;
-      border: 1px solid #e5e5e5;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+
+    img {
+      border: 0;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
     }
-    .logo {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .logo img {
-      max-height: 80px; /* adjust as needed */
-    }
-    .header {
-      border-bottom: 2px solid #b32d2e;
-      padding-bottom: 12px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .header h2 {
-      margin: 0;
-      font-size: 22px;
-      color: #b32d2e;
-    }
-    .info {
-      margin: 15px 0;
-      line-height: 1.6;
-      font-size: 15px;
-    }
-    .label {
-      font-weight: 600;
-      color: #444;
-    }
-    .message-box {
-      background: #fafafa;
-      border-left: 4px solid #b32d2e;
-      padding: 15px;
-      border-radius: 6px;
-      margin-top: 10px;
-      font-size: 15px;
-    }
-    .footer {
-      margin-top: 30px;
-      font-size: 12px;
-      text-align: center;
-      color: #777;
-      border-top: 1px solid #eee;
-      padding-top: 15px;
-    }
-    .brand {
-      font-weight: bold;
-      color: #b32d2e;
-    }
-    .contact-id {
-      margin-top: 8px;
-      font-size: 11px;
-      color: #999;
-    }
-    .powered {
-      margin-top: 5px;
-      font-size: 11px;
-      color: #999;
+
+    p { margin: 0 0 10px; padding: 0; }
+    p:last-child { margin-bottom: 0; }
+
+    a { color: #C1121F; text-decoration: none; }
+
+    @media only screen and (max-width: 480px) {
+      .wrap { width: 100% !important; }
+      .body-cell { padding: 20px 16px !important; }
+      .info-col { display: block !important; width: 100% !important; padding: 0 0 8px 0 !important; }
+      .ref-col { display: block !important; width: 100% !important; padding: 0 0 6px 0 !important; }
+      .footer-cell { padding: 18px 16px !important; }
+      .hero-title { font-size: 15px !important; }
+      .hero-sub { font-size: 11px !important; }
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <!-- Logo -->
-    <div class="logo">
-      <img src="https://fpstorage.sgp1.cdn.digitaloceanspaces.com/www.fabricspluscurtains.com/logos/HDLogoFabricsPlusV2.png" alt="Fabrics Plus Logo">
-    </div>
+<body style="margin:0; padding:20px; background-color:#111111;">
 
-    <!-- Header -->
-    <div class="header">
-      <h2>📩 New Inquiry Received</h2>
-      <p>You have a new message from your <span class="brand">DriveEase</span> contact form</p>
-    </div>
+  <!-- OUTER WRAPPER -->
+  <table class="wrap" align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width:600px; width:100%;">
+    <tr>
+      <td>
 
-    <!-- Contact Info -->
-    <div class="info">
-      <p><span class="label">Name:</span> {{ firstname }} {{ lastname }}</p>
-      <p><span class="label">Email:</span> {{ contact_email }}</p>
-      <p><span class="label">Phone:</span> {{ contact_number }}</p>
-    </div>
+        <!-- CARD: top red border via table row -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#1a1a1a; border:1px solid #252525; border-radius:8px; overflow:hidden;">
+          <tr>
+            <!-- TOP RED BAR -->
+            <td height="4" bgcolor="#C1121F" style="font-size:0; line-height:0; border-radius:8px 8px 0 0;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td>
 
-    <!-- Message -->
-    <div class="info">
-      <p><span class="label">Message:</span></p>
-      <div class="message-box">
-        {{ message }}
-      </div>
-    </div>
+              <!-- LOGO AREA -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#000000; border-bottom:1px solid #252525;">
+                <tr>
+                  <td align="center" style="padding:22px 32px;">
+                    <table border="0" cellpadding="0" cellspacing="0" align="center">
+                      <tr>
+                        <td align="center" valign="middle" style="padding-right:12px;">
+                          <img
+                            src="https://sgp1.digitaloceanspaces.com/fpstorage/www.driveease.com/app/fleet/logo1.png"
+                            alt="DriveEase Logo"
+                            height="52"
+                            style="display:block; max-height:52px; width:auto;"
+                          />
+                        </td>
+                        <td align="left" valign="middle">
+                          <p style="font-size:20px; font-weight:700; color:#ffffff; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 3px;">DriveEase</p>
+                          <p style="font-size:11px; color:#555555; margin:0;">Drive smart, drive easy.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
 
-    <!-- Footer -->
-    <div class="footer">
-      <p>This email was automatically generated from your contact form at <span class="brand">DriveEase</span>.</p>
-      <p class="contact-id">Reference ID: {{ contact_id }}</p>
-      <p class="powered">Powered by <a href="https://www.techsavvies.space" target="_blank">www.techsavvies.space</a></p>
-    </div>
-  </div>
+              <!-- HERO BAND -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#C1121F;">
+                <tr>
+                  <td style="padding:18px 32px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tr>
+                        <!-- HERO ICON -->
+                        <td width="48" valign="middle" style="padding-right:14px;">
+                          <table border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td align="center" width="40" height="40" style="width:40px; height:40px; background-color:rgba(0,0,0,0.25); border-radius:8px; font-size:20px; line-height:40px; text-align:center;">
+                                📩
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <!-- HERO TEXT -->
+                        <td valign="middle">
+                          <p class="hero-title" style="font-size:18px; font-weight:700; color:#ffffff; margin:0 0 3px;">New Inquiry Received</p>
+                          <p class="hero-sub" style="font-size:12px; color:rgba(255,255,255,0.7); margin:0; line-height:1.5;">A customer has submitted a message through your contact form</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- BODY -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td class="body-cell" style="padding:28px 32px;">
+
+                    <!-- SECTION LABEL: SENDER INFO -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:10px; color:#C1121F; text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding-bottom:8px; border-bottom:1px solid #252525;">
+                          Sender information
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- INFO GRID ROW 1 -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:8px;">
+                      <tr>
+                        <td class="info-col" valign="top" width="49%" style="padding-right:8px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#111111; border:1px solid #252525; border-radius:6px;">
+                            <tr>
+                              <td style="padding:12px 14px;">
+                                <p style="font-size:9px; color:#555555; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 4px;">First name</p>
+                                <p style="font-size:13px; color:#ffffff; font-weight:500; word-break:break-all; margin:0;">{{ firstname }}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td class="info-col" valign="top" width="49%">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#111111; border:1px solid #252525; border-radius:6px;">
+                            <tr>
+                              <td style="padding:12px 14px;">
+                                <p style="font-size:9px; color:#555555; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 4px;">Last name</p>
+                                <p style="font-size:13px; color:#ffffff; font-weight:500; word-break:break-all; margin:0;">{{ lastname }}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- INFO GRID ROW 2 -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:24px;">
+                      <tr>
+                        <td class="info-col" valign="top" width="49%" style="padding-right:8px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#111111; border:1px solid #252525; border-radius:6px;">
+                            <tr>
+                              <td style="padding:12px 14px;">
+                                <p style="font-size:9px; color:#555555; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 4px;">Email address</p>
+                                <p style="font-size:13px; color:#ffffff; font-weight:500; word-break:break-all; margin:0;">{{ contact_email }}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td class="info-col" valign="top" width="49%">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#111111; border:1px solid #252525; border-radius:6px;">
+                            <tr>
+                              <td style="padding:12px 14px;">
+                                <p style="font-size:9px; color:#555555; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 4px;">Phone number</p>
+                                <p style="font-size:13px; color:#ffffff; font-weight:500; word-break:break-all; margin:0;">{{ contact_number }}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- SECTION LABEL: MESSAGE -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:10px; color:#C1121F; text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding-bottom:8px; border-bottom:1px solid #252525;">
+                          Message
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- MESSAGE BOX -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:24px;">
+                      <tr>
+                        <td width="3" bgcolor="#C1121F" style="font-size:0; line-height:0; border-radius:3px 0 0 3px;">&nbsp;</td>
+                        <td style="background-color:#111111; border:1px solid #252525; border-left:none; border-radius:0 6px 6px 0; padding:16px 18px;">
+                          <p style="font-size:13px; color:#aaaaaa; line-height:1.75; margin:0;">{{ message }}</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- SECTION LABEL: REFERENCE -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:10px; color:#C1121F; text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding-bottom:8px; border-bottom:1px solid #252525;">
+                          Reference
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- REFERENCE BOX -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#0d0d0d; border:1px solid #1e1e1e; border-radius:6px; margin-bottom:24px;">
+                      <tr>
+                        <td style="padding:12px 16px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                              <td class="ref-col" valign="top">
+                                <p style="font-size:10px; color:#444444; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 3px;">Reference ID</p>
+                                <p style="font-size:13px; color:#ffffff; font-weight:600; font-family:monospace, Courier; margin:0;">{{ contact_id }}</p>
+                              </td>
+                              <td class="ref-col" valign="middle" align="right">
+                                <p style="font-size:11px; color:#444444; margin:0;">Received &middot; {{ timestamp }}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- ACTION BUTTON -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tr>
+                        <td align="center" style="padding:4px 0 8px;">
+                          <table border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td align="center" bgcolor="#C1121F" style="border-radius:6px;">
+                                <a href="mailto:{{ contact_email }}?subject=Re: Inquiry from DriveEase Contact Form" style="display:inline-block; background-color:#C1121F; color:#ffffff; font-size:13px; font-weight:600; padding:12px 32px; border-radius:6px; text-decoration:none; letter-spacing:0.03em;">
+                                  Reply to this inquiry &rarr;
+                                </a>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                  </td>
+                </tr>
+              </table>
+
+              <!-- FOOTER -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#000000; border-top:1px solid #252525;">
+                <tr>
+                  <td class="footer-cell" align="center" style="padding:20px 32px;">
+                    <p style="font-size:13px; font-weight:700; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 8px;">
+                      Drive<span style="color:#C1121F;">Ease</span>
+                    </p>
+                    <p style="font-size:11px; color:#444444; line-height:1.6; margin:0 0 3px;">
+                      This email was automatically generated from your contact form at <strong style="color:#ffffff;">DriveEase</strong>.
+                    </p>
+                    <p style="font-size:11px; color:#444444; line-height:1.6; margin:0 0 3px;">
+                      Tipolo, Mandaue City, Philippines &middot; <a href="mailto:hello@driveeasy.ph" style="color:#C1121F; text-decoration:none;">hello@driveeasy.ph</a>
+                    </p>
+
+                    <!-- DIVIDER -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:12px 0;">
+                      <tr>
+                        <td height="1" bgcolor="#1a1a1a" style="font-size:0; line-height:0;">&nbsp;</td>
+                      </tr>
+                    </table>
+
+                    <p style="font-size:10px; color:#333333; margin:0;">
+                      Powered by <a href="https://www.techsavvies.space" target="_blank" style="color:#444444; text-decoration:none;">www.techsavvies.space</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
 </body>
 </html>

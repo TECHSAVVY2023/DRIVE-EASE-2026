@@ -421,7 +421,7 @@ const {
     handleIdDrop,
 
     validateFile
-} = useProfileEdit()
+} = useProfileUploads()
 
 watch(
     () => props.user,

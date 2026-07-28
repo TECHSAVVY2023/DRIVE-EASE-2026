@@ -1,7 +1,8 @@
 <template>
-    <BookCarModal
+    <ClientBookingModal
         v-model="showBookingModal"
         :car="car"
+        :user="user"
     />
 
     <MobileDrawer
@@ -34,7 +35,9 @@
             <div v-if="car" class="max-w-5xl w-full h-fit flex justify-center items-center flex-col gap-6 px-4 py-8">
 
                 <CarDetails 
-                    :car="car" 
+                    :car="car"
+                    :avg-rating="avgRating"
+                    :total-reviews="totalReviews" 
                     @book="showBookingModal = true"
                 />
         
@@ -49,6 +52,7 @@
                         <h2 class="text-white font-extrabold text-lg">Customer reviews</h2>
 
                         <CarReviewWriteButton 
+                            v-if="!myReview"
                             :is-logged-in="isLoggedIn" 
                             @click="OpenWriteReviewModal = true" 
                         />
@@ -119,16 +123,6 @@
                     />
                 </div>
 
-                <!-- <ReviewsCarDetails
-                    :car-id="car?.car_id.toString()"
-                    :isLoggedIn="isLoggedIn"
-                /> -->
-
-                <!-- <CarDetailsR 
-                    :car-id="car?.car_id.toString()"
-                    :isLoggedIn="isLoggedIn"
-                />  -->
-
                 <SimilarCars />
             
             </div>
@@ -145,6 +139,7 @@
 import { ref } from 'vue'
 
 const route = useRoute()
+const router = useRouter()
 
 const { isLoggedIn } = useAuth()
 const { apiFetch } = useApiFetch()
@@ -164,16 +159,17 @@ const { formattedRatingBreakdown, displayedReviews, totalReviews,
         avgRating, reviews, myReview, nextPage, previousPage, sortBy, setRating,
         selectedRating, ratingBreakdown, fetchReviews, loadMore } = useCarReview({ carId })
 
+const { car, getCar } = useCarDetail()
 
 const reviewState = useWriteReview({ carId })
 
-watch(isLoggedIn, async (val) => {
-    if (val) {
-        user.value = await apiFetch('/auth/me/')
-    } else {
-        user.value = null
-    }
-}, { immediate: true })
+const hasUserReviewed = computed(() => {
+    if (!isLoggedIn.value || !user.value) return false
+
+    return reviews.value.some(
+        review => review.user.id === user.value.id
+    )
+})
 
 const handleReviewSubmit = async () => {
     if(OpenEditReviewModal.value){
@@ -330,7 +326,6 @@ const handleReviewSubmit = async () => {
     }
 }
 
-
 const { 
     menuOpen,
     toggleMenu,
@@ -341,13 +336,44 @@ const {
 
 const showBookingModal = ref(false)
 
-const { car, getCar } = useCarDetail()
+watch(isLoggedIn, async (val) => {
+    if (val) {
+        user.value = await apiFetch('/auth/me/')
+    } else {
+        user.value = null
+    }
+}, { immediate: true })
 
 onMounted(async () => {
     const id = String(route.params.id)
-
     await getCar(id)
     await fetchReviews(1)
+
+    if (route.query.payment === 'success') {
+        $swal.fire({
+        icon: 'success',
+        title: 'Payment Successful',
+        text: 'Your booking has been submitted successfully.'
+        })
+
+        // Remove the query parameter
+        navigateTo(`/client/car-details/${route.params.id}`, {
+            replace: true
+        })
+    }
+
+    if (route.query.payment === 'cancelled') {
+        await $swal.fire({
+        icon: 'info',
+        title: 'Payment Cancelled',
+        text: 'Your payment was cancelled. No charges were made.',
+        })
+
+        router.replace({
+            path: route.path,
+            query: {}
+        })
+    }
 })
 
 watch([selectedRating, sortBy], () => {

@@ -9,10 +9,10 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-from dotenv import load_dotenv
-from corsheaders.defaults import default_headers
-from datetime import timedelta
+
 from pathlib import Path
+from dotenv import load_dotenv
+from datetime import timedelta
 import os
 
 load_dotenv()
@@ -25,12 +25,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--58a9rt)h-db&%5flfrh!1y7n)$cjrk@a@c58(fq3icdr6ac(o'
+SECRET_KEY = 'django-insecure-n@i08x16-y5qfzf5sh5-!cqj2&p0a6*_h@2q!+p*ygq8o_9=5r'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "leu-embassy-still-harmony.trycloudflare.com",
+]
+
 
 # Application definition
 
@@ -41,9 +46,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'driveease.apps.DriveeaseConfig',
-    'corsheaders',
+    'driveease',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -58,6 +63,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'api.urls'
+AUTH_USER_MODEL = 'driveease.Accounts'
 
 TEMPLATES = [
     {
@@ -73,6 +79,7 @@ TEMPLATES = [
         },
     },
 ]
+
 # ------------------------------------------------------------
 # SMTP Config
 # ------------------------------------------------------------
@@ -95,6 +102,11 @@ AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'sgp1')
 AWS_DEFAULT_ACL = 'public-read'
 AWS_QUERYSTRING_AUTH = False
 
+# PayMongo Payment Gateway
+PAYMONGO_SECRET_KEY = os.getenv('PAYMONGO_SECRET_KEY')
+PAYMONGO_WEBHOOK_SECRET = os.getenv('PAYMONGO_WEBHOOK_SECRET')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+
 CORS_ALLOW_HEADERS = [
     "authorization",
     "content-type",
@@ -112,7 +124,9 @@ CORS_ALLOW_ALL_ORIGINS = False
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
+    ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 3,
 }
 
 SIMPLE_JWT = {
@@ -158,20 +172,16 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
 USE_I18N = True
 
-USE_TZ = True
+TIME_ZONE = 'Asia/Manila'
 
+USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

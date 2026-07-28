@@ -66,7 +66,7 @@
                     </Transition>
                     <!-- CTA -->
                     <button 
-                        @click="$router.push('/fleet')"
+                        @click="$router.push('/client/fleet')"
                         class="
                         mt-6 bg-[#C1121F] hover:bg-[#9B0E18]
                         text-white text-sm font-semibold

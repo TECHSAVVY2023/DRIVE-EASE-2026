@@ -42,7 +42,7 @@
                         <div class="mt-12 flex gap-4">
 
                             <button
-                                @click="$router.push('/fleet')"
+                                @click="$router.push('client/fleet')"
                                 class="
                                     px-8 py-4 rounded-[10px]
                                     bg-[#C1121F] hover:bg-[#9B0E18]
@@ -55,7 +55,7 @@
 
                             <button
                                 v-if="!isLoggedIn"
-                                @click="$router.push('/login')"
+                                @click="$router.push('/client/login')"
                                 class="
                                     px-8 py-4 rounded-[10px]
                                     border border-white

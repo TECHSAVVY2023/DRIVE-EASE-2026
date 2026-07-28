@@ -1,6 +1,6 @@
 from django.db import models
-from django.template import defaultfilters
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 from storages.backends.s3boto3 import S3Boto3Storage
 
 def default_car_meta():
@@ -8,12 +8,12 @@ def default_car_meta():
         "primary_image": "",
         "images": []
     }
+
 def default_user_id():
     return {
         "images": []
     }
 
-# Create your models here.
 class Cars(models.Model):
 
     CAR_STATUS = [
@@ -68,7 +68,7 @@ class Cars(models.Model):
     )
 
     created_by = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True
@@ -94,6 +94,75 @@ class Cars(models.Model):
     def __str__(self):
         return f"{self.brand} {self.model} ({self.car_id})"
 
+class Accounts(AbstractUser):
+    contact_number = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+
+    profile_picture = models.URLField(blank=True, null=True)
+    id_images = models.JSONField(default=default_user_id, blank=True)
+
+    def __str__(self):
+        return self.username
+
+class Reviews(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
+
+    car = models.ForeignKey(
+        'Cars',
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
+
+    rating = models.PositiveSmallIntegerField()
+
+    text = models.TextField()
+
+    helpful_count = models.PositiveIntegerField(default=0)
+
+    images = models.JSONField(
+        default=list,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Review"
+        verbose_name_plural = "Reviews"
+        unique_together = ('user', 'car')
+
+    def __str__(self):
+        return f'{self.user} - {self.car}'
+
+class ReviewHelpful(models.Model):
+    review = models.ForeignKey(
+        "Reviews",
+        on_delete=models.CASCADE,
+        related_name="helpful_votes"
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="helpful_reviews"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Review Helpful"
+        verbose_name_plural = "Review Helpful"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["review", "user"],
+                name="unique_review_helpful_vote"
+            )
+        ]
+
 class FileUploadModel(models.Model):
 
     file = models.FileField(storage=S3Boto3Storage(), upload_to='app/fleet/')
@@ -101,25 +170,6 @@ class FileUploadModel(models.Model):
 
     def __str__(self):
         return self.file.name
-
-class Profile(models.Model):
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name="profile"
-    )
-
-    contact_number = models.CharField(max_length=20, blank=True)
-    address = models.TextField(blank=True)
-
-    profile_picture = models.URLField(blank=True, null=True)
-    id_images = models.JSONField(default=default_user_id, blank=True)
-
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.user.get_full_name()} ({self.user.email})"
 
 class ContactListModel(models.Model):
     contact_id = models.CharField(max_length=255, blank=True, null=True, default='')
@@ -135,3 +185,101 @@ class ContactListModel(models.Model):
 
     def created_at_formatted(self):
         return defaultfilters.date(self.created_at, 'M d, Y')
+
+class Booking(models.Model):
+    BOOKING_STATUS = [
+        ("pending_payment", "Pending Payment"),
+        ("payment_failed", "Payment Failed"),
+        ("confirmed", "Confirmed"),
+        ("picked_up", "Picked Up"),
+        ("returned", "Returned"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+        ("expired", "Expired"),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='bookings'
+    )
+
+    car = models.ForeignKey(
+        'Cars',
+        on_delete=models.CASCADE,
+        related_name='bookings'
+    )
+
+    booking_reference = models.CharField(
+        max_length=30,
+        unique=True,
+        blank=True
+    )
+
+    pickup_date = models.DateTimeField()
+    return_date = models.DateTimeField()
+    location = models.CharField(max_length=255)
+
+    # Pricing Snapshot
+    daily_rate = models.DecimalField(max_digits=10,decimal_places=2)
+    number_of_days = models.PositiveIntegerField()
+    subtotal = models.DecimalField(max_digits=10,decimal_places=2)
+    discount = models.DecimalField(max_digits=10,decimal_places=2,default=0)
+    total_price = models.DecimalField(max_digits=10,decimal_places=2)
+
+    status = models.CharField(
+        max_length=20,
+        choices=BOOKING_STATUS,
+        default='pending_payment'
+    )
+
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancel_reason = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Booking"
+        verbose_name_plural = "Bookings"
+        ordering = ('-created_at',)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.car.brand} {self.car.model} ({self.pickup_date})'
+
+class Payment(models.Model):
+    PAYMENT_STATUS = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
+
+    booking = models.OneToOneField(
+        Booking,
+        on_delete=models.CASCADE,
+        related_name='payments'
+    )
+    checkout_session_id = models.CharField(max_length=255,unique=True)
+    payment_intent_id = models.CharField(max_length=255, unique=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3, default='PHP')
+    status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS,
+        default='pending'
+    )
+
+    paymongo_response = models.JSONField(default=dict, blank=True)
+
+    paid_at = models.DateTimeField(null=True,blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Payment"
+        verbose_name_plural = "Payments"
+        ordering = ('-created_at',)
+
+    def __str__(self):
+        return f'{self.booking.booking_reference} - {self.amount} {self.currency} ({self.status})'

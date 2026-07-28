@@ -8,27 +8,29 @@
                 <!-- Main Image -->
                 <div class="relative bg-[#1a1a1a] rounded-xl overflow-hidden aspect-[16/10] flex items-center justify-center border border-[#222]">
                     <img
-                    :src="galleryImages[activeImage] as string"
-                    :alt="car.model"
-                    class="absolute inset-0 w-full h-full object-cover"
+                        :src="galleryImages[activeImage] as string"
+                        :alt="car.model"
+                        class="absolute inset-0 w-full h-full object-cover"
                     />
+
                     <!-- Prev -->
                     <button
-                    @click="prevImage"
-                    class="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors duration-200"
-                    >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
+                        @click="prevImage"
+                        class="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors duration-200"
+                        >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
                     </button>
+
                     <!-- Next -->
                     <button
-                    @click="nextImage"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors duration-200"
-                    >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
+                        @click="nextImage"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors duration-200"
+                        >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
                     </button>
                 </div>
     
@@ -68,8 +70,8 @@
                 <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
-                <span class="text-yellow-400 text-sm font-semibold">4.8</span>
-                <span class="text-gray-400 text-xs">40 reviews</span>
+                <span class="text-yellow-400 text-sm font-semibold">{{ props.avgRating.toFixed(1) }}</span>
+                <span class="text-gray-400 text-xs">{{ props.totalReviews }} reviews</span>
             </div>
     
             <!-- Price -->
@@ -190,6 +192,8 @@ import type { Car } from '~/utils/api/api'
 
 const props = defineProps<{
     car: Car
+    avgRating: number
+    totalReviews: number
 }>()
 
 const emit = defineEmits<{

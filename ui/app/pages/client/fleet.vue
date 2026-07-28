@@ -1,8 +1,8 @@
 <template>
-    <BookCarModal
-        v-if="selectedCar"
+    <ClientBookingModal
         v-model="showBookingModal"
         :car="selectedCar"
+        :user="user"
     />
 
     <MobileDrawer

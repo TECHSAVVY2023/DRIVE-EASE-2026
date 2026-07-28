@@ -300,22 +300,22 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const uploadedImages = ref<string[]>([])
 
 const form = reactive<BookingForm>({
-  firstName: '',
-  lastName: '',
-  address: '',
-  contact: '',
-  pickupDate: '',
-  returnDate: '',
-  location: '',
+    firstName: '',
+    lastName: '',
+    address: '',
+    contact: '',
+    pickupDate: '',
+    returnDate: '',
+    location: '',
 })
 
 function handleNext(): void {
-  if (currentStep.value < steps.length) {
-    currentStep.value++
-  } else {
-    emit('confirm', { ...form })
-    emit('update:modelValue', false)
-  }
+    if (currentStep.value < steps.length) {
+        currentStep.value++
+    } else {
+        emit('confirm', { ...form })
+        emit('update:modelValue', false)
+    }
 }
 
 function triggerUpload(): void {

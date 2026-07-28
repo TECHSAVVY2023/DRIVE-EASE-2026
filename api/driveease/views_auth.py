@@ -9,7 +9,6 @@ from django.shortcuts import redirect
 import urllib.parse
 import base64
 
-from .models import Profile
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from .utils.auth import is_authorized
@@ -65,11 +64,11 @@ class GoogleCallbackView(APIView):
 
         # User cancelled login
         if error == 'access_denied':
-            return redirect(f"{frontend_url}/login?error=cancelled")
+            return redirect(f"{frontend_url}/client/login?error=cancelled")
 
         # Missing code
         if not code:
-            return redirect(f"{frontend_url}/login?error=no_code")
+            return redirect(f"{frontend_url}/client/login?error=no_code")
 
         client_id = os.getenv("GOOGLE_CLIENT_ID")
         client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
@@ -104,7 +103,7 @@ class GoogleCallbackView(APIView):
 
             if 'access_token' not in token_res:
                 print("[ERROR] No access token received")
-                return redirect(f"{frontend_url}/login?error=oauth_failed")
+                return redirect(f"{frontend_url}/client/login?error=oauth_failed")
 
             profile_res = requests.get(
                 'https://www.googleapis.com/oauth2/v3/userinfo',
@@ -114,22 +113,14 @@ class GoogleCallbackView(APIView):
             ).json()
 
             if not is_authorized(profile_res):
-                return redirect(f"{frontend_url}/login?error=unauthorized")
+                return redirect(f"{frontend_url}/client/login?error=unauthorized")
 
-            # Get or create Django user
             auth_user, created = User.objects.get_or_create(
                 username=profile_res["email"],
                 defaults={
                     "email": profile_res["email"],
                     "first_name": profile_res.get("given_name", ""),
                     "last_name": profile_res.get("family_name", ""),
-                }
-            )
-
-            # Create/update profile
-            profile, profile_created = Profile.objects.get_or_create(
-                user=auth_user,
-                defaults={
                     "profile_picture": profile_res.get("picture", ""),
                 }
             )
@@ -139,77 +130,81 @@ class GoogleCallbackView(APIView):
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
 
+            if auth_user.is_staff:
+                return redirect(
+                    f"{frontend_url}/admin-dashboard/?access={access_token}&refresh={refresh_token}"
+                )
+
             return redirect(
                 f"{frontend_url}/?access={access_token}&refresh={refresh_token}"
             )
 
         except Exception:
-            return redirect(f"{frontend_url}/login?error=oauth_failed")
+            return redirect(f"{frontend_url}/client/login?error=oauth_failed")
 
 class AuthMeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
-        profile = user.profile
 
         return Response({
             "id": user.id,
+            "username": user.username,
             "given_name": user.first_name,
             "family_name": user.last_name,
             "email": user.email,
 
-            "contact_number": profile.contact_number,
-            "address": profile.address,
-            "profile_picture": profile.profile_picture,
-            "id_images": profile.id_images,
+            "contact_number": user.contact_number,
+            "address": user.address,
+            "profile_picture": user.profile_picture,
+            "id_images": user.id_images,
 
-            "date_created": profile.date_created.isoformat(),
+            "date_created": user.date_joined.isoformat(),
         })
     
     def patch(self, request):
         user = request.user
-        profile = user.profile
-
         data = request.data
 
-        # Update User fields
+        # Update user fields
         user.first_name = data.get("given_name", user.first_name)
         user.last_name = data.get("family_name", user.last_name)
         user.email = data.get("email", user.email)
-        user.save()
 
-        # Update Profile fields
-        profile.contact_number = data.get("contact_number", profile.contact_number)
-        profile.address = data.get("address", profile.address)
+        user.contact_number = data.get(
+            "contact_number",
+            user.contact_number
+        )
 
-        profile.profile_picture = data.get(
+        user.address = data.get(
+            "address",
+            user.address
+        )
+
+        user.profile_picture = data.get(
             "profile_picture",
-            profile.profile_picture
+            user.profile_picture
         )
 
-        profile.id_images = data.get(
+        user.id_images = data.get(
             "id_images",
-            profile.id_images
+            user.id_images
         )
 
-        deleted_images = request.data.get("deleted_images", [])
-        
-        print("deleted_images:", deleted_images)
+        deleted_images = data.get("deleted_images", [])
+
         for upload in FileUploadModel.objects.all():
-            print("DB URL:", upload.file.url)
 
             if upload.file and upload.file.url in deleted_images:
                 upload.file.delete(save=False)
                 upload.delete()
 
-        profile.save()
+        user.save()
 
-        return Response({"message": "Profile updated successfully"})
-
-class AuthLogoutView(APIView):
-    def post(self, request):
-        return Response({"status": "logged_out"})
+        return Response({
+            "message": "Profile updated successfully"
+        })
 
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):

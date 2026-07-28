@@ -226,7 +226,7 @@
 
 <script setup lang="ts">
 
-//Navbar + User Profile + Working login // line 227-247 is for navbar //
+//Navbar + User Profile + Working login
 const { isLoggedIn } = useAuth()
 const { apiFetch } = useApiFetch()
 

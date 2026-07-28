@@ -8,7 +8,7 @@
             <!-- Step bubble -->
             <div class="flex items-center gap-2">
                 <div
-                    class="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold flex-shrink-0"
+                    class="w-8 h-8 rounded-md flex items-center justify-center text-sm font-bold flex-shrink-0"
                     :class="
                         currentStep > i + 1
                             ? 'bg-green-500 text-white'
@@ -36,10 +36,10 @@
                 </div>
 
                 <div class="flex flex-col leading-tight">
-                    <span class="text-white text-[10px] font-semibold">
+                    <span class="text-white text-sm font-semibold">
                         {{ step.title }}
                     </span>
-                    <span class="text-[#929292] text-[9px]">
+                    <span class="text-[#929292] text-xs">
                         {{ step.subtitle }}
                     </span>
                 </div>

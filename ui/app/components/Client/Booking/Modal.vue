@@ -13,318 +13,461 @@
                 leave-from-class="opacity-100 scale-100"
                 leave-to-class="opacity-0 scale-95"
             >
-            <div class="h-full flex items-center justify-center">
-                <div
-                    v-if="modelValue"
-                    class="
-                        bg-[#111111] border-t-[#C1121F] border-t-5 rounded-xl 
-                        w-full h-[90%] max-w-md font-[poppins] flex flex-col
-                    "
-                >
-                    <!-- Header -->
-                    <div class="px-6 pt-6 pb-4 flex-shrink-0">
-                        <h2 class="text-white font-extrabold text-lg">Book this car</h2>
-                        <p class="text-[#929292] text-xs mt-1">Complete all steps to confirm your reservation</p>
-                    </div>
-
-                    <ClientBookingSteps 
-                        :current-step="currentStep"
-                        :steps="steps"
-                    />
-
-                    <!-- Content -->
-                    <div class="scroll-container pl-6 pr-5 py-6 flex flex-col gap-4 overflow-y-auto">
-
-                        <!-- Car summary card -->
-                        <div class="flex shrink-0 items-center gap-3 bg-[#1a1a1a] border border-[#C1121F]/50 h-fit rounded-xl overflow-hidden">
-                            <div class="flex-none w-24 h-full overflow-hidden">
-                                <img
-                                    :src="`${car?.meta.primary_image}`"
-                                    :alt="`${car?.brand} ${car?.model}`"
-                                    class="object-cover w-full h-full"
-                                />
-                            </div>
-
-                            <div class="flex-1 min-w-0 py-2">
-                                <p class="text-white text-sm font-bold">
-                                    {{ car?.brand }} {{ car?.model }}
-                                </p>
-                                <p class="text-gray-400 text-xs">
-                                    ₱{{ car?.price_per_day }} / day
-                                </p>
-                            </div>
-
-                            <div class="pr-3 flex-shrink-0">
-                                <span
-                                    class="flex items-center gap-1 text-[10px] font-semibold text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-full"
-                                >
-                                    <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                                    AVAILABLE
-                                </span>
-                            </div>
+                <div class="h-full w-full flex items-center justify-center">
+                    <div
+                        v-if="modelValue"
+                        class="
+                            bg-[#111111] border-t-[#C1121F] border-t-5 rounded-xl 
+                            w-full h-[90%] max-w-lg font-[poppins] flex flex-col
+                        "
+                    >
+                        <!-- Header -->
+                        <div class="px-6 pt-6 pb-4 flex-shrink-0">
+                            <h2 class="text-white font-extrabold text-xl">Book this car</h2>
+                            <p class="text-[#929292] text-xs mt-1">Complete all steps to confirm your reservation</p>
                         </div>
 
-                        <!-- Step 1: Your Info & ID -->
-                        <template v-if="currentStep === 1">
-                            <div class="flex flex-col gap-4">
+                        <ClientBookingSteps 
+                            :current-step="currentStep"
+                            :steps="steps"
+                        />
 
-                            <!-- First + Last name -->
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="flex flex-col gap-1.5">
-                                <label class="text-gray-400 text-xs">First name</label>
-                                <input
-                                    v-model="form.firstName"
-                                    type="text"
-                                    class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#444] focus:outline-none focus:border-[#C1121F] transition-colors duration-200"
-                                />
+                        <!-- Content -->
+                        <div class="scroll-container w-[100%] pl-6 pr-5 py-6 flex flex-col gap-4 overflow-y-auto">
+
+                            <!-- Car summary card -->
+                            <div class="flex shrink-0 items-center gap-3 bg-[#1a1a1a] border border-[#C1121F] h-fit rounded-xl overflow-hidden">
+                                <div class="flex-none w-24 h-full overflow-hidden">
+                                    <img
+                                        :src="`${car?.meta.primary_image}`"
+                                        :alt="`${car?.brand} ${car?.model}`"
+                                        class="object-cover w-full h-full"
+                                    />
                                 </div>
-                                <div class="flex flex-col gap-1.5">
-                                <label class="text-gray-400 text-xs">Last name</label>
-                                <input
-                                    v-model="form.lastName"
-                                    type="text"
-                                    class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#444] focus:outline-none focus:border-[#C1121F] transition-colors duration-200"
-                                />
+
+                                <div class="flex-1 min-w-0 py-2">
+                                    <p class="text-white text-sm font-bold">
+                                        {{ car?.brand }} {{ car?.model }}
+                                    </p>
+                                    <p class="text-gray-400 text-xs">
+                                        ₱{{ car?.price_per_day }} / day
+                                    </p>
                                 </div>
-                            </div>
 
-                            <!-- Address -->
-                            <div class="flex flex-col gap-1.5">
-                                <label class="text-gray-400 text-xs">Address</label>
-                                <input
-                                v-model="form.address"
-                                type="text"
-                                class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#444] focus:outline-none focus:border-[#C1121F] transition-colors duration-200"
-                                />
-                            </div>
-
-                            <!-- Contact number -->
-                            <div class="flex flex-col gap-1.5">
-                                <label class="text-gray-400 text-xs">Contact number</label>
-                                <input
-                                v-model="form.contact"
-                                type="tel"
-                                class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#444] focus:outline-none focus:border-[#C1121F] transition-colors duration-200"
-                                />
-                            </div>
-
-                            <!-- Upload ID -->
-                            <div class="flex flex-col gap-1.5">
-                                <label class="text-gray-400 text-xs">Upload image of two valid IDs</label>
-                                <p class="text-gray-500 text-[10px]">Valid ID that are accepted: national ID, driver license ID, passport.</p>
-
-                                <!-- Drop zone -->
-                                <div
-                                class="border-2 border-dashed border-[#C1121F]/40 hover:border-[#C1121F] rounded-xl h-24 flex items-center justify-center cursor-pointer transition-colors duration-200"
-                                @click="triggerUpload"
-                                @dragover.prevent
-                                @drop.prevent="handleDrop"
-                                >
-                                <p class="text-gray-500 text-xs text-center px-4">Click to upload image or drag and drop</p>
-                                </div>
-                                <input ref="fileInput" type="file" accept="image/*" multiple class="hidden" @change="handleFileChange" />
-                            </div>
-
-                            <!-- Uploaded previews -->
-                            <div v-if="uploadedImages.length" class="flex flex-col gap-1.5">
-                                <label class="text-gray-400 text-xs">Uploaded images</label>
-                                <div class="flex gap-2 flex-wrap">
-                                <div
-                                    v-for="(img, i) in uploadedImages"
-                                    :key="i"
-                                    class="relative w-16 h-12 rounded-lg overflow-hidden border border-[#2a2a2a] flex-shrink-0"
-                                >
-                                    <img :src="img" alt="Uploaded ID" class="w-full h-full object-cover" />
-                                    <button
-                                    @click="removeImage(i)"
-                                    class="absolute top-0.5 right-0.5 w-4 h-4 bg-black/70 rounded-full flex items-center justify-center"
+                                <div class="pr-3 flex-shrink-0">
+                                    <span
+                                        class="flex items-center gap-1 text-[10px] font-semibold text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-full"
                                     >
-                                    <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
-                                    </button>
-                                </div>
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                                        AVAILABLE
+                                    </span>
                                 </div>
                             </div>
 
-                            </div>
-                        </template>
+                            <ClientBookingStepOne
+                                v-if="currentStep === 1"
+                                :form="form"
+                                :user="user"
+                                :existingIdImages="existingIdImages"
+                                :uploadedIdFiles="uploadedIdFiles"
+                                @file-change="handleIdChange"
+                                @drop="handleIdDrop"
+                                @remove-existing-id="removeExistingId"
+                                @remove-uploaded-id="removeIdFile"
+                            />
 
-                        <!-- Step 2: Schedule & Location (placeholder) -->
-                        <template v-else-if="currentStep === 2">
-                            <div class="flex flex-col gap-4">
-                            <div class="flex flex-col gap-1.5">
-                                <label class="text-gray-400 text-xs">Pickup date</label>
-                                <input type="date" v-model="form.pickupDate" class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#C1121F] transition-colors duration-200" />
-                            </div>
-                            <div class="flex flex-col gap-1.5">
-                                <label class="text-gray-400 text-xs">Return date</label>
-                                <input type="date" v-model="form.returnDate" class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#C1121F] transition-colors duration-200" />
-                            </div>
-                            <div class="flex flex-col gap-1.5">
-                                <label class="text-gray-400 text-xs">Pickup location</label>
-                                <input type="text" v-model="form.location" placeholder="e.g. Cagayan De Oro City" class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#444] focus:outline-none focus:border-[#C1121F] transition-colors duration-200" />
-                            </div>
-                            </div>
-                        </template>
+                            <ClientBookingStepTwo
+                                v-if="currentStep === 2"
+                                :form="form"
+                            />
 
-                        <!-- Step 3: Review & Confirm (placeholder) -->
-                        <template v-else-if="currentStep === 3">
-                            <div class="bg-[#1a1a1a] border border-[#222] rounded-xl p-4 flex flex-col gap-3 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-400 text-xs">Name</span>
-                                <span class="text-white text-xs font-semibold">{{ form.firstName }} {{ form.lastName }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400 text-xs">Address</span>
-                                <span class="text-white text-xs font-semibold">{{ form.address }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400 text-xs">Contact</span>
-                                <span class="text-white text-xs font-semibold">{{ form.contact }}</span>
-                            </div>
-                            <div class="border-t border-[#222] pt-2 flex justify-between">
-                                <span class="text-gray-400 text-xs">Pickup date</span>
-                                <span class="text-white text-xs font-semibold">{{ form.pickupDate }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400 text-xs">Return date</span>
-                                <span class="text-white text-xs font-semibold">{{ form.returnDate }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400 text-xs">Location</span>
-                                <span class="text-white text-xs font-semibold">{{ form.location }}</span>
-                            </div>
-                            </div>
-                        </template>
+                            <!-- Step 3: Review & Confirm (placeholder) -->
+                            <template v-else-if="currentStep === 3">
+                                <div class="bg-[#1a1a1a] border border-[#222] rounded-xl p-4 flex flex-col gap-3 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-xs">Name</span>
+                                        <span class="text-white text-xs font-semibold">{{ form.firstName }} {{ form.lastName }}</span>
+                                    </div>
+
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-xs">Address</span>
+                                        <span class="text-white text-xs font-semibold">{{ form.address }}</span>
+                                    </div>
+
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-xs">Contact</span>
+                                        <span class="text-white text-xs font-semibold">{{ form.contact }}</span>
+                                    </div>
+
+                                    <div class="border-t border-[#222] pt-2 flex flex-col gap-2">
+                                        <span class="text-gray-400 text-xs">Uploaded Valid IDs</span>
+
+                                        <template v-if="existingIdImages.length">
+                                            <div
+                                                v-for="(url, index) in existingIdImages"
+                                                :key="'id-' + index"
+                                                class="flex items-center justify-between bg-[#0f0f0f] border border-white/10 rounded-lg px-3 py-2"
+                                            >
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 flex items-center justify-center bg-[#1a1a1a] rounded">
+                                                        <svg class="w-4 h-4 text-[#C1121F]" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                        </svg>
+                                                    </div>
+
+                                                    <a
+                                                        :href="url"
+                                                        target="_blank"
+                                                        class="text-white text-xs hover:text-[#C1121F] transition-colors"
+                                                    >
+                                                        Valid ID {{ index + 1 }}
+                                                    </a>
+                                                </div>
+
+                                                <span class="text-[11px] text-green-400 font-medium">
+                                                    Uploaded
+                                                </span>
+                                            </div>
+                                        </template>
+
+                                        <!-- Newly selected IDs -->
+                                        <template v-if="uploadedIdFiles.length">
+                                            <div
+                                                v-for="(file, index) in uploadedIdFiles"
+                                                :key="'uploaded-' + index"
+                                                class="flex items-center justify-between bg-[#0f0f0f] border border-white/10 rounded-lg px-3 py-2"
+                                            >
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 flex items-center justify-center bg-[#1a1a1a] rounded">
+                                                        <svg class="w-4 h-4 text-[#C1121F]" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                        </svg>
+                                                    </div>
+
+                                                    <div class="flex flex-col">
+                                                        <p @click="openImage(file)" 
+                                                            class="text-white text-xs truncate max-w-[100px] font-medium hover:text-[#c1121f] transition-colors cursor-pointer">
+                                                            {{ file.name }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <span class="text-[11px] text-green-400 font-medium">
+                                                    Uploaded
+                                                </span>
+
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <div class="border-t border-[#222] pt-2 flex justify-between">
+                                        <span class="text-gray-400 text-xs">Pickup date</span>
+                                        <span class="text-white text-xs font-semibold">{{ form.pickupDate }}</span>
+                                    </div>
+
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-xs">Return date</span>
+                                        <span class="text-white text-xs font-semibold">{{ form.returnDate }}</span>
+                                    </div>
+
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-xs">Location</span>
+                                        <span class="text-white text-xs font-semibold">{{ form.location }}</span>
+                                    </div>
+
+                                    <div class="border-t border-[#222] pt-2 flex justify-between">
+                                        <span class="text-gray-400 text-xs">Rental Duration</span>
+                                        <span class="text-white text-xs font-semibold">{{ rentalDays }} day(s)</span>
+                                    </div>
+
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-xs">Rate per day</span>
+                                        <span class="text-white text-xs font-semibold">₱{{ car?.price_per_day.toLocaleString() }}</span>
+                                    </div>
+
+                                    <div class="flex justify-between border-t border-[#222] pt-5">
+                                        <span class="text-white text-[18px] font-semibold">Total Price</span>
+                                        <span class="text-white text-[18px] font-bold">
+                                            ₱{{ totalPrice.toLocaleString() }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </template>
+
+                        </div>
+
+                        <div class="flex flex-col gap-2 mt-4 mb-8 mx-6">
+                            <button
+                                @click="currentStep === steps.length ? confirmBooking() : handleNext()"
+                                :disabled="isSubmitting"
+                                class="w-full bg-[#C1121F] hover:bg-red-700 disabled:opacity-50 text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
+                            >
+                                {{
+                                    isSubmitting
+                                        ? 'Submitting...'
+                                        : currentStep === steps.length
+                                            ? 'Confirm Booking'
+                                            : 'Next Step'
+                                }}
+                            </button>
+
+                            <button
+                                @click="closeModal"
+                                class="w-full border border-[#2a2a2a] hover:border-white text-white text-sm font-semibold py-3 rounded-lg transition-colors duration-200"
+                            >
+                                Cancel
+                            </button>
+                        </div>
 
                     </div>
-
-                    <!-- Actions -->
-                    <div class="flex flex-col gap-2 my-4 mx-6">
-                        <button
-                        @click="handleNext"
-                        class="w-full bg-[#C1121F] hover:bg-red-700 text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
-                        >
-                        {{ currentStep === steps.length ? 'Confirm booking' : 'Next step' }}
-                        </button>
-                        <button
-                        @click="closeModal"
-                        class="w-full border border-[#2a2a2a] hover:border-white text-white text-sm font-semibold py-3 rounded-lg transition-colors duration-200"
-                        >
-                        Cancel
-                        </button>
-                    </div>
-
                 </div>
-            </div>
-
             </Transition>
         </div>
     </Transition>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import type { User } from '~/utils/api/api'
 import type { Car } from '~/utils/api/api'
+import { ref, reactive } from 'vue'
 
-const closeModal = () => {
-    if (import.meta.client) {
-        document.documentElement.style.overflow = 'hidden'
-    }
-
-    emit('update:modelValue', false)
-}
+const { $swal } = useNuxtApp()
+const { apiFetch } = useApiFetch()
+const currentStep = ref<number>(1)
 
 interface Step {
-  title: string
-  subtitle: string
+    title: string
+    subtitle: string
 }
 
-interface BookingForm {
-    firstName: string
-    lastName: string
-    address: string
-    contact: string
-    pickupDate: string
-    returnDate: string
-    location: string
-}
+const steps: Step[] = [
+    { title: 'Your info', subtitle: '& ID' },
+    { title: 'Schedule', subtitle: '& Location' },
+    { title: 'Review', subtitle: '& Confirm' },
+]
 
 const props = defineProps<{
-  modelValue: boolean
-  car: Car | null
+    modelValue: boolean
+    car: Car | null
+    user: User | null
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
-  (e: 'confirm', form: BookingForm): void
+    (e: 'update:modelValue', value: boolean): void
 }>()
 
-const steps: Step[] = [
-  { title: 'Your info', subtitle: '& ID' },
-  { title: 'Schedule', subtitle: '& Location' },
-  { title: 'Review', subtitle: '& Confirm' },
-]
-
-const currentStep = ref<number>(1)
-const fileInput = ref<HTMLInputElement | null>(null)
-const uploadedImages = ref<string[]>([])
-
-const form = reactive<BookingForm>({
+const form = reactive({
+    userid: props.user?.id,
+    carid: props.car?.car_id,
     firstName: '',
     lastName: '',
+    email: '',
     address: '',
     contact: '',
+    id_images: [] as string[],
     pickupDate: '',
     returnDate: '',
     location: '',
 })
 
-function handleNext(): void {
+const {
+    uploadedIdFiles,
+    removeIdFile,
+    removeExistingId,
+    uploadIdFiles,
+
+    existingIdImages,
+    originalIdImages,
+
+    handleIdChange,
+    handleIdDrop,
+
+    validateFile
+} = useProfileUploads()
+
+function openImage(file: File) {
+    const url = URL.createObjectURL(file)
+    window.open(url, '_blank')
+
+    // Release the object URL after a short delay
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+const closeModal = () => {
+    if (import.meta.client) {
+        document.documentElement.style.overflow = 'hidden'
+    }
+    currentStep.value = 1
+    emit('update:modelValue', false)
+}
+
+const rentalDays = computed(() => {
+    if (!form.pickupDate || !form.returnDate) return 0
+
+    const pickup = new Date(form.pickupDate)
+    const dropoff = new Date(form.returnDate)
+
+    const diff = dropoff.getTime() - pickup.getTime()
+
+    return Math.ceil(diff / (1000 * 60 * 60 * 24))
+})
+
+const totalPrice = computed(() => {
+    return rentalDays.value * Number(props.car?.price_per_day)
+})
+
+const { validateStepOne, validateStepTwo } = useBookingValidation()
+
+async function handleNext(): Promise<void> {
+
+    if (currentStep.value === 1) {
+        const valid = await validateStepOne(
+            form,
+            existingIdImages.value,
+            uploadedIdFiles.value
+        )
+
+        if (!valid) return
+    }
+    
+    if (currentStep.value === 2) {
+        const valid = await validateStepTwo(form)
+
+        if (!valid) return
+    }
+
     if (currentStep.value < steps.length) {
         currentStep.value++
     } else {
-        emit('confirm', { ...form })
+
         emit('update:modelValue', false)
     }
 }
 
-function triggerUpload(): void {
-    fileInput.value?.click()
-}
+const isSubmitting = ref(false)
 
-function handleFileChange(e: Event): void {
-  const input = e.target as HTMLInputElement
-  if (!input.files) return
-  Array.from(input.files).forEach(file => {
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      if (ev.target?.result) {
-        uploadedImages.value.push(ev.target.result as string)
-      }
-    }
-    reader.readAsDataURL(file)
-  })
-}
+async function confirmBooking(): Promise<void> {
+    if (isSubmitting.value) return
 
-function handleDrop(e: DragEvent): void {
-    const files = e.dataTransfer?.files
-    if (!files) return
-    Array.from(files).forEach(file => {
-        const reader = new FileReader()
-        reader.onload = (ev) => {
-        if (ev.target?.result) {
-            uploadedImages.value.push(ev.target.result as string)
-        }
-        }
-        reader.readAsDataURL(file)
+    const result = await $swal.fire({
+        title: 'Confirm booking?',
+        text: 'Please review your booking details before submitting.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Proceed to Payment',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#C1121F',
+        background: '#1a1a1a',
+        color: '#ffffff'
     })
+
+    if (!result.isConfirmed) return
+
+    isSubmitting.value = true
+
+    try{
+        const { updateUserProfile } = useBookingProfileUpdate()
+
+        await updateUserProfile({
+            user: props.user,
+            form: form,
+            uploadedIdFiles: uploadedIdFiles.value,
+            existingIdImages: existingIdImages.value,
+            originalIdImages: originalIdImages.value,
+            validateFile: validateFile,
+            uploadIdFiles: uploadIdFiles
+        })
+
+        // Create booking first (status = pending_payment)
+        const bookingBody = {
+            user: props.user?.id,
+            car: props.car?.car_id,
+            pickup_date: form.pickupDate,
+            return_date: form.returnDate,
+            location: form.location,
+            daily_rate: props.car?.price_per_day,
+            number_of_days: rentalDays.value,
+            subtotal: totalPrice.value,
+            discount: 0,
+            total_price: totalPrice.value
+        }
+
+        const bookingRes = await apiFetch<{ message: string; booking_id: number; booking_reference: string }>('/bookings/create/', {
+            method: 'POST',
+            body: bookingBody
+        })
+
+        // Create PayMongo payment session with booking_id
+        const paymentData = {
+            amount: Math.round(totalPrice.value * 100), // PayMongo expects amount in cents
+            description: `Car rental: ${props.car?.brand} ${props.car?.model} - Booking: ${bookingRes.booking_reference}`,
+            currency: 'PHP',
+            booking_id: bookingRes.booking_id
+        }
+
+        const paymentRes = await apiFetch<{ 
+            checkout_url: string
+            payment_intent_id: string 
+        }>('/payments/create-paymongo-payment/', {
+            method: 'POST',
+            body: paymentData
+        })
+
+        // Redirect to PayMongo checkout
+        if (paymentRes.checkout_url) {
+            window.location.href = paymentRes.checkout_url
+            return
+        }
+
+        console.log('form:', form)
+        console.log('Booking submitted successfully:', bookingRes)
+    }catch(error){
+        console.error(error)
+    }finally{
+        isSubmitting.value = false
+    }
 }
 
-function removeImage(index: number): void {
-  uploadedImages.value.splice(index, 1)
-}
+watch(
+    () => props.modelValue,
+    (open) => {
+        if (!open) {
+            currentStep.value = 1
+
+            uploadedIdFiles.value = []
+            existingIdImages.value = []
+            originalIdImages.value = []
+
+            Object.assign(form, {
+                firstName: '',
+                lastName: '',
+                email: '',
+                contact: '',
+                address: '',
+                id_images: []
+            })
+
+            return
+        }
+
+        if (!props.user) return
+
+        Object.assign(form, {
+            firstName: props.user.given_name,
+            lastName: props.user.family_name,
+            email: props.user.email,
+            contact: props.user.contact_number,
+            address: props.user.address,
+            id_images: props.user.id_images || []
+        })
+
+        const images = props.user.id_images?.images || []
+
+        existingIdImages.value = [...images]
+        originalIdImages.value = [...images]
+
+    }
+)
 
 watch(
     () => props.modelValue,
@@ -336,12 +479,6 @@ watch(
     },
     { immediate: true }
 )
-
-// onUnmounted(() => {
-//     if (import.meta.client) {
-//         document.documentElement.style.overflow = ''
-//     }
-// })
 </script>
 
 <style scoped>

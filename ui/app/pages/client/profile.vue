@@ -181,7 +181,6 @@ const fetchUser = async () => {
         user.value = null
         return
     }
-
     user.value = await apiFetch('/auth/me/')
 }
 
@@ -201,34 +200,4 @@ const {
     handleOpenSidebar
 } = useNavbar()
 
-interface Profile {
-    firstName: string
-    lastName: string
-    email: string
-    contact: string
-    address: string
-    memberSince: string
-    avatar: string
-}
-
-interface Document {
-    label: string
-    fileName: string
-    fileSize: string
-}
-
-const profile: Profile = {
-    firstName: 'Aljubehr',
-    lastName: 'Sahiol',
-    email: 'Aljubehr',
-    contact: 'Sahiol',
-    address: 'Brgy. Nazareth, Cagayan de Oro City, Misamis Oriental',
-    memberSince: '2020',
-    avatar: '',
-}
-
-const documents: Document[] = [
-  { label: 'License', fileName: 'License.jpg', fileSize: '10 mb' },
-  { label: 'ID', fileName: 'ID.jpg', fileSize: '10 mb' },
-]
 </script>

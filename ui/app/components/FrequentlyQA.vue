@@ -50,7 +50,7 @@
                     </p>
                     
                     <button 
-                        @click="$router.push('/contact')"
+                        @click="$router.push('client/contact')"
                         class="
                             mt-4 mb-8
                             bg-[#C1121F] hover:bg-[#9B0E18] 

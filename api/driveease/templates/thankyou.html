@@ -1,94 +1,276 @@
+
 <!DOCTYPE html>
 <html>
 <head>
+  <title>Thank You - DriveEase</title>
   <meta charset="UTF-8">
-  <title>Thank You - Fabrics Plus</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
+      margin: 0;
+      padding: 0;
+      background-color: #0d0d0d;
       font-family: 'Segoe UI', Arial, sans-serif;
-      background-color: #f5f5f5;
-      padding: 30px;
-      margin: 0;
-      color: #333;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
     }
-    .container {
-      max-width: 650px;
-      margin: auto;
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 25px 30px;
-      border: 1px solid #e5e5e5;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+
+    img {
+      border: 0;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
     }
-    .logo {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .logo img {
-      max-height: 80px;
-    }
-    .header {
-      border-bottom: 2px solid #b32d2e;
-      padding-bottom: 12px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .header h2 {
-      margin: 0;
-      font-size: 22px;
-      color: #b32d2e;
-    }
-    .content {
-      margin: 15px 0;
-      line-height: 1.6;
-      font-size: 15px;
-    }
-    .footer {
-      margin-top: 30px;
-      font-size: 12px;
-      text-align: center;
-      color: #777;
-      border-top: 1px solid #eee;
-      padding-top: 15px;
-    }
-    .brand {
-      font-weight: bold;
-      color: #b32d2e;
-    }
-    .powered {
-      margin-top: 5px;
-      font-size: 11px;
-      color: #999;
+
+    a { color: #CC0000; text-decoration: none; }
+
+    p { margin: 0 0 10px; padding: 0; }
+    p:last-child { margin-bottom: 0; }
+
+    @media only screen and (max-width: 480px) {
+      .wrap { width: 100% !important; }
+      .body-cell { padding: 20px 16px !important; }
+      .hero-title { font-size: 16px !important; }
+      .hero-sub { font-size: 11px !important; }
+      .contact-col { display: block !important; width: 100% !important; padding: 0 0 10px 0 !important; }
+      .action-btn { display: block !important; text-align: center !important; }
+      .footer-cell { padding: 18px 16px !important; }
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <!-- Logo -->
-    <div class="logo">
-      <img src="https://fpstorage.sgp1.cdn.digitaloceanspaces.com/www.fabricspluscurtains.com/logos/HDLogoFabricsPlusV2.png" alt="Fabrics Plus Logo">
-    </div>
+<body style="margin:0; padding:20px; background-color:#0d0d0d;">
 
-    <!-- Header -->
-    <div class="header">
-      <h2>✅ Thank You for Reaching Out!</h2>
-    </div>
+  <!-- OUTER WRAPPER -->
+  <table class="wrap" align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width:600px; width:100%;">
+    <tr>
+      <td>
 
-    <!-- Content -->
-    <div class="content">
-      <p>Dear {{ firstname }},</p>
-      <p>Thank you for contacting <span class="brand">DriveEase</span>. We have received your inquiry and our team will review your message shortly. One of our representatives will get back to you as soon as possible.</p>
-      <p>We truly appreciate your interest and look forward to assisting you.</p>
+        <!-- TOP RED BAR -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          <tr>
+            <td height="4" bgcolor="#CC0000" style="font-size:0; line-height:0; border-radius:6px 6px 0 0;">&nbsp;</td>
+          </tr>
+        </table>
 
-      <!-- <p>Message: {{ message }}</p> -->
-    </div>
+        <!-- CARD -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#1a1a1a; border:1px solid #252525; border-top:none; border-radius:0 0 10px 10px;">
+          <tr>
+            <td>
 
-    <!-- Footer -->
-    <div class="footer">
-      <p>This is an automated confirmation that we have received your message.</p>
-      <p>© {{ year }} <span class="brand">DriveEase</span>. All rights reserved.</p>
-      <p class="powered">Powered by <a href="https://www.techsavvies.space" target="_blank">www.techsavvies.space</a></p>
-    </div>
-  </div>
+              <!-- LOGO AREA -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#000000; border-bottom:1px solid #252525;">
+                <tr>
+                  <td align="center" style="padding:22px 32px;">
+                    <table border="0" cellpadding="0" cellspacing="0" align="center">
+                      <tr>
+                        <td align="center" valign="middle" style="padding-right:12px;">
+                          <img
+                            src="https://sgp1.digitaloceanspaces.com/fpstorage/www.driveease.com/app/fleet/logo1.png"
+                            alt="DriveEase Logo"
+                            height="52"
+                            style="display:block; max-height:52px; width:auto;"
+                          />
+                        </td>
+                        <td align="left" valign="middle">
+                          <p style="font-size:20px; font-weight:700; color:#ffffff; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 3px;">DriveEase</p>
+                          <p style="font-size:11px; color:#555555; margin:0;">Drive smart, drive easy.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- HERO BAND -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#C1121F;">
+                <tr>
+                  <td align="center" style="padding:28px 24px 24px;">
+
+                    <!-- HERO ICON CIRCLE -->
+                    <table border="0" cellpadding="0" cellspacing="0" align="center">
+                      <tr>
+                        <td align="center" width="54" height="54" style="width:54px; height:54px; background-color:rgba(0,0,0,0.2); border-radius:50%; font-size:26px; line-height:54px; text-align:center; color:#ffffff;">
+                          ✅
+                        </td>
+                      </tr>
+                    </table>
+
+                    <br>
+
+                    <p class="hero-title" style="font-size:20px; font-weight:700; color:#ffffff; margin:0 0 6px; text-align:center;">Thank you for reaching out!</p>
+                    <p class="hero-sub" style="font-size:12px; color:rgba(255,255,255,0.7); margin:0; text-align:center; line-height:1.5;">We've received your message and will get back to you shortly</p>
+
+                  </td>
+                </tr>
+              </table>
+
+              <!-- BODY -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td class="body-cell" style="padding:28px 28px;">
+
+                    <!-- GREETING BOX -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#111111; border:1px solid #252525; border-left:3px solid #CC0000; border-radius:0 6px 6px 0; margin-bottom:24px;">
+                      <tr>
+                        <td style="padding:16px 18px;">
+                          <p style="font-size:15px; font-weight:600; color:#ffffff; margin:0 0 10px;">Hi {{ firstname }},</p>
+                          <p style="font-size:13px; color:#888888; line-height:1.75; margin:0 0 10px;">Thank you for contacting <span style="color:#CC0000; font-weight:600;">DriveEase</span>. We've received your inquiry and our team will review your message shortly.</p>
+                          <p style="font-size:13px; color:#888888; line-height:1.75; margin:0;">One of our representatives will get back to you as soon as possible. We truly appreciate your interest and look forward to assisting you.</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- SECTION LABEL: WHAT NEXT -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:10px; color:#CC0000; text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding-bottom:8px; border-bottom:1px solid #252525;">
+                          What happens next
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- STEP 1 -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#111111; border:1px solid #252525; border-radius:6px; margin-bottom:8px;">
+                      <tr>
+                        <td width="22" valign="top" style="padding:12px 0 12px 14px;">
+                          <table border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td align="center" width="22" height="22" style="width:22px; height:22px; background-color:#CC0000; border-radius:50%; font-size:10px; font-weight:700; color:#ffffff; text-align:center; line-height:22px;">
+                                1
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td style="padding:12px 14px;">
+                          <p style="font-size:12px; font-weight:600; color:#ffffff; margin:0 0 3px;">Message received</p>
+                          <p style="font-size:11px; color:#555555; line-height:1.5; margin:0;">Your inquiry has been logged and assigned to our support team.</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- STEP 2 -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#111111; border:1px solid #252525; border-radius:6px; margin-bottom:8px;">
+                      <tr>
+                        <td width="22" valign="top" style="padding:12px 0 12px 14px;">
+                          <table border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td align="center" width="22" height="22" style="width:22px; height:22px; background-color:#CC0000; border-radius:50%; font-size:10px; font-weight:700; color:#ffffff; text-align:center; line-height:22px;">
+                                2
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td style="padding:12px 14px;">
+                          <p style="font-size:12px; font-weight:600; color:#ffffff; margin:0 0 3px;">Team review</p>
+                          <p style="font-size:11px; color:#555555; line-height:1.5; margin:0;">Our team will review your message and prepare a response within 24 hours.</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- STEP 3 -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#111111; border:1px solid #252525; border-radius:6px; margin-bottom:24px;">
+                      <tr>
+                        <td width="22" valign="top" style="padding:12px 0 12px 14px;">
+                          <table border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td align="center" width="22" height="22" style="width:22px; height:22px; background-color:#CC0000; border-radius:50%; font-size:10px; font-weight:700; color:#ffffff; text-align:center; line-height:22px;">
+                                3
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td style="padding:12px 14px;">
+                          <p style="font-size:12px; font-weight:600; color:#ffffff; margin:0 0 3px;">We'll reach out</p>
+                          <p style="font-size:11px; color:#555555; line-height:1.5; margin:0;">A representative will contact you via email or phone at the details you provided.</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- SECTION LABEL: CONTACT -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:10px; color:#CC0000; text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding-bottom:8px; border-bottom:1px solid #252525;">
+                          Need immediate help?
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- CONTACT BOX -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#0d0d0d; border:1px solid #1e1e1e; border-radius:6px; margin-bottom:24px;">
+                      <tr>
+                        <td style="padding:14px 16px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                              <td class="contact-col" valign="top" width="33%" style="padding-right:8px;">
+                                <p style="font-size:9px; color:#444444; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 3px;">Phone</p>
+                                <p style="font-size:12px; color:#aaaaaa; margin:0;">+63 912 345 6789</p>
+                              </td>
+                              <td class="contact-col" valign="top" width="33%" style="padding-right:8px;">
+                                <p style="font-size:9px; color:#444444; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 3px;">Email</p>
+                                <p style="font-size:12px; color:#aaaaaa; margin:0;"><a href="mailto:hello@driveease.ph" style="color:#CC0000; text-decoration:none;">hello@driveease.ph</a></p>
+                              </td>
+                              <td class="contact-col" valign="top" width="34%">
+                                <p style="font-size:9px; color:#444444; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 3px;">Hours</p>
+                                <p style="font-size:12px; color:#aaaaaa; margin:0;">Mon–Sat, 8AM–6PM</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- ACTION BUTTON -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tr>
+                        <td align="center" style="padding:4px 0 8px;">
+                          <table border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td align="center" bgcolor="#CC0000" style="border-radius:6px;">
+                                <a class="action-btn" href="#" style="display:inline-block; background-color:#CC0000; color:#ffffff; font-size:13px; font-weight:600; padding:13px 36px; border-radius:6px; text-decoration:none; letter-spacing:0.03em;">
+                                  Browse our fleet &rarr;
+                                </a>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                  </td>
+                </tr>
+              </table>
+
+              <!-- FOOTER -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#000000; border-top:1px solid #252525;">
+                <tr>
+                  <td class="footer-cell" align="center" style="padding:20px 28px;">
+                    <p style="font-size:14px; font-weight:700; color:#ffffff; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 8px;">
+                      Drive<span style="color:#CC0000;">Ease</span>
+                    </p>
+                    <p style="font-size:11px; color:#444444; line-height:1.6; margin:0 0 3px;">This is an automated confirmation that we have received your message.</p>
+                    <p style="font-size:11px; color:#444444; line-height:1.6; margin:0 0 3px;">© {{ year }} DriveEase. All rights reserved. &middot; Tipolo, Mandaue City, Philippines</p>
+
+                    <!-- FOOTER DIVIDER -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:12px 0;">
+                      <tr>
+                        <td height="1" bgcolor="#1a1a1a" style="font-size:0; line-height:0;">&nbsp;</td>
+                      </tr>
+                    </table>
+
+                    <p style="font-size:10px; color:#333333; margin:0;">
+                      Powered by <a href="https://www.techsavvies.space" target="_blank" style="color:#444444; text-decoration:none;">www.techsavvies.space</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
 </body>
 </html>
