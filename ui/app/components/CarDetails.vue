@@ -53,59 +53,127 @@
             </div>
     
             <!-- Right: Car Info -->
-            <div class="flex-1 flex flex-col gap-4 w-full pt-4">
-            <!-- Name + Status -->
-            <div class="flex items-start justify-between gap-3">
-                <h1 class="text-white font-extrabold text-2xl leading-tight">{{ car.brand }} {{ car.model }}</h1>
-                <span class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0"
-                :class="car.status === 'available' ? 'bg-green-500/10 text-green-400 border border-green-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'"
-                >
-                <span class="w-1.5 h-1.5 rounded-full" :class="car.status === 'available' ? 'bg-green-400' : 'bg-red-400'"></span>
-                {{ car.status === 'available' ? 'AVAILABLE' : 'UNAVAILABLE' }}
-                </span>
-            </div>
-    
-            <!-- Rating -->
-            <div class="flex items-center gap-1.5">
-                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-                <span class="text-yellow-400 text-sm font-semibold">{{ props.avgRating.toFixed(1) }}</span>
-                <span class="text-gray-400 text-xs">{{ props.totalReviews }} reviews</span>
-            </div>
-    
-            <!-- Price -->
-            <div class="flex items-end gap-2">
-                <span class="text-white text-3xl font-extrabold">₱{{ car.price_per_day.toLocaleString() }}</span>
-                <span class="text-gray-400 text-sm mb-1">Per day</span>
-            </div>
-    
-            <!-- Perks -->
-            <div class="grid grid-cols-2 gap-2">
-                <div v-for="perk in perks" :key="perk" class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                </svg>
-                <span class="text-gray-300 text-xs">{{ perk }}</span>
+            <div class="flex-1 flex flex-col w-full pt-4">
+
+                <!-- Name + Status -->
+                <div class="flex items-start justify-between gap-3">
+                    <h1 class="text-white font-extrabold text-2xl leading-tight">{{ car.brand }} {{ car.model }}</h1>
+                    <span class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0"
+                        :class="car.status === 'available' ? 'bg-[#123a1f] text-green-400' : 'bg-[#C1121F]/20 text-[#FF6161]'"
+                    >
+                        <span class="w-1.5 h-1.5 rounded-full" :class="car.status === 'available' ? 'bg-green-400' : 'bg-[#FF6161]'"></span>
+                        {{ car.status === 'available' ? 'AVAILABLE' : 'UNAVAILABLE' }}
+                    </span>
                 </div>
-            </div>
     
-            <!-- CTAs -->
-            <div class="flex flex-col gap-3 mt-2">
-                <button 
-                    @click="emit('book')"
-                    class="w-full bg-[#C1121F] hover:bg-[#9B0E18] text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200">
-                    Book now
-                </button>
-                <button
-                    @click="scrollToOwnerNote" 
-                    class="w-full border border-white hover:bg-white hover:text-[#C1121F] text-white text-sm font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200">
-                    Owner's note
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <!-- Rating -->
+                <div class="flex items-center pt-1 gap-1.5">
+                    <svg class="w-4 h-4 text-[#c1121f]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
-                </button>
-            </div>
+                    <span class="text-[#c1121f] text-md font-semibold">{{ props.avgRating.toFixed(1) }}</span>
+                    <span class="text-[#A3A3A3] text-sm font-light">{{ props.totalReviews }} reviews</span>
+                </div>
+    
+                <!-- Price -->
+                <div class="flex items-end py-4 gap-2">
+                    <span class="text-white text-3xl font-extrabold">₱{{ car.price_per_day.toLocaleString() }}</span>
+                    <span class="text-[#A3A3A3] text-sm mb-1">Per day</span>
+                </div>
+
+                <div
+                    v-if="currentRental" 
+                    class="flex justify-center items-center gap-2 bg-[#2A2516] border border-[#FFAE00] rounded-lg py-3">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        class="w-5 h-5 text-[#FFAE00]"
+                        fill="currentColor"
+                    >
+                        <path d="M12.25,7H12V4c0-1.653-1.347-3-3-3H7C5.347,1,4,2.347,4,4v3H3.75C3.338,7,3,7.338,3,7.75v6.5C3,14.663,3.338,15,3.75,15h8.5 c0.413,0,0.75-0.337,0.75-0.75v-6.5C13,7.338,12.663,7,12.25,7z M6,4c0-0.55,0.45-1,1-1h2c0.55,0,1,0.45,1,1v3H6V4z"/>
+                    </svg>
+
+                    <div class="flex flex-col items-center leading-tight">
+                        <span class="text-[#FFAE00] text-sm font-medium">
+                            Currently Rented
+                        </span>
+                        <span class="text-[#FFAE00] text-xs opacity-80">
+                            Until {{ rentedUntil }}
+                        </span>
+                    </div>
+                </div>
+    
+                <!-- Perks -->
+                <div class="grid grid-cols-2 py-4 gap-2">
+                    <div v-for="perk in perks" :key="perk" class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span class="text-gray-300 text-xs">{{ perk }}</span>
+                    </div>
+                </div>
+        
+                <!-- CTAs -->
+                <div class="flex flex-col gap-3 mt-2">
+
+                    <!-- Available -->
+                    <template v-if="!currentRental">
+                        <button
+                            @click="emit('book')"
+                            class="
+                                w-full bg-[#C1121F] hover:shadow-md hover:shadow-[#C1121F]/30
+                                text-white text-sm font-bold py-3 rounded-lg
+                                transition-all duration-300 cursor-pointer
+                            "
+                        >
+                            Book now
+                        </button>
+
+                        <button
+                            @click="scrollToOwnerNote"
+                            class="
+                                w-full border border-[#C1121F] hover:bg-[#2A1616]
+                                hover:text-[#FF6161] text-[#C1121F] text-sm font-semibold
+                                py-3 rounded-lg flex items-center justify-center gap-2
+                                transition-all duration-300 cursor-pointer
+                            "
+                        >
+                            Owner's note
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </button>
+                    </template>
+
+                    <!-- Currently rented -->
+                    <template v-else>
+                        <button
+                            @click="emit('reserve')"
+                            class="
+                                w-full bg-[#333] text-[#9E9090] hover:shadow-md hover:shadow-[#333]/50
+                                text-sm font-semibold py-3 rounded-lg
+                                transition-all duration-300 cursor-pointer
+                            "
+                        >
+                            Reserve in Advance
+                        </button>
+
+                        <button
+                            @click="emit('notify-available')"
+                            class="
+                                w-full border border-[#9E9090]
+                                hover:bg-[#242424]
+                                text-[#9E9090] text-sm font-semibold
+                                py-3 rounded-lg
+                                transition-all duration-300 cursor-pointer
+                            "
+                        >
+                            Notify me when available
+                        </button>
+                    </template>
+
+                </div>
             </div>
 
         </div>
@@ -198,7 +266,9 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'book'): void
+    (e: 'reserve'): void
     (e: 'write-review'): void
+    (e: 'notify-available'): void
 }>()
 
 interface RentalTerm {
@@ -207,8 +277,6 @@ interface RentalTerm {
 }
  
 const activeImage = ref<number>(0)
-
-const showBookingModal = ref(false)
 
 const perks: string[] = [
     'Free cancellation',
@@ -222,6 +290,23 @@ const rentalTerms: RentalTerm[] = [
     { label: 'Fuel policy', value: 'Full-full' },
     { label: 'Insurance', value: '(Ask)' },
 ]
+
+const currentRental = computed(() => useCurrentRental(props.car))
+
+console.log('props:',props.car.unavailable_periods)
+console.log('Current:', currentRental.value)
+
+const rentedUntil = computed(() => {
+    if (!currentRental.value) return ''
+
+    return new Intl.DateTimeFormat('en-PH', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+    }).format(new Date(currentRental.value.return_date))
+})
 
 const specifications = computed(() => {
     if (!props.car) return []

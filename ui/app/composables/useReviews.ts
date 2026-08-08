@@ -23,12 +23,6 @@ export const useReviews = () => {
         { force = false, page = 1, rating, sort }: { force?: boolean; page?: number; rating?: number; sort?: string } = {}
     ): Promise<CarReviewsResponse> => {
 
-            console.log("Received in fetchCarReviews:", {
-                rating,
-                sort,
-                page,
-            })
-
         const cacheKey = `${carId}-page-${page}-rating-${rating ?? 'all'}-sort-${sort ?? 'highest'}`
         const now = Date.now()
 

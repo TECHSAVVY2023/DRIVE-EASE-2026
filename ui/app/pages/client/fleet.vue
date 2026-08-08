@@ -34,13 +34,25 @@
 
             <SidebarFilters
                 :show-filters="filterState.showFilters.value"
-                :price-range="filterState.priceRange.value"
                 :filters="filterState.filters"
                 :open="filterState.open"
-                :transmissions="transmissions"
-                :categories="categories"
+                
+                :carTypeOptions="carTypeOptions"
+                :selectedCarTypes="selectedCarType"
+                @update:selectedCarTypes="selectedCarType = $event"
+
+                :selectedTransmission="selectedTransmission"
+                :transmissionOptions="transmissionOptions"
+                @update:selectedTransmission="selectedTransmission = $event"
+
+                :selectedSeat="selectedSeat"
+                :seatOptions="seatOptions"
+                @update:selectedSeat="selectedSeat = $event"
+
+                :max-price="maxPrice"
+                @update:max-price="maxPrice = $event"
+
                 :fuel-types="fuelTypes"
-                :seat-options="seatOptions"
                 :feature-options="featureOptions"
                 @toggle-section="filterState.toggleSection"
                 @reset-filters="filterState.resetFilters"
@@ -58,7 +70,7 @@
                     </h2>
 
                     <p class="text-[#7E7E7E] text-xs mt-0.5">
-                        {{ filteredCars.length }} cars available
+                        {{ count }} cars available
                     </p>
                 </div>
 
@@ -68,15 +80,15 @@
                 <div class="flex flex-col justify-between md:flex-row md:items-center gap-3 w-full">
 
                     <FleetSort
-                        :sort-by="filterState.sortBy.value"
-                        :show-filters="filterState.showFilters.value"
-                        @update:sortBy="filterState.sortBy.value = $event"
-                        @toggleFilters="filterState.showFilters.value = !filterState.showFilters.value"
+                        :sort-by="sortBy"
+                        :show-filters="showFilters"
+                        @update:sortBy="sortBy = $event"
+                        @toggleFilters="showFilters = !showFilters"
                     />
 
                     <FleetSearch
-                        :search="filterState.search.value"
-                        @update:search="filterState.search.value = $event"
+                        :search="search"
+                        @update:search="search = $event"
                     />
 
                 </div>
@@ -85,22 +97,21 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
                     <CarCards
-                        :paginated-cars="paginatedCars"
+                        :paginated-cars="fleet"
                         @book="openBookingModal"
                     />
 
                 </div>
 
-                <!-- Empty state -->
                 <ClientCommonEmptyState
-                    v-if="filteredCars.length === 0"
+                    v-if="fleet.length === 0"
                     message="No cars match your filters."
                     button-text="Reset filters"
-                    @action="filterState.resetFilters"
+                    @action="resetFilters"
                 />
 
                 <Pagination
-                    v-model:currentPage="filterState.currentPage.value"
+                    v-model:currentPage="currentPage"
                     :totalPages="totalPages"
                 />
 
@@ -115,6 +126,7 @@
 
 <script setup lang="ts">
 import type { Car } from '~/utils/api/api'
+import { type FleetResponse } from '~/utils/api/api'
 
 const { isLoggedIn } = useAuth()
 const { apiFetch } = useApiFetch()
@@ -144,18 +156,21 @@ const filterState = useCarFilters()
 const { cars } = useCars()
 
 /* filtered logic */
-const { totalPages, paginatedCars, filteredCars } =
+const { paginatedCars, filteredCars } =
     useFilteredCars(cars, filterState)
 
 /* options */
 const {
-    categories,
-    transmissions,
     fuelTypes,
-    seatOptions,
     featureOptions
 } = useCarOptions(cars)
 
+const { 
+    fleet, count, currentPage, search, selectedTransmission, selectedSeat, selectedCarType, 
+    transmissionOptions, carTypeOptions, seatOptions, sortBy, maxPrice, fetchCars, totalPages, showFilters
+} = useFleetList()
+
+const { resetFilters } = useFiltersCar()
 
 const showBookingModal = ref(false)
 const selectedCar = ref<Car | null>(null)
@@ -164,5 +179,9 @@ const openBookingModal = (car: Car) => {
     selectedCar.value = car
     showBookingModal.value = true
 }
+
+onMounted(async () => {
+    await fetchCars()
+})
 
 </script>

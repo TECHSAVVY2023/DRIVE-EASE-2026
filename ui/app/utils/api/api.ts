@@ -3,6 +3,11 @@
 /**
  * Types
  */
+export interface UnavailablePeriod {
+  pickup_date: string
+  return_date: string
+  status: string
+}
 
 export interface User {
   id: number
@@ -41,6 +46,7 @@ export interface Car {
     primary_image: string | null
     images: string[]
   }
+  unavailable_periods: UnavailablePeriod[]
 }
 
 export interface Review {
@@ -90,6 +96,68 @@ export interface CarReviewsResponse {
   previous?: string | null
   total_reviews: number
   my_review: Review | null
+}
+
+export interface FilterOption {
+  label: string
+  count: number
+}
+
+export interface Tab {
+  label: string
+  value: string
+}
+
+export interface SortOption {
+  label: string
+  value: string
+}
+
+export interface FleetResponse {
+  count: number
+  page: number
+  page_size: number
+  total_pages: number
+  next?: string | null
+  previous?: string | null
+  results: Car[]
+  filters: {
+    categories: FilterOption[]
+    transmissions: FilterOption[]
+    seats: FilterOption[]
+  }
+}
+
+export interface Transaction {
+  booking_reference: string
+  status: string
+
+  pickup_date: string
+  return_date: string
+
+  daily_rate: number
+  number_of_days: number
+  subtotal: number
+  discount: number
+  total_price: number
+
+  created_at: string
+
+  payment_method: string
+
+  car: {
+      car_id: string
+      brand: string
+      model: string
+      image: string
+  }
+}
+
+export interface TransactionResponse {
+  count: number
+  next?: string | null
+  previous?: string | null
+  results: Transaction[]
 }
 
 export interface UploadedFile {

@@ -1,0 +1,3 @@
+- removed the native html date/time input, replaced it with vue native input
+- implemented a way for users to know if the car is being rented or not
+- updated how status work for both cars, booking, and payment

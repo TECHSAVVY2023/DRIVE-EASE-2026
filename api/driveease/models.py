@@ -14,11 +14,24 @@ def default_user_id():
         "images": []
     }
 
+class Feature(models.Model):
+    name = models.CharField(
+        max_length=100,
+        unique=True
+    )
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "Feature"
+        verbose_name_plural = "Features"
+
+    def __str__(self):
+        return self.name
+
 class Cars(models.Model):
 
     CAR_STATUS = [
         ('available', 'Available'),
-        ('rented', 'Rented'),
         ('maintenance', 'Maintenance'),
     ]
 
@@ -55,7 +68,11 @@ class Cars(models.Model):
 
     seats = models.IntegerField()
 
-    features = models.JSONField(default=list, blank=True)
+    features = models.ManyToManyField(
+        "Feature",
+        blank=True,
+        related_name="cars"
+    )
 
     note = models.TextField(blank=True, null=True)
 
@@ -189,13 +206,14 @@ class ContactListModel(models.Model):
 class Booking(models.Model):
     BOOKING_STATUS = [
         ("pending_payment", "Pending Payment"),
-        ("payment_failed", "Payment Failed"),
+        ("payment_failed", "Pending Failed"),
+        ("pending_approval", "Pending Approval"),
         ("confirmed", "Confirmed"),
+        ("rejected", "Rejected"),
         ("picked_up", "Picked Up"),
         ("returned", "Returned"),
         ("completed", "Completed"),
         ("cancelled", "Cancelled"),
-        ("expired", "Expired"),
     ]
 
     user = models.ForeignKey(
@@ -270,6 +288,12 @@ class Payment(models.Model):
         default='pending'
     )
 
+    payment_method = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
     paymongo_response = models.JSONField(default=dict, blank=True)
 
     paid_at = models.DateTimeField(null=True,blank=True)
@@ -283,3 +307,61 @@ class Payment(models.Model):
 
     def __str__(self):
         return f'{self.booking.booking_reference} - {self.amount} {self.currency} ({self.status})'
+
+class Notification(models.Model):
+
+    class NotificationType(models.TextChoices):
+        BOOKING = "booking", "Booking"
+        PAYMENT = "payment", "Payment"
+        REMINDER = "reminder", "Reminder"
+        SYSTEM = "system", "System"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+
+    notification_type = models.CharField(
+        max_length=30,
+        choices=NotificationType.choices,
+    )
+
+    title = models.CharField(max_length=255)
+
+    message = models.TextField()
+
+    # Frontend route/page to open when notification is clicked
+    action_url = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+
+    # Optional references to related objects
+    booking = models.ForeignKey(
+        "Booking",
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        blank=True,
+        null=True,
+    )
+
+    is_read = models.BooleanField(default=False)
+
+    read_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "is_read"]),
+            models.Index(fields=["user", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.title}"

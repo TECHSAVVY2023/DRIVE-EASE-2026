@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Cars, Accounts, FileUploadModel, ContactListModel, Reviews, ReviewHelpful, Booking, Payment
+from .models import Cars, Accounts, FileUploadModel, ContactListModel, Reviews, ReviewHelpful, Booking, Payment, Feature, Notification
 
 admin.site.register(Cars)
 
@@ -81,3 +81,23 @@ class FileUploadModelAdmin(admin.ModelAdmin):
         "file",
         "uploaded_at",
     )
+
+@admin.register(Feature)
+class FeatureAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "notification_type",
+        "title",
+        "message",
+        "is_read",
+        "created_at",
+    )
+    list_filter = ("is_read", "created_at")
+    search_fields = ("title", "message")
+    readonly_fields = ("created_at",)
+    date_hierarchy = "created_at"

@@ -27,24 +27,32 @@
             <div v-if="open.category" class="flex flex-col gap-1 px-5 pb-4">
 
                 <label 
-                    v-for="cat in categories" 
+                    v-for="cat in props.carTypeOptions" 
                     :key="cat.label" 
                     class="flex items-center justify-between cursor-pointer group rounded-md py-1 px-3 transition-all duration-200 ease-in-out"
-                    :class="filters.category.includes(cat.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
-                    @click="filters.category = filters.category.includes(cat.label) ? filters.category.filter(c => c !== cat.label) : [...filters.category, cat.label]"
+                    :class="props.selectedCarTypes.includes(cat.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
+                    @click="
+                        emit(
+                            'update:selectedCarTypes',
+                            props.selectedCarTypes.includes(cat.label)
+                                ? props.selectedCarTypes.filter(c => c !== cat.label)
+                                : [...props.selectedCarTypes, cat.label]
+                        )
+                    "
                 >
 
                     <div class="flex items-center gap-2">
                         <span
                             class="text-xs transition-colors duration-200 cursor-pointer"
-                            :class="filters.category.includes(cat.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'"
+                            :class="props.selectedCarTypes.includes(cat.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'"
                         >{{ cat.label.charAt(0).toUpperCase() + cat.label.slice(1) }}</span>
                     </div>
 
                     <span
                         class="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                        :class="filters.category.includes(cat.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'"
+                        :class="props.selectedCarTypes.includes(cat.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'"
                     >{{ cat.count }}</span>
+                    
                 </label>
 
             </div>
@@ -68,12 +76,22 @@
             <div v-if="open.price" class="flex flex-col gap-2 px-5 pb-4">
 
                 <div class="flex justify-between text-xs text-[#7E7E7E]">
-                    <span>₱{{ priceRange[0] }}</span>
-                    <span>₱{{ priceRange[1] }}</span>
+                    <span>₱100</span>
+                    <span>₱{{ maxPrice }}</span>
                 </div>
 
-                <input type="range" min="100" max="4700" v-model="priceRange[1]" class="w-full accent-[#C1121F] cursor-pointer" />
-                <p class="text-[#7E7E7E] text-[12px]">₱{{ priceRange[0] }} – ₱{{ priceRange[1] }}</p>
+                <input
+                    type="range"
+                    min="100"
+                    max="4700"
+                    step="100"
+                    v-model.number="maxPrice"
+                    class="w-full accent-[#C1121F] cursor-pointer"
+                />
+
+                <p class="text-[#7E7E7E] text-[12px]">
+                    Up to ₱{{ maxPrice }}
+                </p>
 
             </div>
 
@@ -96,20 +114,30 @@
             <div v-if="open.transmission" class="flex flex-col gap-1 px-5 pb-4">
                 
                 <label 
-                    v-for="t in transmissions"
+                    v-for="t in transmissionOptions"
                     :key="t.label" 
                     class="flex items-center justify-between cursor-pointer group py-1 px-3 rounded-md transition-all duration-200 ease-in-out"
-                    :class="filters.transmission.includes(t.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
-                    @click="filters.transmission = filters.transmission.includes(t.label) ? filters.transmission.filter((item) => item !== t.label) : [...filters.transmission, t.label]"
+                    :class="props.selectedTransmission.includes(t.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
+                    @click="
+                        emit(
+                            'update:selectedTransmission',
+                            props.selectedTransmission.includes(t.label)
+                                ? props.selectedTransmission.filter(c => c !== t.label)
+                                : [...props.selectedTransmission, t.label]
+                        )
+                    "
                 >
 
                     <div class="flex items-center gap-2">
                         <span 
                             class="text-xs transition-colors duration-200 cursor-pointer" 
-                            :class="filters.transmission.includes(t.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
+                            :class="props.selectedTransmission.includes(t.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
                         >{{ t.label.charAt(0).toUpperCase() + t.label.slice(1) }}</span>
                     </div>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.transmission.includes(t.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ t.count }}</span>
+                    <span 
+                        class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" 
+                        :class="props.selectedTransmission.includes(t.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'"
+                    >{{ t.count }}</span>
                 
                 </label>
 
@@ -172,19 +200,28 @@
                 <label v-for="s in seatOptions" 
                     :key="s.label" 
                     class="flex items-center justify-between cursor-pointer group py-1 px-3 rounded-md transition-all duration-200 ease-in-out"
-                    :class="filters.seats.includes(s.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
-                    @click="filters.seats = filters.seats.includes(s.label) ? filters.seats.filter((item) => item !== s.label) : [...filters.seats, s.label]"
+                    :class="props.selectedSeat.includes(s.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
+                    @click="
+                        emit(
+                            'update:selectedSeat',
+                            props.selectedSeat.includes(s.label)
+                                ? props.selectedSeat.filter(c => c !== s.label)
+                                : [...props.selectedSeat, s.label]
+                        )
+                    "
                 >
 
                     <div class="flex items-center gap-2">
 
                         <span class="text-xs transition-colors duration-200 cursor-pointer" 
-                            :class="filters.seats.includes(s.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
-                        >{{ s.label }}</span>
+                            :class="props.selectedSeat.includes(s.label) ?'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
+                        >{{ s.label }} Seats </span>
 
                     </div>
 
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.seats.includes(s.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ s.count }}</span>
+                    <span 
+                        class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" 
+                        :class="props.selectedSeat.includes(s.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ s.count }}</span>
                 
                 </label>
 
@@ -237,9 +274,12 @@
 
 <script setup lang="ts">
 
-    defineProps<{
+    const props = defineProps<{
         showFilters: boolean
-        priceRange: [number, number]
+        maxPrice: number
+        selectedCarTypes: string[]
+        selectedTransmission: string[]
+        selectedSeat: string[]
         filters: {
             category: string[]
             transmission: string[]
@@ -255,8 +295,8 @@
             seats: boolean
             features: boolean
         }
-        transmissions: { label: string; count: number }[]
-        categories: { label: string; count: number }[]
+        transmissionOptions: { label: string; count: number }[]
+        carTypeOptions: { label: string; count: number }[]
         fuelTypes: { label: string; count: number }[]
         seatOptions: { label: string; count: number }[]
         featureOptions: { label: string; count: number }[]
@@ -265,8 +305,18 @@
     const emit = defineEmits<{
         toggleSection: [key: 'category' | 'price' | 'transmission' | 'fuel' | 'seats' | 'features']
         resetFilters: []
+        'update:selectedCarTypes': [value: string[]]
+        'update:selectedTransmission': [value: string[]]
+        'update:selectedSeat': [value: string[]]
+        'update:maxPrice': [value: number]
     }>()
 
     const toggleSection = (key: 'category' | 'price' | 'transmission' | 'fuel' | 'seats' | 'features') => emit('toggleSection', key)
+    
     const resetFilters = () => emit('resetFilters')
+
+    const maxPrice = computed({
+        get: () => props.maxPrice,
+        set: (value: number) => emit('update:maxPrice', value),
+    })
 </script>

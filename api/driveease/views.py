@@ -4,12 +4,13 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.pagination import PageNumberPagination
+from .pagination import ReviewPagination, FleetPagination, TransactionPagination
 from rest_framework.decorators import api_view, permission_classes
 
 from .models import ContactListModel, Cars, Reviews, ReviewHelpful, FileUploadModel, Booking, Payment
 from .serializers import ContactListSerializer
 from .forms import ContactListForm
+from .filter_options import get_filter_options
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -17,8 +18,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models import F
+from django.db.models import Exists, OuterRef
 from django.db.models.fields import capfirst
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Q
 from django.db.models import Case, When, Value, BooleanField
 from django.core import mail
 from django.template.loader import render_to_string
@@ -28,7 +30,8 @@ import traceback
 import requests
 import json
 
-from .serializers import ReviewSerializer, CarSerializer, FileUploadSerializer, BookingSerializer, PaymentSerializer
+from .serializers import ReviewSerializer, CarSerializer, FileUploadSerializer, BookingSerializer, PaymentSerializer, TransactionSerializer
+
 
 # === Cars ===
 
@@ -37,6 +40,158 @@ class CarListView(APIView):
         cars = Cars.objects.all()
         serializer = CarSerializer(cars, many=True)
         return Response(serializer.data)
+
+class FleetListView(ListAPIView):
+    serializer_class = CarSerializer
+    pagination_class = FleetPagination
+
+    def get_queryset(self):
+        queryset = Cars.objects.all()
+
+        # Search
+        search = self.request.query_params.get("search")
+        if search:
+            queryset = queryset.filter(
+                Q(brand__icontains=search) |
+                Q(model__icontains=search)
+            )
+
+        # Filter by transmission
+        transmission = self.request.query_params.get("transmission")
+        if transmission:
+            transmissions = [
+                item.strip()
+                for item in transmission.split(",")
+            ]
+
+            queryset = queryset.filter(
+                transmission__in=transmissions
+            )
+
+        # Filter by seats
+        seat_param = self.request.query_params.get("seats")
+        if seat_param:
+            selected_seats = [
+                item.strip()
+                for item in seat_param.split(",")
+            ]
+
+            queryset = queryset.filter(
+                seats__in=selected_seats
+            )
+
+        # Filter by fuel type
+        fuel = self.request.query_params.get("fuel")
+        if fuel:
+            queryset = queryset.filter(fuel_type__iexact=fuel)
+
+        # Filter by car type
+        car_type = self.request.query_params.get("car_type")
+        if car_type:
+            car_types = [
+                item.strip()
+                for item in car_type.split(",")
+            ]
+
+            queryset = queryset.filter(
+                car_type__in=car_types
+            )
+
+        # Filter by price range
+        min_price = self.request.query_params.get("min_price")
+        max_price = self.request.query_params.get("max_price")
+
+        if min_price:
+            queryset = queryset.filter(price_per_day__gte=min_price)
+
+        if max_price:
+            queryset = queryset.filter(price_per_day__lte=max_price)
+
+        # Filter by features
+        # features = self.request.query_params.get("features")
+
+        # if features:
+        #     feature_list = [
+        #         feature.strip()
+        #         for feature in features.split(",")
+        #     ]
+
+        #     for feature in feature_list:
+        #         queryset = queryset.filter(features__contains=[feature])
+
+        features = self.request.query_params.getlist("features")
+
+        if features:
+            for feature in features:
+                queryset = queryset.filter(
+                    features__name__iexact=feature
+                )
+
+        # Check for currently rented cars
+        active_bookings = Booking.objects.filter(
+            car=OuterRef("pk"),
+            status__in=[
+                "pending_approval",
+                "confirmed",
+                "picked_up",
+            ],
+            return_date__gt=timezone.now(),
+        )
+
+        queryset = queryset.annotate(
+            has_active_booking=Exists(active_bookings)
+        )
+
+        # Sort
+        sort = self.request.query_params.get("sort")
+
+        if sort == "price-asc":
+            queryset = queryset.order_by(
+                "has_active_booking",
+                "price_per_day",
+            )
+
+        elif sort == "price-desc":
+            queryset = queryset.order_by(
+                "has_active_booking",
+                "-price_per_day",
+            )
+
+        elif sort == "name":
+            queryset = queryset.order_by(
+                "has_active_booking",
+                "brand",
+                "model",
+            )
+
+        else:
+            queryset = queryset.order_by(
+                "has_active_booking",
+            )
+            
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            paginated_response = self.get_paginated_response(serializer.data)
+
+            paginated_response.data["filters"] = get_filter_options()
+
+            return paginated_response
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        return Response({
+            "count": queryset.count(),
+            "results": serializer.data,
+            "filters": get_filter_options(),
+        })
         
 class CarDetailView(APIView):
     def get(self, request, car_id):
@@ -48,7 +203,7 @@ class CarDetailView(APIView):
 
 class ReviewListView(ListAPIView):
     serializer_class = ReviewSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = ReviewPagination
 
     def get_queryset(self):
         queryset = Reviews.objects.all()
@@ -102,7 +257,7 @@ class ReviewListView(ListAPIView):
 
 class CarReviewListView(ListAPIView):
     serializer_class = ReviewSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = ReviewPagination
 
     def get_queryset(self):
         queryset = Reviews.objects.filter(
@@ -209,14 +364,11 @@ class FeaturedReviewsView(ListAPIView):
         return (
             Reviews.objects
             .filter(images__isnull=False)
-            .order_by('-helpful_count', '?')[:3]
+            .order_by("-helpful_count", "?")[:3]
         )
-    
-    def list(self, request, *args, **kwargs):
-        # Unfiltered queryset for statistics
-        stats_queryset = Reviews.objects.all()
 
-        # Filtered queryset for displayed reviews
+    def list(self, request, *args, **kwargs):
+        stats_queryset = Reviews.objects.all()
         queryset = self.get_queryset()
 
         avg_rating = stats_queryset.aggregate(
@@ -242,6 +394,15 @@ class FeaturedReviewsView(ListAPIView):
 
             return response
 
+        serializer = self.get_serializer(queryset, many=True)
+
+        return Response({
+            "results": serializer.data,
+            "avg_rating": round(avg_rating, 1),
+            "rating_breakdown": rating_breakdown,
+            "total_reviews": total_reviews,
+        })
+
 class CreateReviewView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -260,7 +421,7 @@ class CreateReviewView(APIView):
 
         rating = request.data.get("rating")
         text = request.data.get("review")
-        images = request.data.get("images")
+        images = request.data.get("images") or []
 
         review = Reviews.objects.create(
             user=request.user,
@@ -542,6 +703,29 @@ class CreateBookingView(APIView):
         serializer = BookingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
+        car = serializer.validated_data["car"]
+        pickup_date = serializer.validated_data["pickup_date"]
+        return_date = serializer.validated_data["return_date"]
+
+        overlap = Booking.objects.filter(
+            car=car,
+            status__in=[
+                "pending_approval",
+                "confirmed",
+                "picked_up",
+            ],
+            pickup_date__lt=return_date,
+            return_date__gt=pickup_date,
+        ).exists()
+
+        if overlap:
+            return Response(
+                {
+                    "message": "This car is unavailable during the selected period."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # Generate booking reference if not provided
         if not serializer.validated_data.get('booking_reference'):
             import uuid
@@ -554,6 +738,76 @@ class CreateBookingView(APIView):
             "booking_id": booking.id,
             "booking_reference": booking.booking_reference
         }, status=status.HTTP_201_CREATED)
+
+class TransactionListView(ListAPIView):
+    serializer_class = TransactionSerializer
+    pagination_class = TransactionPagination
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = (
+            Booking.objects
+            .filter(user=self.request.user)
+            .select_related("car")
+        )
+
+        # Search
+        search = self.request.query_params.get("search")
+
+        if search:
+            queryset = queryset.filter(
+                Q(booking_reference__icontains=search) |
+                Q(car__brand__icontains=search) |
+                Q(car__model__icontains=search)
+            )
+
+        # Filter by status
+        status_param = self.request.query_params.get("status")
+
+        if status_param and status_param != "all":
+            statuses = [
+                item.strip()
+                for item in status_param.split(",")
+                if item.strip()
+            ]
+
+            if statuses:
+                queryset = queryset.filter(
+                    status__in=statuses
+                )
+
+        # Sort
+        sort = self.request.query_params.get("sort")
+
+        if sort == "oldest":
+            queryset = queryset.order_by("created_at")
+
+        elif sort == "highest":
+            queryset = queryset.order_by("-total_price")
+
+        elif sort == "lowest":
+            queryset = queryset.order_by("total_price")
+
+        else:
+            queryset = queryset.order_by("-created_at")
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        return Response({
+            "count": queryset.count(),
+            "results": serializer.data,
+        })
 
 # === Payments ===
 
@@ -663,15 +917,16 @@ class CreatePayMongoPaymentView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            checkout_url = response_data['data']['attributes']['checkout_url']
-            payment_intent_id = response_data['data']['id']
+            checkout_session_id = response_data["data"]["id"]
+            payment_intent_id = response_data["data"]["attributes"]["payment_intent"]["id"]
+            checkout_url = response_data["data"]["attributes"]["checkout_url"]
 
             # Create Payment record
             booking = Booking.objects.filter(id=booking_id).first()
             if booking:
                 Payment.objects.create(
                     booking=booking,
-                    checkout_session_id=payment_intent_id,
+                    checkout_session_id=checkout_session_id,
                     payment_intent_id=payment_intent_id,
                     amount=amount / 100,  # Convert back from cents
                     currency=currency,
@@ -681,6 +936,7 @@ class CreatePayMongoPaymentView(APIView):
 
             return Response({
                 'checkout_url': checkout_url,
+                'checkout_session_id': checkout_session_id,
                 'payment_intent_id': payment_intent_id
             }, status=status.HTTP_200_OK)
 
@@ -729,29 +985,30 @@ class PayMongoWebhookView(APIView):
             data = request.data.get('data', {})
             attributes = data.get('attributes', {})
             event_type = attributes.get('type')
-            print(f"Event Type: {event_type}")
             
             # Handle payment success
             if event_type == 'payment.paid':
                 payment_data = attributes.get('data', {}).get('attributes', {})
+
+                print(json.dumps(payment_data, indent=4))
+
                 metadata = payment_data.get('metadata', {})
                 booking_id = metadata.get('booking_id')
-                print(f"Booking ID: {booking_id}")
                 
                 if booking_id:
                     # Update booking status to confirmed
                     booking = Booking.objects.filter(id=booking_id).first()
                     if booking:
-                        print(f"Updating Booking #{booking.id} -> confirmed")
-                        booking.status = 'confirmed'
+                        booking.status = "pending_approval"
                         booking.save()
                     
                     # Update payment status and set paid_at
                     payment = Payment.objects.filter(booking_id=booking_id).first()
                     if payment:
-                        print(f"Updating Payment #{payment.id} -> paid")
-                        payment.status = 'paid'
+                        payment.status = "paid"
                         payment.paid_at = timezone.now()
+                        payment.payment_method = payment_data.get("source", {}).get("type")
+                        payment.paymongo_response = request.data
                         payment.save()
             
             # Handle payment failure

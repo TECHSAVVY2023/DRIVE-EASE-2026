@@ -4,12 +4,14 @@
       @close-menu="closeMenu"
    />
 
-   <Navbar
-      :menu-open="menuOpen"
-      @toggle-menu="toggleMenu"
-      @open-sidebar="handleOpenSidebar" 
-      @close-sidebar="handleCloseSidebar"
-   />
+    <Navbar
+        :user="user"
+        :is-logged-in="isLoggedIn"
+        :menu-open="menuOpen"
+        @toggle-menu="toggleMenu"
+        @open-sidebar="handleOpenSidebar" 
+        @close-sidebar="handleCloseSidebar"
+    />
 
     <div class="min-h-screen bg-[#0D0D0D] font-[poppins]">
 
@@ -108,6 +110,19 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
+const { isLoggedIn } = useAuth()
+const { apiFetch } = useApiFetch()
+
+const user = ref<any>(null)
+
+watch(isLoggedIn, async (val) => {
+    if (val) {
+        user.value = await apiFetch('/auth/me/')
+    } else {
+        user.value = null
+    }
+}, { immediate: true })
+
 const { 
     menuOpen,
     toggleMenu,
@@ -116,17 +131,18 @@ const {
     handleOpenSidebar
 } = useNavbar()
 
+
 const displayedCount = computed(() =>
-  Math.min(visibleCount.value, notifications.value.length)
+    Math.min(visibleCount.value, notifications.value.length)
 )
 
 interface Notification {
-  title: string
-  message: string
-  time: string
-  read: boolean
-  iconPath: string
-  iconBg: string
+    title: string
+    message: string
+    time: string
+    read: boolean
+    iconPath: string
+    iconBg: string
 }
 
 const visibleCount = ref<number>(3)

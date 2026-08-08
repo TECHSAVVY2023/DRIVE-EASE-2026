@@ -37,8 +37,9 @@
                 <CarDetails 
                     :car="car"
                     :avg-rating="avgRating"
-                    :total-reviews="totalReviews" 
-                    @book="showBookingModal = true"
+                    :total-reviews="totalReviews"
+                    @book="openBooking"
+                    @reserve="showBookingModal = true"
                 />
         
                 <OwnerNote
@@ -170,6 +171,29 @@ const hasUserReviewed = computed(() => {
         review => review.user.id === user.value.id
     )
 })
+
+const openBooking = async () => {
+    if (!user.value) {
+        const result = await $swal.fire({
+            icon: 'warning',
+            title: 'Login Required',
+            text: 'You need to log in before booking a vehicle.',
+            showCancelButton: true,
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            confirmButtonText: 'Login',
+        })
+
+        if (result.isConfirmed) {
+            router.push('/client/login')
+        }
+
+        return
+    }
+
+    showBookingModal.value = true
+}
 
 const handleReviewSubmit = async () => {
     if(OpenEditReviewModal.value){
@@ -353,7 +377,10 @@ onMounted(async () => {
         $swal.fire({
         icon: 'success',
         title: 'Payment Successful',
-        text: 'Your booking has been submitted successfully.'
+        text: 'Your booking has been submitted successfully.',
+        confirmButtonColor: '#C1121F',
+        background: '#1a1a1a',
+        color: '#ffffff'
         })
 
         // Remove the query parameter
@@ -367,6 +394,9 @@ onMounted(async () => {
         icon: 'info',
         title: 'Payment Cancelled',
         text: 'Your payment was cancelled. No charges were made.',
+        confirmButtonColor: '#C1121F',
+        background: '#1a1a1a',
+        color: '#ffffff'
         })
 
         router.replace({

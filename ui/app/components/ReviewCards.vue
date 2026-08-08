@@ -14,14 +14,15 @@
             </div>
 
             <div class="flex gap-2">
+                <!-- Edit -->
                 <button
                     @click="emit('edit')"
-                    class="cursor-pointer flex items-center gap-2 border border-[#929292] text-[#929292] hover:bg-[#2B2B2B] hover:text-white px-4 py-2 rounded-lg transition-colors"
+                    class="cursor-pointer p-2 rounded-lg border border-[#929292] text-[#929292] hover:bg-[#2B2B2B] hover:text-white transition-colors"
+                    title="Edit"
                 >
-                    <!-- Edit Icon -->
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        class="w-4 h-4"
+                        class="w-5 h-5"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -33,17 +34,17 @@
                             d="M16.862 3.487a2.1 2.1 0 113.03 2.91L8.5 17.79l-4 1 1-4L16.862 3.487z"
                         />
                     </svg>
-
-                    <span class="text-sm font-semibold">Edit</span>
                 </button>
 
+                <!-- Delete -->
                 <button
-                    class="cursor-pointer flex items-center gap-2 border hover:bg-[#2E1618] border-[#C1121F] text-[#C1121F] hover:text-[#D92331] px-4 rounded-lg transition-colors"
+                    @click="emit('delete')"
+                    class="cursor-pointer p-2 rounded-lg border border-[#C1121F] text-[#C1121F] hover:bg-[#2E1618] hover:text-[#D92331] transition-colors"
+                    title="Delete"
                 >
-                    <!-- Trash Icon -->
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        class="w-4 h-4"
+                        class="w-5 h-5"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -55,8 +56,6 @@
                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-3h4m-7 3h10M10 11v6m4-6v6"
                         />
                     </svg>
-
-                    <span class="text-sm font-semibold">Delete</span>
                 </button>
             </div>
         </div>
@@ -171,6 +170,7 @@ defineProps<{
 
 const emit = defineEmits<{
     (e: "edit"): void
+    (e: "delete"): void
 }>()
 
 const formatDate = (date: string) =>

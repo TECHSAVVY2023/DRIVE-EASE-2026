@@ -77,8 +77,9 @@
                             />
 
                             <ClientBookingStepTwo
-                                v-if="currentStep === 2"
+                                v-if="currentStep === 2 && car"
                                 :form="form"
+                                :car="car"
                             />
 
                             <!-- Step 3: Review & Confirm (placeholder) -->
@@ -198,7 +199,7 @@
 
                         <div class="flex flex-col gap-2 mt-4 mb-8 mx-6">
                             <button
-                                @click="currentStep === steps.length ? confirmBooking() : handleNext()"
+                                @click="currentStep === steps.length ? confirmBooking() : nextStep(form, existingIdImages, uploadedIdFiles)"
                                 :disabled="isSubmitting"
                                 class="w-full bg-[#C1121F] hover:bg-red-700 disabled:opacity-50 text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
                             >
@@ -229,22 +230,12 @@
 <script setup lang="ts">
 import type { User } from '~/utils/api/api'
 import type { Car } from '~/utils/api/api'
+import { steps } from '~/constants/client/bookingSteps'
 import { ref, reactive } from 'vue'
 
 const { $swal } = useNuxtApp()
 const { apiFetch } = useApiFetch()
 const currentStep = ref<number>(1)
-
-interface Step {
-    title: string
-    subtitle: string
-}
-
-const steps: Step[] = [
-    { title: 'Your info', subtitle: '& ID' },
-    { title: 'Schedule', subtitle: '& Location' },
-    { title: 'Review', subtitle: '& Confirm' },
-]
 
 const props = defineProps<{
     modelValue: boolean
@@ -256,50 +247,16 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
 }>()
 
-const form = reactive({
-    userid: props.user?.id,
-    carid: props.car?.car_id,
-    firstName: '',
-    lastName: '',
-    email: '',
-    address: '',
-    contact: '',
-    id_images: [] as string[],
-    pickupDate: '',
-    returnDate: '',
-    location: '',
-})
+const { form, closeModal, openImage } = useBookingForm(
+    toRef(props, 'modelValue'),
+    toRef(props, 'user'),
+    toRef(props, 'car'),
+    currentStep,
+    () => emit('update:modelValue', false)
+)
 
-const {
-    uploadedIdFiles,
-    removeIdFile,
-    removeExistingId,
-    uploadIdFiles,
-
-    existingIdImages,
-    originalIdImages,
-
-    handleIdChange,
-    handleIdDrop,
-
-    validateFile
-} = useProfileUploads()
-
-function openImage(file: File) {
-    const url = URL.createObjectURL(file)
-    window.open(url, '_blank')
-
-    // Release the object URL after a short delay
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
-
-const closeModal = () => {
-    if (import.meta.client) {
-        document.documentElement.style.overflow = 'hidden'
-    }
-    currentStep.value = 1
-    emit('update:modelValue', false)
-}
+const { uploadedIdFiles, removeIdFile, removeExistingId, uploadIdFiles, existingIdImages,
+originalIdImages, handleIdChange, handleIdDrop, validateFile } = useProfileUploads()
 
 const rentalDays = computed(() => {
     if (!form.pickupDate || !form.returnDate) return 0
@@ -318,31 +275,7 @@ const totalPrice = computed(() => {
 
 const { validateStepOne, validateStepTwo } = useBookingValidation()
 
-async function handleNext(): Promise<void> {
-
-    if (currentStep.value === 1) {
-        const valid = await validateStepOne(
-            form,
-            existingIdImages.value,
-            uploadedIdFiles.value
-        )
-
-        if (!valid) return
-    }
-    
-    if (currentStep.value === 2) {
-        const valid = await validateStepTwo(form)
-
-        if (!valid) return
-    }
-
-    if (currentStep.value < steps.length) {
-        currentStep.value++
-    } else {
-
-        emit('update:modelValue', false)
-    }
-}
+const { nextStep } = useBookingSteps( steps, currentStep, validateStepOne, validateStepTwo )
 
 const isSubmitting = ref(false)
 
@@ -365,65 +298,49 @@ async function confirmBooking(): Promise<void> {
 
     isSubmitting.value = true
 
-    try{
+    try {
         const { updateUserProfile } = useBookingProfileUpdate()
 
         await updateUserProfile({
             user: props.user,
-            form: form,
+            form,
             uploadedIdFiles: uploadedIdFiles.value,
             existingIdImages: existingIdImages.value,
             originalIdImages: originalIdImages.value,
-            validateFile: validateFile,
-            uploadIdFiles: uploadIdFiles
+            validateFile,
+            uploadIdFiles
         })
-
-        // Create booking first (status = pending_payment)
-        const bookingBody = {
-            user: props.user?.id,
-            car: props.car?.car_id,
-            pickup_date: form.pickupDate,
-            return_date: form.returnDate,
-            location: form.location,
-            daily_rate: props.car?.price_per_day,
-            number_of_days: rentalDays.value,
-            subtotal: totalPrice.value,
-            discount: 0,
-            total_price: totalPrice.value
-        }
 
         const bookingRes = await apiFetch<{ message: string; booking_id: number; booking_reference: string }>('/bookings/create/', {
             method: 'POST',
-            body: bookingBody
+            body: {
+                user: props.user?.id,
+                car: props.car?.car_id,
+                pickup_date: form.pickupDate,
+                return_date: form.returnDate,
+                location: form.location,
+                daily_rate: props.car?.price_per_day,
+                number_of_days: rentalDays.value,
+                subtotal: totalPrice.value,
+                discount: 0,
+                total_price: totalPrice.value
+            }
         })
 
-        // Create PayMongo payment session with booking_id
-        const paymentData = {
-            amount: Math.round(totalPrice.value * 100), // PayMongo expects amount in cents
-            description: `Car rental: ${props.car?.brand} ${props.car?.model} - Booking: ${bookingRes.booking_reference}`,
-            currency: 'PHP',
-            booking_id: bookingRes.booking_id
-        }
-
-        const paymentRes = await apiFetch<{ 
-            checkout_url: string
-            payment_intent_id: string 
-        }>('/payments/create-paymongo-payment/', {
+        const paymentRes = await apiFetch<{ checkout_url: string; payment_intent_id: string }>('/payments/create-paymongo-payment/', {
             method: 'POST',
-            body: paymentData
+            body: {
+                amount: Math.round(totalPrice.value * 100),
+                description: `Car rental: ${props.car?.brand} ${props.car?.model} - Booking: ${bookingRes.booking_reference}`,
+                currency: 'PHP',
+                booking_id: bookingRes.booking_id
+            }
         })
 
-        // Redirect to PayMongo checkout
-        if (paymentRes.checkout_url) {
-            window.location.href = paymentRes.checkout_url
-            return
-        }
-
-        console.log('form:', form)
-        console.log('Booking submitted successfully:', bookingRes)
-    }catch(error){
+        if (paymentRes.checkout_url) window.location.href = paymentRes.checkout_url
+    } catch (error) {
         console.error(error)
-    }finally{
+    } finally {
         isSubmitting.value = false
     }
 }

@@ -10,6 +10,7 @@
         :menu-open="menuOpen"
         @close-menu="closeMenu"
     />
+    
     <Navbar
         :user="user"
         :is-logged-in="isLoggedIn"

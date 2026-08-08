@@ -20,6 +20,7 @@ urlpatterns = [
     path('contact/create/', views.ContactCreateView.as_view()),
     path('contact/gmail-notif/', views.SubmitToGmail.as_view()),
 
+    path("fleet/", views.FleetListView.as_view(), name="fleet-list"),
     path("cars/", views.CarListView.as_view(), name="car-list"),
     path("cars/<str:car_id>/", views.CarDetailView.as_view()),
     
@@ -31,7 +32,9 @@ urlpatterns = [
     path("reviews/featured/", views.FeaturedReviewsView.as_view(), name="featured-reviews"),
     path("reviews/<int:review_id>/helpful/", views.toggle_helpful, name="toggle-helpful"),
 
+    path("bookings/", views.TransactionListView.as_view(), name="bookings"),
     path("bookings/create/", views.CreateBookingView.as_view(), name="create-booking"),
+    
     path("payments/create-paymongo-payment/", views.CreatePayMongoPaymentView.as_view(), name="create-paymongo-payment"),
     path("payments/paymongo-webhook/", views.PayMongoWebhookView.as_view(), name="paymongo-webhook"),  # Commented out for development
 ]
