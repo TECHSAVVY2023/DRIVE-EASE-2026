@@ -14,6 +14,17 @@
         </div>
 
         <div class="flex flex-col gap-1.5">
+            <label class="text-gray-400 text-xs">Pickup location</label>
+            <input
+                v-model="form.pickupLocation"
+                type="text"
+                required
+                placeholder="e.g. Cagayan De Oro City"
+                class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#444] focus:outline-none focus:border-[#C1121F] transition-colors duration-200"
+            />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
             <label class="text-gray-400 text-xs">Return date</label>
             <VueDatePicker
                 v-model="form.returnDate"
@@ -27,9 +38,9 @@
         </div>
 
         <div class="flex flex-col gap-1.5">
-            <label class="text-gray-400 text-xs">Pickup location</label>
+            <label class="text-gray-400 text-xs">Return location</label>
             <input
-                v-model="form.location"
+                v-model="form.returnLocation"
                 type="text"
                 required
                 placeholder="e.g. Cagayan De Oro City"

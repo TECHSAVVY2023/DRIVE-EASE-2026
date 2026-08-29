@@ -1,6 +1,6 @@
-- added a rented state in fleet for each car
-- added a rented state in car details for each car
-- enabled the transaction page to display bookings from database instead of static data
-- enabled the sort and filter to work with the data from database
-- added intial code for notification to work
-- fixed a bug that prevented the review page from loading image of a review
+- fixed the display of feature and fuel option
+- fixed the filter function of feature and fuel
+- added notifications about booking and have made it function
+- added notification details
+
+- used data from database for the notification details

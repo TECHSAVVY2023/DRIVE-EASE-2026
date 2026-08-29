@@ -199,7 +199,7 @@ const handleReviewSubmit = async () => {
     if(OpenEditReviewModal.value){
 
         const removedImages = reviewState.originalImages.value.filter(
-            (url) => reviewState.existingImages.value.includes(url)
+            (url) => !reviewState.existingImages.value.includes(url)
         )
 
         for (const file of reviewState.uploadedImages.value) {

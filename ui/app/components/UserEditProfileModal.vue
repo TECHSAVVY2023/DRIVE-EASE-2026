@@ -469,6 +469,20 @@ const saveChanges = async () => {
             }
         }
 
+        // Show loading immediately
+        $swal.fire({
+            title: 'Saving changes...',
+            text: 'Please wait.',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                $swal.showLoading()
+            }
+        })
+
         let newProfileImage = null
 
         if (profileInput.value) {
@@ -479,18 +493,6 @@ const saveChanges = async () => {
                 return
             }
         }
-
-        $swal.fire({
-            title: 'Saving changes...',
-            text: 'Please wait.',
-            background: '#1a1a1a',
-            color: '#ffffff',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            didOpen: () => {
-                $swal.showLoading()
-            }
-        })
 
         const newIdUrls = await uploadIdFiles()
 

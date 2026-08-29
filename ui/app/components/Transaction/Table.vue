@@ -1,4 +1,3 @@
-```vue
 <template>
     <!-- Table -->
     <div class="overflow-x-auto">
@@ -42,7 +41,8 @@
                 <tr
                     v-for="transaction in transactions"
                     :key="transaction.booking_reference"
-                    class="border-b border-[#1f1f1f] hover:bg-[#222] transition-colors duration-150"
+                    @click="emit('select', transaction)"
+                    class="border-b border-[#1f1f1f] hover:bg-[#222] transition-colors duration-150 cursor-pointer"
                 >
                     <!-- Vehicle -->
                     <td class="px-5 py-4">
@@ -178,6 +178,7 @@ const emit = defineEmits<{
     (e: 'update:currentPage', value: number): void
     (e: 'previous'): void
     (e: 'next'): void
+    (e: 'select', transaction: Transaction): void
 }>()
 
 const formatAmount = (amount: string | number | null | undefined) => {

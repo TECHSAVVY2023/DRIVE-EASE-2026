@@ -18,6 +18,7 @@ export const useFleet = () => {
             transmission,
             seats,
             car_type,
+            fuel_type,
             features,
             sort,
             max_price,
@@ -29,6 +30,7 @@ export const useFleet = () => {
             transmission?: string
             seats?: string
             car_type?: string
+            fuel_type?: string
             features?: string[]
             sort?: string
             max_price?: number
@@ -42,6 +44,7 @@ export const useFleet = () => {
             `-transmission-${transmission ?? 'all'}` +
             `-seats-${seats ?? 'all'}` +
             `-car_type-${car_type ?? 'all'}` +
+            `-fuel_type-${fuel_type ?? 'all'}` +
             `-features-${features?.slice().sort().join('-') ?? 'all'}` +
             `-max-${max_price ?? 'none'}` +
             `-sort-${sort ?? 'newest'}`
@@ -67,6 +70,7 @@ export const useFleet = () => {
         if (transmission) params.append('transmission', transmission)
         if (seats) params.append('seats', String(seats))
         if (car_type) params.append('car_type', car_type)
+        if (fuel_type) params.append('fuel_type', fuel_type)
         features?.forEach(feature => {
             params.append('features', feature)
         })

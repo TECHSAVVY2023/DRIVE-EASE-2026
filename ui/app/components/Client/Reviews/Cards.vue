@@ -16,7 +16,11 @@
             <div class="flex gap-2">
                 <button
                     @click="$emit('click')"
-                    class="cursor-pointer flex items-center gap-2 border border-[#929292] text-[#929292] hover:bg-[#2B2B2B] hover:text-white px-4 py-2 rounded-lg transition-colors"
+                    class="
+                        cursor-pointer flex items-center gap-2 
+                        border border-[#3D3D3D] text-[#929292] hover:text-white hover:border-white
+                        px-3 py-2 rounded-lg transition-colors
+                    "
                 >
                     <!-- Edit Icon -->
                     <svg
@@ -34,12 +38,16 @@
                         />
                     </svg>
 
-                    <span class="text-sm font-semibold">Edit</span>
+                    <span class="text-xs">Edit</span>
                 </button>
 
                 <button
                     @click="$emit('delete')"
-                    class="cursor-pointer flex items-center gap-2 border hover:bg-[#2E1618] border-[#C1121F] text-[#C1121F] hover:text-[#D92331] px-4 rounded-lg transition-colors"
+                    class="
+                        cursor-pointer flex items-center gap-2 
+                        border border-[#3D3D3D] text-[#929292] hover:text-[#c1121f] hover:border-[#c1121f]
+                        px-4 rounded-lg transition-colors
+                    "
                 >
                     <!-- Trash Icon -->
                     <svg
@@ -57,7 +65,7 @@
                         />
                     </svg>
 
-                    <span class="text-sm font-semibold">Delete</span>
+                    <span class="text-xs">Delete</span>
                 </button>
             </div>
         </div>

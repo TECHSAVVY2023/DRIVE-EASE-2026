@@ -1,10 +1,12 @@
-import { type TransactionResponse } from "~/utils/api/api"
+import { type TransactionResponse, type Transaction } from "~/utils/api/api"
 
 const transactionCacheExpiresAt: Record<string, number> = {}
 const TRANSACTION_CACHE_TTL_MS = 60 * 1000
 
 const TransactionCache: Record<string, TransactionResponse> = {}
 const TransactionRequests = new Map<string, Promise<TransactionResponse>>()
+const TransactionDetailCache: Record<string, Transaction> = {}
+const TransactionDetailRequests = new Map<string, Promise<Transaction>>()
 
 export const useTransactions = () => {
     const { apiFetch } = useApiFetch()
@@ -77,7 +79,52 @@ export const useTransactions = () => {
         return request
     }
 
+    const fetchTransactionDetail = async (
+        bookingReference: string,
+        force = false
+    ): Promise<Transaction> => {
+
+        const cacheKey = `transaction-detail-${bookingReference}`
+
+        const now = Date.now()
+        const expiresAt = transactionCacheExpiresAt[cacheKey]
+
+        if (
+            !force &&
+            cacheKey in TransactionDetailCache && //
+            expiresAt &&
+            now < expiresAt
+        ) {
+            return TransactionDetailCache[cacheKey] //
+        }
+
+        const existingRequest = TransactionDetailRequests.get(cacheKey)
+
+        if (!force && existingRequest) {
+            return existingRequest
+        }
+
+        const request = apiFetch<Transaction>(
+            `/bookings/${bookingReference}/`
+        )
+            .then((data) => {
+                TransactionDetailCache[cacheKey] = data //
+                transactionCacheExpiresAt[cacheKey] =
+                    Date.now() + TRANSACTION_CACHE_TTL_MS
+
+                return data
+            })
+            .finally(() => {
+                TransactionDetailRequests.delete(cacheKey)
+            })
+
+        TransactionDetailRequests.set(cacheKey, request)
+
+        return request
+    }
+
     return {
         fetchTransactionsList,
+        fetchTransactionDetail,
     }
 }

@@ -47,6 +47,7 @@
                     :current-page="currentPage"
                     :total-pages="totalPages"
                     @update:current-page="currentPage = $event"
+                    @select="viewTransaction"
                 />
 
             </div>
@@ -60,7 +61,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import type { Transaction } from '~/utils/api/api'
 
 const { isLoggedIn } = useAuth()
 const { apiFetch } = useApiFetch()
@@ -94,5 +96,9 @@ const {
     count,
     loading,
 } = useTransactionsList()
+
+const viewTransaction = (transaction: Transaction) => {
+    navigateTo(`/client/transaction-details/${transaction.booking_reference}`)
+}
 
 </script>

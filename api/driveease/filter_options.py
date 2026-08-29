@@ -25,6 +25,21 @@ def get_filter_options():
         .order_by("seats")
     )
 
+    fuel = (
+        Cars.objects
+        .values("fuel_type")
+        .annotate(count=Count("car_id"))
+        .order_by("fuel_type")
+    )
+
+    features = (
+        Cars.objects
+        .filter(features__isnull=False)
+        .values("features__name")
+        .annotate(count=Count("car_id", distinct=True))
+        .order_by("features__name")
+    )
+
     return {
         "categories": [
             {
@@ -48,7 +63,23 @@ def get_filter_options():
                 "count": item["count"],
             }
             for item in seats
-        ]
+        ],
+
+        "fuel": [
+            {
+                "label": item["fuel_type"],
+                "count": item["count"],
+            }
+            for item in fuel
+        ],
+
+        "features": [
+            {
+                "label": item["features__name"],
+                "count": item["count"],
+            }
+            for item in features
+        ],
     }
 
     

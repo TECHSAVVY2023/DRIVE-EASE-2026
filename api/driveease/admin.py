@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import Cars, Accounts, FileUploadModel, ContactListModel, Reviews, ReviewHelpful, Booking, Payment, Feature, Notification
+from .tasks import create_notification
 
 admin.site.register(Cars)
 
@@ -49,14 +50,115 @@ class BookingAdmin(admin.ModelAdmin):
         "car",
         "pickup_date",
         "return_date",
-        "location",
+        "pickup_location",
+        "return_location",
         "total_price",
         "status",
         "created_at",
     )
-    list_filter = ("status", "pickup_date", "created_at")
-    search_fields = ("booking_reference", "user__email", "car__car_id", "location")
-    readonly_fields = ("booking_reference", "created_at", "updated_at")
+
+    list_filter = (
+        "status",
+        "pickup_date",
+        "created_at",
+    )
+
+    search_fields = (
+        "booking_reference",
+        "user__email",
+        "car__car_id",
+        "pickup_location",
+        "return_location",
+    )
+
+    readonly_fields = (
+        "booking_reference",
+        "created_at",
+        "updated_at",
+    )
+
+    def save_model(self, request, obj, form, change):
+        """
+        Detect booking status changes when an admin saves a booking.
+        If the status changes, create a notification through Celery.
+        """
+
+        old_status = None
+
+        # Get the previous status before saving
+        if change:
+            old_booking = Booking.objects.get(pk=obj.pk)
+            old_status = old_booking.status
+
+        # Save the booking normally
+        super().save_model(request, obj, form, change)
+
+        # Only send a notification when the status actually changed
+        if not change or old_status == obj.status:
+            return
+
+        # Notifications for each relevant booking status
+        notifications = {
+            "confirmed": {
+                "title": "Booking Confirmed",
+                "message": (
+                    f"Your booking {obj.booking_reference} "
+                    "has been confirmed."
+                ),
+            },
+
+            "rejected": {
+                "title": "Booking Rejected",
+                "message": (
+                    f"Your booking {obj.booking_reference} "
+                    "has been rejected."
+                ),
+            },
+
+            "picked_up": {
+                "title": "Vehicle Picked Up",
+                "message": (
+                    f"Your booking {obj.booking_reference} "
+                    "has been marked as picked up."
+                ),
+            },
+
+            "returned": {
+                "title": "Vehicle Returned",
+                "message": (
+                    f"Your booking {obj.booking_reference} "
+                    "has been marked as returned."
+                ),
+            },
+
+            "completed": {
+                "title": "Booking Completed",
+                "message": (
+                    f"Your booking {obj.booking_reference} "
+                    "has been completed."
+                ),
+            },
+
+            "cancelled": {
+                "title": "Booking Cancelled",
+                "message": (
+                    f"Your booking {obj.booking_reference} "
+                    "has been cancelled."
+                ),
+            },
+        }
+
+        notification = notifications.get(obj.status)
+
+        # Only create a notification for statuses we defined above
+        if notification:
+            create_notification.delay(
+                user_id=obj.user_id,
+                notification_type="booking_status",
+                title=notification["title"],
+                message=notification["message"],
+                booking_id=obj.id,
+            )
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):

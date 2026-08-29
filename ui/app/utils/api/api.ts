@@ -125,6 +125,8 @@ export interface FleetResponse {
     categories: FilterOption[]
     transmissions: FilterOption[]
     seats: FilterOption[]
+    fuel: FilterOption[]
+    features: FilterOption[]
   }
 }
 
@@ -132,24 +134,45 @@ export interface Transaction {
   booking_reference: string
   status: string
 
+  payment_method: string
+
+  created_at: string
+  total_price: number
+
+  pending_approval_at: string | null
+  confirmed_at: string | null
+  picked_up_at: string | null
+  returned_at: string | null
+  completed_at: string | null
+  cancelled_at: string | null
+  cancel_reason: string | null
+
   pickup_date: string
   return_date: string
+
+  pickup_location: string
+  return_location: string
 
   daily_rate: number
   number_of_days: number
   subtotal: number
   discount: number
-  total_price: number
-
-  created_at: string
-
-  payment_method: string
 
   car: {
       car_id: string
       brand: string
       model: string
       image: string
+  }
+
+  user: {
+      id: number
+      email: string
+      first_name: string
+      last_name: string
+      contact_number: string
+      address: string
+      id_images: string[]
   }
 }
 
@@ -172,6 +195,30 @@ export interface UploadResponse {
 export interface DeleteResponse {
   success: boolean;
   message?: string;
+}
+
+export interface NotificationBooking {
+  booking_reference: string
+  status: string
+}
+
+export interface Notification {
+  id: number
+  notification_type: string
+  title: string
+  message: string
+  action_url: string | null
+  booking: NotificationBooking | null
+  is_read: boolean
+  read_at: string | null
+  created_at: string
+}
+
+export interface NotificationResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: Notification[]
 }
 
 /**

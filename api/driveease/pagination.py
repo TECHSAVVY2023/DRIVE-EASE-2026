@@ -9,3 +9,7 @@ class FleetPagination(PageNumberPagination):
 
 class TransactionPagination(PageNumberPagination):
     page_size = 5
+
+class NotificationPagination(PageNumberPagination):
+    page_size = 5
+

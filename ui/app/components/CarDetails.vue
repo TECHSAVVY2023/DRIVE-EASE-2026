@@ -132,10 +132,11 @@
                         <button
                             @click="scrollToOwnerNote"
                             class="
-                                w-full border border-[#C1121F] hover:bg-[#2A1616]
-                                hover:text-[#FF6161] text-[#C1121F] text-sm font-semibold
+                                w-full border
+                                text-sm font-semibold
                                 py-3 rounded-lg flex items-center justify-center gap-2
                                 transition-all duration-300 cursor-pointer
+                                border border-[#333333] text-[#8F8F8F] hover:text-[#C1121F] hover:border-[#C1121F]
                             "
                         >
                             Owner's note

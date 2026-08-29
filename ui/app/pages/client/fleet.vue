@@ -33,7 +33,7 @@
         <div class="max-w-7xl px-4 py-8 flex flex-col mx-auto md:flex-row gap-6">
 
             <SidebarFilters
-                :show-filters="filterState.showFilters.value"
+                :show-filters="showFilters"
                 :filters="filterState.filters"
                 :open="filterState.open"
                 
@@ -45,17 +45,23 @@
                 :transmissionOptions="transmissionOptions"
                 @update:selectedTransmission="selectedTransmission = $event"
 
+                :selectedFuel="selectedFuel"
+                :fuelTypesOptions="fuelTypeOptions"
+                @update:selectedFuel="selectedFuel = $event"
+
                 :selectedSeat="selectedSeat"
                 :seatOptions="seatOptions"
                 @update:selectedSeat="selectedSeat = $event"
 
+                :selectedFeature="selectedFeature"
+                :featureOptions="featureOptions"
+                @update:selectedFeature="selectedFeature = $event"
+
                 :max-price="maxPrice"
                 @update:max-price="maxPrice = $event"
 
-                :fuel-types="fuelTypes"
-                :feature-options="featureOptions"
                 @toggle-section="filterState.toggleSection"
-                @reset-filters="filterState.resetFilters"
+                @reset-filters="resetFilters"
             />
 
             <!-- =========================
@@ -83,7 +89,7 @@
                         :sort-by="sortBy"
                         :show-filters="showFilters"
                         @update:sortBy="sortBy = $event"
-                        @toggleFilters="showFilters = !showFilters"
+                        @toggle-filters="toggleFilters"
                     />
 
                     <FleetSearch
@@ -96,7 +102,7 @@
                 <!-- Car Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                    <CarCards
+                    <ClientFleetCarCards
                         :paginated-cars="fleet"
                         @book="openBookingModal"
                     />
@@ -125,11 +131,14 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { Car } from '~/utils/api/api'
-import { type FleetResponse } from '~/utils/api/api'
 
 const { isLoggedIn } = useAuth()
 const { apiFetch } = useApiFetch()
+
+const router = useRouter()
+const { $swal } = useNuxtApp()
 
 const user = ref<any>(null)
 
@@ -155,29 +164,42 @@ const filterState = useCarFilters()
 /* cars */
 const { cars } = useCars()
 
-/* filtered logic */
-const { paginatedCars, filteredCars } =
-    useFilteredCars(cars, filterState)
-
-/* options */
-const {
-    fuelTypes,
-    featureOptions
-} = useCarOptions(cars)
-
 const { 
-    fleet, count, currentPage, search, selectedTransmission, selectedSeat, selectedCarType, 
-    transmissionOptions, carTypeOptions, seatOptions, sortBy, maxPrice, fetchCars, totalPages, showFilters
+    fleet, count, currentPage, search, selectedTransmission, selectedFeature, selectedSeat, 
+    selectedCarType, selectedFuel, transmissionOptions, carTypeOptions, fuelTypeOptions, 
+    seatOptions, featureOptions, sortBy, maxPrice, fetchCars, totalPages, showFilters, resetFilters
 } = useFleetList()
-
-const { resetFilters } = useFiltersCar()
 
 const showBookingModal = ref(false)
 const selectedCar = ref<Car | null>(null)
 
-const openBookingModal = (car: Car) => {
+const openBookingModal = async (car: Car) => {
+    if (!user.value) {
+        const result = await $swal.fire({
+            icon: 'warning',
+            title: 'Login Required',
+            text: 'You need to log in before booking a vehicle.',
+            showCancelButton: true,
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            confirmButtonText: 'Login',
+            cancelButtonText: 'Cancel',
+        })
+
+        if (result.isConfirmed) {
+            await router.push('/client/login')
+        }
+
+        return
+    }
+
     selectedCar.value = car
     showBookingModal.value = true
+}
+
+const toggleFilters = () => {
+    showFilters.value = !showFilters.value
 }
 
 onMounted(async () => {

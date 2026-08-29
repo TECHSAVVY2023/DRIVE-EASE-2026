@@ -236,7 +236,18 @@ class Booking(models.Model):
 
     pickup_date = models.DateTimeField()
     return_date = models.DateTimeField()
-    location = models.CharField(max_length=255)
+    
+    pickup_location = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+    )
+
+    return_location = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+    )
 
     # Pricing Snapshot
     daily_rate = models.DecimalField(max_digits=10,decimal_places=2)
@@ -251,11 +262,40 @@ class Booking(models.Model):
         default='pending_payment'
     )
 
+    pending_approval_at = models.DateTimeField(null=True, blank=True)
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    picked_up_at = models.DateTimeField(null=True, blank=True)
+    returned_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
     cancelled_at = models.DateTimeField(null=True, blank=True)
     cancel_reason = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        from django.utils import timezone
+
+        if self.status == "pending_approval" and self.pending_approval_at is None:
+            self.pending_approval_at = timezone.now()
+
+        if self.status == "confirmed" and self.confirmed_at is None:
+            self.confirmed_at = timezone.now()
+
+        if self.status == "picked_up" and self.picked_up_at is None:
+            self.picked_up_at = timezone.now()
+
+        if self.status == "returned" and self.returned_at is None:
+            self.returned_at = timezone.now()
+
+        if self.status == "completed" and self.completed_at is None:
+            self.completed_at = timezone.now()
+
+        if self.status == "cancelled" and self.cancelled_at is None:
+            self.cancelled_at = timezone.now()
+
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Booking"

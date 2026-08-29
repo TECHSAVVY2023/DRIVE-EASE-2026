@@ -33,12 +33,13 @@ export const useAuth = () => {
     // LOGIN CALLBACK
     const setAuth = async (access: string, refresh: string) => {
         console.log('setting auth with access:', access, 'and refresh:', refresh)
-        
+
         token.value = access
 
-        localStorage.setItem('access_token', access)
-        localStorage.setItem('refresh_token', refresh)
-
+        if (import.meta.client) {
+            localStorage.setItem('access_token', access)
+            localStorage.setItem('refresh_token', refresh)
+        }
     }
 
     // INIT APP
@@ -55,15 +56,31 @@ export const useAuth = () => {
 
     // REFRESH ACCESS TOKEN
     const refreshAccessToken = async () => {
+        if (!import.meta.client) {
+            return null
+        }
+
+        const refreshToken = localStorage.getItem('refresh_token')
+
         console.log(
             'activating refresh token:',
-            localStorage.getItem('refresh_token')
+            refreshToken
         )
+
+        if (!refreshToken) {
+            return null
+        }
+
         try {
-            const res = await $fetch<RefreshResponse>(`${apiBase}/auth/token/refresh/`, {
-                method: 'POST',
-                body: { refresh: localStorage.getItem('refresh_token') }
-            })
+            const res = await $fetch<RefreshResponse>(
+                `${apiBase}/auth/token/refresh/`,
+                {
+                    method: 'POST',
+                    body: {
+                        refresh: refreshToken
+                    }
+                }
+            )
 
             token.value = res.access
             localStorage.setItem('access_token', res.access)

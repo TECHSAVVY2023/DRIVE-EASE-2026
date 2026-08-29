@@ -1,20 +1,20 @@
 <template>
-    
+
     <!-- =========================
             Banner container
     ========================== -->
-    <div class="relative flex justify-between bg-[#C1121F] px-10 py-10 md:px-26">
+    <div class="relative flex flex-col items-center text-center md:flex-row md:items-center md:justify-between md:text-left gap-4 md:gap-6 bg-[#C1121F] px-6 py-8 sm:px-10 sm:py-10 md:px-16 lg:px-26">
 
         <!-- Left -->
-        <div>
+        <div class="min-w-0">
 
             <p class="text-red-200 text-xs mb-1"> {{ subtitle }} </p>
-            <h1 class="text-white text-2xl font-extrabold"> {{ title }} </h1>
+            <h1 class="text-white text-xl sm:text-2xl font-extrabold break-words"> {{ title }} </h1>
 
         </div>
 
         <!-- Breadcrumbs -->
-        <div class="flex items-center gap-2 text-xs mt-4 flex-wrap">
+        <div class="flex items-center justify-center gap-2 text-xs flex-wrap mt-3 md:mt-0 md:justify-end md:shrink-0">
 
             <template
                 v-for="(breadcrumb, index) in breadcrumbs"

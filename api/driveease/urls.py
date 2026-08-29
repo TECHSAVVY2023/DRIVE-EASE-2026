@@ -32,9 +32,14 @@ urlpatterns = [
     path("reviews/featured/", views.FeaturedReviewsView.as_view(), name="featured-reviews"),
     path("reviews/<int:review_id>/helpful/", views.toggle_helpful, name="toggle-helpful"),
 
-    path("bookings/", views.TransactionListView.as_view(), name="bookings"),
     path("bookings/create/", views.CreateBookingView.as_view(), name="create-booking"),
+    path("bookings/", views.TransactionListView.as_view(), name="bookings"),
+    path("bookings/<str:booking_reference>/", views.TransactionDetailView.as_view(), name="booking-detail",),
     
     path("payments/create-paymongo-payment/", views.CreatePayMongoPaymentView.as_view(), name="create-paymongo-payment"),
     path("payments/paymongo-webhook/", views.PayMongoWebhookView.as_view(), name="paymongo-webhook"),  # Commented out for development
+
+    path("notifications/", views.UserNotificationListView.as_view(), name="user-notifications"),
+    path("notifications/unread-count/", views.UserUnreadNotificationCountView.as_view(), name="notification-unread-count"),
+    path("notifications/<int:notification_id>/read/", views.MarkNotificationAsReadView.as_view(), name="mark-notification-read"),
 ]

@@ -53,8 +53,13 @@ export function useBookingValidation() {
             return false
         }
 
-        if (!form.location.trim()) {
+        if (!form.pickupLocation.trim()) {
             await showError('Please enter a pickup location.')
+            return false
+        }
+
+        if (!form.returnLocation.trim()) {
+            await showError('Please enter a return location.')
             return false
         }
 

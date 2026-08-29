@@ -17,16 +17,18 @@ const search = ref("")
 const selectedCarType = ref<string[]>([])
 const selectedTransmission = ref<string[]>([])
 const selectedSeat = ref<string[]>([])
+const selectedFuel = ref<string[]>([])
+const selectedFeature = ref<string[]>([])
 
 const brand = ref("")
-const seats = ref<number>()
-const features = ref<string[]>([])
 const maxPrice = ref(4700)
 
 //All filters from the backend to be displayed in the sidebar
 const carTypeOptions = ref<FilterOption[]>([])
 const transmissionOptions = ref<FilterOption[]>([])
 const seatOptions = ref<FilterOption[]>([])
+const fuelTypeOptions = ref<FilterOption[]>([])
+const featureOptions = ref<FilterOption[]>([])
 
 export function useFleetList() {
     const { fetchFleet } = useFleet()
@@ -51,7 +53,8 @@ export function useFleetList() {
                 transmission: selectedTransmission.value.join(","),
                 seats: selectedSeat.value.join(","),
                 car_type: selectedCarType.value.join(","),
-                features: features.value,
+                fuel_type: selectedFuel.value.join(","),
+                features: selectedFeature.value,
                 sort: sortBy.value,
                 max_price: maxPrice.value,
             })
@@ -66,6 +69,8 @@ export function useFleetList() {
             carTypeOptions.value = res.filters.categories
             transmissionOptions.value = res.filters.transmissions
             seatOptions.value = res.filters.seats
+            fuelTypeOptions.value = res.filters.fuel
+            featureOptions.value = res.filters.features
 
             nextPage.value = res.next ?? null
             previousPage.value = res.previous ?? null
@@ -76,7 +81,7 @@ export function useFleetList() {
     }
 
     watch(
-        [currentPage, search, selectedCarType, selectedTransmission, selectedSeat, features, maxPrice,
+        [currentPage, search, selectedCarType, selectedTransmission, selectedSeat, selectedFuel, selectedFeature, maxPrice,
             sortBy
         ],
         () => {
@@ -88,7 +93,7 @@ export function useFleetList() {
         console.log("sortBy changed:", value)
     })
 
-    watch([selectedCarType, selectedTransmission, selectedSeat, maxPrice, sortBy], () => {
+    watch([selectedCarType, selectedTransmission, selectedFuel, selectedSeat, selectedFeature, maxPrice, sortBy], () => {
         currentPage.value = 1
     })
 
@@ -97,7 +102,8 @@ export function useFleetList() {
         selectedCarType.value = []
         selectedTransmission.value = []
         selectedSeat.value = []
-        features.value = []
+        selectedFeature.value = []
+        selectedFuel.value = []
         maxPrice.value = 4700
     }
 
@@ -110,8 +116,6 @@ export function useFleetList() {
         currentPage,
         search,
         brand,
-        features,
-        seats,
         showFilters,
         sortBy,
         maxPrice,
@@ -119,10 +123,14 @@ export function useFleetList() {
         selectedCarType,
         selectedTransmission,
         selectedSeat,
+        selectedFuel,
+        selectedFeature,
 
         carTypeOptions,
         transmissionOptions,
         seatOptions,
+        fuelTypeOptions,
+        featureOptions,
 
         fetchCars,
         totalPages,

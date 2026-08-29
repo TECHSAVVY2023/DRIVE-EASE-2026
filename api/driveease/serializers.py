@@ -31,7 +31,7 @@ class CarSerializer(serializers.ModelSerializer):
             ]
         )
 
-        print(obj.car_id, bookings.count())
+        # print(obj.car_id, bookings.count())
 
         return [
             {
@@ -90,8 +90,23 @@ class TransactionCarSerializer(serializers.ModelSerializer):
     def get_image(self, obj):
         return obj.meta.get("primary_image")
 
+class TransactionUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "contact_number",
+            "address",
+            "id_images",
+        )
+
 class TransactionSerializer(serializers.ModelSerializer):
     car = TransactionCarSerializer(read_only=True)
+    user = TransactionUserSerializer(read_only=True)
+
     payment_method = serializers.CharField(
         source="payments.payment_method",
         read_only=True
@@ -103,9 +118,25 @@ class TransactionSerializer(serializers.ModelSerializer):
             "booking_reference",
             "status",
             "car",
+            "user",
             "payment_method",
             "created_at",
-            "total_price"
+            "pending_approval_at",
+            "confirmed_at",
+            "picked_up_at",
+            "returned_at",
+            "completed_at",
+            "cancelled_at",
+            "cancel_reason",
+            "daily_rate",
+            "number_of_days",
+            "subtotal",
+            "discount",
+            "total_price",
+            "pickup_date",
+            "return_date",
+            "pickup_location",
+            "return_location",
         )
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -114,9 +145,40 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
+class NotificationBookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = [
+            "booking_reference",
+            "status",
+        ]
+
 class NotificationSerializer(serializers.ModelSerializer):
+    booking = NotificationBookingSerializer(read_only=True)
+    
     class Meta:
         model = Notification
-        fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+        fields = [
+            "id",
+            "notification_type",
+            "title",
+            "message",
+            "action_url",
+            "booking",
+            "is_read",
+            "read_at",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "notification_type",
+            "title",
+            "message",
+            "action_url",
+            "booking",
+            "is_read",
+            "read_at",
+            "created_at",
+        ]
+
 

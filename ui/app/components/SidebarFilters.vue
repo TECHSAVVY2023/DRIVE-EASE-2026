@@ -160,20 +160,29 @@
 
             <div v-if="open.fuel" class="flex flex-col gap-1 px-5 pb-4">
 
-                <label v-for="f in fuelTypes" 
+                <label v-for="f in fuelTypesOptions" 
                     :key="f.label" 
                     class="flex items-center justify-between cursor-pointer group py-1 px-3 rounded-md transition-all duration-200 ease-in-out"
-                    :class="filters.fuel.includes(f.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'" 
-                    @click="filters.fuel = filters.fuel.includes(f.label) ? filters.fuel.filter((item) => item !== f.label) : [...filters.fuel, f.label]"
+                    :class="props.selectedFuel.includes(f.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'" 
+                    @click="
+                        emit(
+                            'update:selectedFuel',
+                            props.selectedFuel.includes(f.label)
+                                ? props.selectedFuel.filter(c => c !== f.label)
+                                : [...props.selectedFuel, f.label]
+                        )
+                    "
                 >
                     
                     <div class="flex items-center gap-2">
                         <span 
                             class="text-xs transition-colors duration-200 cursor-pointer" 
-                            :class="filters.fuel.includes(f.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
+                            :class="props.selectedFuel.includes(f.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'" 
                             >{{ f.label.charAt(0).toUpperCase() + f.label.slice(1) }}</span>
                     </div>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.fuel.includes(f.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ f.count }}</span>
+                    <span 
+                        class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" 
+                        :class="props.selectedFuel.includes(f.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ f.count }}</span>
                 
                 </label>
 
@@ -248,15 +257,20 @@
                 <label 
                     v-for="f in featureOptions" :key="f.label" 
                     class="flex items-center justify-between cursor-pointer group py-1 px-3 rounded-md transition-all duration-200 ease-in-out"
-                    :class="filters.feature.includes(f.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
-                    @click="filters.feature = filters.feature.includes(f.label)
-                    ? filters.feature.filter(item => item !== f.label)
-                    : [...filters.feature, f.label]"
+                    :class="props.selectedFeature.includes(f.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
+                    @click="
+                        emit(
+                            'update:selectedFeature',
+                            props.selectedFeature.includes(f.label)
+                                ? props.selectedFeature.filter(c => c !== f.label)
+                                : [...props.selectedFeature, f.label]
+                        )
+                    "
                 >
                 <div class="flex items-center gap-2">
 
                     <span class="text-xs transition-colors duration-200 cursor-pointer" 
-                        :class="filters.feature.includes(f.label)
+                        :class="props.selectedFeature.includes(f.label)
                         ? 'text-white font-semibold'
                         : 'text-[#7E7E7E] group-hover:text-white'"
                     >{{ f.label.charAt(0).toUpperCase() + f.label.slice(1) }}</span>
@@ -280,6 +294,8 @@
         selectedCarTypes: string[]
         selectedTransmission: string[]
         selectedSeat: string[]
+        selectedFuel: string[]
+        selectedFeature: string[]
         filters: {
             category: string[]
             transmission: string[]
@@ -297,7 +313,7 @@
         }
         transmissionOptions: { label: string; count: number }[]
         carTypeOptions: { label: string; count: number }[]
-        fuelTypes: { label: string; count: number }[]
+        fuelTypesOptions: { label: string; count: number }[]
         seatOptions: { label: string; count: number }[]
         featureOptions: { label: string; count: number }[]
     }>()
@@ -308,6 +324,8 @@
         'update:selectedCarTypes': [value: string[]]
         'update:selectedTransmission': [value: string[]]
         'update:selectedSeat': [value: string[]]
+        'update:selectedFuel': [value: string[]]
+        'update:selectedFeature': [value: string[]]
         'update:maxPrice': [value: number]
     }>()
 

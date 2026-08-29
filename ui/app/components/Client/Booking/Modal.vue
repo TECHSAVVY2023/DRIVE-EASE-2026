@@ -163,17 +163,22 @@
 
                                     <div class="border-t border-[#222] pt-2 flex justify-between">
                                         <span class="text-gray-400 text-xs">Pickup date</span>
-                                        <span class="text-white text-xs font-semibold">{{ form.pickupDate }}</span>
+                                        <span class="text-white text-xs font-semibold">{{ formatDateTime(form.pickupDate) }}</span>
+                                    </div>
+
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-xs">Pickup Location</span>
+                                        <span class="text-white text-xs font-semibold">{{ form.pickupLocation }}</span>
                                     </div>
 
                                     <div class="flex justify-between">
                                         <span class="text-gray-400 text-xs">Return date</span>
-                                        <span class="text-white text-xs font-semibold">{{ form.returnDate }}</span>
+                                        <span class="text-white text-xs font-semibold">{{ formatDateTime(form.returnDate) }}</span>
                                     </div>
 
                                     <div class="flex justify-between">
-                                        <span class="text-gray-400 text-xs">Location</span>
-                                        <span class="text-white text-xs font-semibold">{{ form.location }}</span>
+                                        <span class="text-gray-400 text-xs">Return Location</span>
+                                        <span class="text-white text-xs font-semibold">{{ form.returnLocation }}</span>
                                     </div>
 
                                     <div class="border-t border-[#222] pt-2 flex justify-between">
@@ -279,6 +284,17 @@ const { nextStep } = useBookingSteps( steps, currentStep, validateStepOne, valid
 
 const isSubmitting = ref(false)
 
+const formatDateTime = (date: string | Date) => {
+    return new Date(date).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    })
+}
+
 async function confirmBooking(): Promise<void> {
     if (isSubmitting.value) return
 
@@ -318,7 +334,8 @@ async function confirmBooking(): Promise<void> {
                 car: props.car?.car_id,
                 pickup_date: form.pickupDate,
                 return_date: form.returnDate,
-                location: form.location,
+                pickup_location: form.pickupLocation,
+                return_location: form.returnLocation,
                 daily_rate: props.car?.price_per_day,
                 number_of_days: rentalDays.value,
                 subtotal: totalPrice.value,
@@ -368,6 +385,8 @@ watch(
         }
 
         if (!props.user) return
+
+        console.log('step one user:', props.user.family_name)
 
         Object.assign(form, {
             firstName: props.user.given_name,

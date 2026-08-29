@@ -24,7 +24,8 @@ export function useBookingForm(
         id_images: [] as string[],
         pickupDate: '',
         returnDate: '',
-        location: '',
+        pickupLocation: '',
+        returnLocation: '',
     })
 
     function openImage(file: File) {

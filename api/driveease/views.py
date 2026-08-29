@@ -4,16 +4,18 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .pagination import ReviewPagination, FleetPagination, TransactionPagination
+from .pagination import ReviewPagination, FleetPagination, TransactionPagination, NotificationPagination
 from rest_framework.decorators import api_view, permission_classes
 
-from .models import ContactListModel, Cars, Reviews, ReviewHelpful, FileUploadModel, Booking, Payment
+from .models import ContactListModel, Cars, Reviews, ReviewHelpful, FileUploadModel, Booking, Payment, Notification
 from .serializers import ContactListSerializer
 from .forms import ContactListForm
 from .filter_options import get_filter_options
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+
+from .tasks import create_notification
 
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -30,7 +32,7 @@ import traceback
 import requests
 import json
 
-from .serializers import ReviewSerializer, CarSerializer, FileUploadSerializer, BookingSerializer, PaymentSerializer, TransactionSerializer
+from .serializers import ReviewSerializer, CarSerializer, FileUploadSerializer, BookingSerializer, PaymentSerializer, TransactionSerializer, NotificationSerializer
 
 
 # === Cars ===
@@ -50,11 +52,15 @@ class FleetListView(ListAPIView):
 
         # Search
         search = self.request.query_params.get("search")
+        
         if search:
-            queryset = queryset.filter(
-                Q(brand__icontains=search) |
-                Q(model__icontains=search)
-            )
+            search_terms = search.split()
+
+            for term in search_terms:
+                queryset = queryset.filter(
+                    Q(brand__icontains=term) |
+                    Q(model__icontains=term)
+                )
 
         # Filter by transmission
         transmission = self.request.query_params.get("transmission")
@@ -81,9 +87,16 @@ class FleetListView(ListAPIView):
             )
 
         # Filter by fuel type
-        fuel = self.request.query_params.get("fuel")
+        fuel = self.request.query_params.get("fuel_type")
         if fuel:
-            queryset = queryset.filter(fuel_type__iexact=fuel)
+            selected_fuel = [
+                item.strip()
+                for item in fuel.split(",")
+            ]
+
+            queryset = queryset.filter(
+                fuel_type__in=selected_fuel
+            )
 
         # Filter by car type
         car_type = self.request.query_params.get("car_type")
@@ -96,6 +109,18 @@ class FleetListView(ListAPIView):
             queryset = queryset.filter(
                 car_type__in=car_types
             )
+
+        # Filter by features
+        features = self.request.query_params.get("features")
+        if features:
+            feature_list = [
+                item.strip()
+                for item in features.split(",")
+            ]
+
+            queryset = queryset.filter(
+                features__name__in=feature_list
+            ).distinct()
 
         # Filter by price range
         min_price = self.request.query_params.get("min_price")
@@ -702,7 +727,7 @@ class CreateBookingView(APIView):
     def post(self, request):
         serializer = BookingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         car = serializer.validated_data["car"]
         pickup_date = serializer.validated_data["pickup_date"]
         return_date = serializer.validated_data["return_date"]
@@ -727,17 +752,33 @@ class CreateBookingView(APIView):
             )
 
         # Generate booking reference if not provided
-        if not serializer.validated_data.get('booking_reference'):
+        if not serializer.validated_data.get("booking_reference"):
             import uuid
-            serializer.validated_data['booking_reference'] = f'BKG-{uuid.uuid4().hex[:10].upper()}'
-        
+            serializer.validated_data["booking_reference"] = (
+                f"BKG-{uuid.uuid4().hex[:10].upper()}"
+            )
+
         booking = serializer.save()
-        
-        return Response({
-            "message": "Booking created successfully.",
-            "booking_id": booking.id,
-            "booking_reference": booking.booking_reference
-        }, status=status.HTTP_201_CREATED)
+
+        create_notification.delay(
+            user_id=request.user.id,
+            notification_type="booking",
+            title="Booking Created",
+            message=(
+                f"Your booking {booking.booking_reference} "
+                "has been submitted successfully."
+            ),
+            booking_id=booking.id,
+        )
+
+        return Response(
+            {
+                "message": "Booking created successfully.",
+                "booking_id": booking.id,
+                "booking_reference": booking.booking_reference,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 class TransactionListView(ListAPIView):
     serializer_class = TransactionSerializer
@@ -808,6 +849,31 @@ class TransactionListView(ListAPIView):
             "count": queryset.count(),
             "results": serializer.data,
         })
+
+class TransactionDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, booking_reference):
+        try:
+            booking = (
+                Booking.objects
+                .filter(
+                    user=request.user,
+                    booking_reference=booking_reference,
+                )
+                .select_related("car")
+                .get()
+            )
+
+        except Booking.DoesNotExist:
+            return Response(
+                {"detail": "Booking not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = TransactionSerializer(booking)
+
+        return Response(serializer.data)
 
 # === Payments ===
 
@@ -954,17 +1020,17 @@ class PayMongoWebhookView(APIView):
         import hmac
         import hashlib
 
-        print("=" * 60)
-        print("PAYMONGO WEBHOOK RECEIVED")
-        print("=" * 60)
+        # print("=" * 60)
+        # print("PAYMONGO WEBHOOK RECEIVED")
+        # print("=" * 60)
 
-        print("Headers:")
-        print(dict(request.headers))
+        # print("Headers:")
+        # print(dict(request.headers))
 
-        print("\nBody:")
-        print(json.dumps(request.data, indent=4))
+        # print("\nBody:")
+        # print(json.dumps(request.data, indent=4))
 
-        print("=" * 60)
+        # print("=" * 60)
         
         # Get PayMongo webhook secret from settings
         # webhook_secret = getattr(settings, 'PAYMONGO_WEBHOOK_SECRET', None)
@@ -1033,3 +1099,50 @@ class PayMongoWebhookView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+# === Notifications ===
+
+class UserNotificationListView(ListAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = NotificationPagination
+
+    def get_queryset(self):
+        return (
+            Notification.objects
+            .filter(user=self.request.user)
+            .select_related("booking")
+            .order_by("-created_at")
+        )
+
+class UserUnreadNotificationCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        unread_count = Notification.objects.filter(
+            user=request.user,
+            is_read=False,
+        ).count()
+
+        return Response({
+            "unread_count": unread_count
+        })
+
+class MarkNotificationAsReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, notification_id):
+        notification = get_object_or_404(
+            Notification,
+            id=notification_id,
+            user=request.user,
+        )
+
+        if not notification.is_read:
+            notification.is_read = True
+            notification.read_at = timezone.now()
+            notification.save(update_fields=["is_read", "read_at"])
+
+        return Response({
+            "message": "Notification marked as read."
+        })
