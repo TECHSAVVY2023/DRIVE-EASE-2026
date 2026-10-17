@@ -4,15 +4,18 @@
         :menu-open="menuOpen"
         @close-menu="closeMenu"
     />
+
     <Navbar
         :user="user"
         :is-logged-in="isLoggedIn"
+        :auth-ready="authReady"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
         @open-sidebar="handleOpenSidebar" 
         @close-sidebar="handleCloseSidebar"
     />
-    <UserEditProfileModal 
+
+    <ClientProfileEditModal
         :user="user"
         v-model="showEditProfileModal"
         @updated="fetchUser"
@@ -32,42 +35,10 @@
         <div class="max-w-lg mx-auto px-4 py-8 flex flex-col gap-4">
 
             <!-- Profile Card -->
-            <div class="bg-[#1a1a1a] border border-[#222] rounded-xl p-5 flex items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                <!-- Avatar -->
-                <div class="w-16 h-16 rounded-full bg-[#C1121F] flex-shrink-0 overflow-hidden flex items-center justify-center">
-                    <img
-                    v-if="user?.profile_picture"
-                    :src="user.profile_picture"
-                    :alt="user.given_name + ' ' + user.family_name"
-                    class="w-full h-full object-cover"
-                    />
-                    <span v-else class="text-white text-2xl font-extrabold">
-                    {{ user?.given_name?.charAt(0) }}
-                    </span>
-
-                </div>
-                <!-- Name + Member since -->
-                <div>
-                    <p class="text-white font-bold text-lg leading-tight">{{ user?.given_name }} {{ user?.family_name }}</p>
-                    <p class="text-gray-400 text-xs mt-0.5">
-                        Member since {{ user?.date_created ? new Date(user.date_created).getFullYear() : '' }}
-                    </p>
-                </div>
-                </div>
-                <!-- Edit button -->
-                <button 
-                    @click="showEditProfileModal = true"
-                    class="
-                        bg-[#C1121F] hover:bg-[#9B0E18] rounded-lg
-                        text-white text-xs font-semibold px-4 py-2 
-                        flex-shrink-0 
-                        transition-colors duration-200
-                    "
-                >
-                Edit profile
-                </button>
-            </div>
+            <ClientProfileCard 
+                :user="user" 
+                @edit="showEditProfileModal = true"
+            />
 
             <!-- Personal Information -->
             <div class="bg-[#1a1a1a] border border-[#222] rounded-xl p-5 flex flex-col gap-4">
@@ -112,28 +83,15 @@
                 <div class="border-b border-[#323232] w-full"></div>
 
                 <!-- Existing IDs from DB -->
-                <div v-if="user?.id_images.images?.length" class="flex flex-row gap-2">
-                    <a
-                        v-for="(url, index) in user.id_images.images"
-                        :key="'existing-' + index"
-                        :href="url"
-                        target="_blank"
-                        class="group flex items-center justify-between bg-[#0f0f0f] border border-white/10 hover:border-[#c1121f] rounded-lg px-3 py-2 transition-colors cursor-pointer w-full"
-                    >
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 flex items-center justify-center bg-[#1a1a1a] rounded">
-                                <svg class="w-4 h-4 text-[#c1121f]" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                </svg>
-                            </div>
+                <div v-if="user?.id_images.images?.length" class="flex flex-col gap-2">
 
-                            <span
-                                class="text-white text-xs transition-colors group-hover:text-[#c1121f]"
-                            >
-                                View ID {{ Number(index) + 1 }}
-                            </span>
-                        </div>
-                    </a>
+                    <ClientProfileIDImageItems
+                        v-for="(url, index) in user.id_images.images"
+                        :key="'id-' + index"
+                        :url="url"
+                        :index="Number(index)"
+                    />
+
                 </div>
 
                 <!-- Empty State -->
@@ -157,7 +115,10 @@
                         Upload your identification documents to get started.
                     </p>
                 </div>
+
+
             </div>
+
         </div>
     
     </div>
@@ -171,7 +132,7 @@ import { ref } from 'vue'
 
 const showEditProfileModal = ref(false)
 
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, authReady } = useAuth()
 const { apiFetch } = useApiFetch()
 
 const user = ref<any>(null)

@@ -6,7 +6,8 @@
     
     <Navbar
         :user="user"
-        :isLoggedIn="isLoggedIn"
+        :is-logged-in="isLoggedIn"
+        :auth-ready="authReady"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
         @open-sidebar="handleOpenSidebar" 
@@ -24,12 +25,17 @@
 
     <div class="min-h-screen bg-[#0b0b0d] text-gray-200 p-4 sm:p-6 lg:p-10">
 
-        <ClientBookingDetails 
-            :booking="booking"
-            @view-id="handleViewId"
-            @download-receipt="handleDownloadReceipt"
-            @cancel="handleCancel"
-        />
+        <div class="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-start">
+
+            <ClientBookingRefMainDetails :booking="booking"/>
+
+            <ClientBookingRefSideBar 
+                :booking="booking"
+                @download-receipt="handleDownloadReceipt"
+                @cancel="handleCancel"
+            />
+
+        </div>
 
     </div>
 
@@ -38,7 +44,7 @@
 <script setup lang="ts">
 import type { Transaction } from '~/utils/api/api';
 
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, authReady } = useAuth()
 const { apiFetch } = useApiFetch()
 
 const user = ref<any>(null)
@@ -70,19 +76,15 @@ const { fetchTransactionDetail } = useTransactions()
 const booking = ref<Transaction | null>(null)
 
 onMounted(async () => {
-  booking.value = await fetchTransactionDetail(bookingReference)
+    booking.value = await fetchTransactionDetail(bookingReference)
 })
 
-const handleViewId = (id: any) => {
-  console.log('View ID:', id)
-}
-
 const handleDownloadReceipt = () => {
-  console.log('Download receipt')
+    console.log('Download receipt')
 }
 
 const handleCancel = () => {
-  console.log('Cancel booking')
+    console.log('Cancel booking')
 }
 
 </script>

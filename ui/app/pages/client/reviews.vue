@@ -7,6 +7,7 @@
     <Navbar
         :user="user"
         :is-logged-in="isLoggedIn"
+        :auth-ready="authReady"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
         @open-sidebar="handleOpenSidebar" 
@@ -80,7 +81,7 @@ import { watch } from 'vue'
 
 const route = useRoute()
 
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, authReady } = useAuth()
 const { apiFetch } = useApiFetch()
 
 const user = ref<any>(null)

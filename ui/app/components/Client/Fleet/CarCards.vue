@@ -46,11 +46,9 @@
                 v-if="!useCurrentRental(car)"
                 @click="emit('book', car)"
                 class="
-                    w-full bg-[#C1121F]
-                    hover:bg-[#9B0E18]
-                    py-2
-                    text-white text-xs font-semibold
-                    rounded-lg
+                    w-full bg-[#C1121F] hover:bg-[#9B0E18]
+                    py-2 cursor-pointer text-white 
+                    text-xs font-semibold rounded-lg
                     transition-colors duration-200
                 "
             >
@@ -75,10 +73,9 @@
             <NuxtLink
                 :to="`/client/car-details/${car.car_id}`"
                 class="
-                    w-full border border-[#292929]
-                    hover:border-[#c1121f]
-                    rounded-lg hover:text-[#c1121f]
-                    text-[#8F8F8F] text-xs font-semibold
+                    w-full border border-[#2a2a2a]
+                    hover:border-white rounded-lg
+                    text-white text-xs font-semibold
                     py-2 transition-all duration-200 text-center
                 "
             >

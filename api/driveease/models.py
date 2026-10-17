@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from storages.backends.s3boto3 import S3Boto3Storage
+from django.utils.text import slugify
 
 def default_car_meta():
     return {
@@ -19,11 +20,28 @@ class Feature(models.Model):
         max_length=100,
         unique=True
     )
+    slug = models.SlugField(
+        max_length=100,
+        blank=True
+    )
 
     class Meta:
         ordering = ["name"]
         verbose_name = "Feature"
         verbose_name_plural = "Features"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+class CarType(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -35,16 +53,6 @@ class Cars(models.Model):
         ('maintenance', 'Maintenance'),
     ]
 
-    CAR_TYPE = [
-        ('sedan', 'Sedan'),
-        ('suv', 'SUV'),
-        ('truck', 'Truck'),
-        ('van', 'Van'),
-        ('hatchback', 'Hatchback'),
-        ('pickup', 'Pickup'),
-        ('other', 'Other'),
-    ]
-
     car_id = models.CharField(
         max_length=50,
         primary_key=True
@@ -54,10 +62,10 @@ class Cars(models.Model):
     model = models.CharField(max_length=100)
     year = models.IntegerField()
 
-    car_type = models.CharField(
-        max_length=50,
-        choices=CAR_TYPE,
-        default='other'
+    car_type = models.ForeignKey(
+        CarType,
+        on_delete=models.PROTECT,
+        related_name="cars",
     )
 
     price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
@@ -122,6 +130,13 @@ class Accounts(AbstractUser):
         return self.username
 
 class Reviews(models.Model):
+
+    REVIEW_STATUS = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("hidden", "Hidden"),
+    ]
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -137,6 +152,12 @@ class Reviews(models.Model):
     rating = models.PositiveSmallIntegerField()
 
     text = models.TextField()
+
+    status = models.CharField(
+        max_length=10,
+        choices=REVIEW_STATUS,
+        default="pending"
+    )
 
     helpful_count = models.PositiveIntegerField(default=0)
 
@@ -206,7 +227,6 @@ class ContactListModel(models.Model):
 class Booking(models.Model):
     BOOKING_STATUS = [
         ("pending_payment", "Pending Payment"),
-        ("payment_failed", "Pending Failed"),
         ("pending_approval", "Pending Approval"),
         ("confirmed", "Confirmed"),
         ("rejected", "Rejected"),
@@ -276,6 +296,10 @@ class Booking(models.Model):
 
     def save(self, *args, **kwargs):
         from django.utils import timezone
+        import uuid
+
+        if not self.booking_reference:
+            self.booking_reference = f"BKG-{uuid.uuid4().hex[:10].upper()}"
 
         if self.status == "pending_approval" and self.pending_approval_at is None:
             self.pending_approval_at = timezone.now()

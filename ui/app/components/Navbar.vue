@@ -12,7 +12,7 @@
         "
     >
 
-        <div class="flex items-center gap-2 ml-1">
+        <div v-if="authReady" class="flex items-center gap-2 ml-1">
 
             <div class="w-12 h-12 rounded-full overflow-hidden">
                 <img
@@ -25,7 +25,7 @@
         </div>
 
         <!-- Desktop Nav Links -->
-        <ul class="hidden md:flex items-center gap-10 text-white text-sm font-medium tracking-wide">
+        <ul v-if="authReady" class="hidden md:flex items-center gap-10 text-white text-sm font-medium tracking-wide">
 
             <li><a href="/" class="hover:text-[#c1121f] transition-colors duration-200">Home</a></li>
             <li><a href="/client/fleet" class="hover:text-[#c1121f] transition-colors duration-200">Fleet</a></li>
@@ -34,74 +34,71 @@
         
         </ul>
 
-        <ClientOnly>
-            <button
-                v-if="isLoggedIn"
-                @click="toggleDropdown"
+        <button
+            v-if="authReady && isLoggedIn"
+            @click="toggleDropdown"
+            class="
+                relative
+                hidden md:flex items-center gap-2
+                bg-[#0D0D0D] border border-[#323232] hover:border-[#C1121F]
+                text-white text-sm
+                pl-2 pr-3 py-2 rounded-full
+                transition-colors duration-200
+            "
+        >
+            <!-- Notification Badge -->
+            <span
+                v-if="unreadCount > 0 && !isDropdownOpen"
                 class="
-                    relative
-                    hidden md:flex items-center gap-2
-                    bg-[#0D0D0D] border border-[#323232] hover:border-[#C1121F]
-                    text-white text-sm
-                    pl-2 pr-3 py-2 rounded-full
-                    transition-colors duration-200
+                    absolute -top-1 -right-1
+                    min-w-[18px] h-[18px]
+                    px-1
+                    flex items-center justify-center
+                    rounded-full
+                    bg-[#C1121F]
+                    text-[10px] font-bold text-white
+                    leading-none
+                    z-10
                 "
             >
-                <!-- Notification Badge -->
-                <span
-                    v-if="unreadCount > 0 && !isDropdownOpen"
-                    class="
-                        absolute -top-1 -right-1
-                        min-w-[18px] h-[18px]
-                        px-1
-                        flex items-center justify-center
-                        rounded-full
-                        bg-[#C1121F]
-                        text-[10px] font-bold text-white
-                        leading-none
-                        z-10
-                    "
-                >
-                    {{ unreadCount > 99 ? '99+' : unreadCount }}
-                </span>
+                {{ unreadCount > 99 ? '99+' : unreadCount }}
+            </span>
 
-                <!-- Avatar -->
-                <div
-                    class="w-7 h-7 rounded-full bg-gray-500 flex items-center justify-center flex-shrink-0"
-                >
-                    <img
-                        v-if="isLoggedIn"
-                        :src="props.user?.profile_picture"
-                        alt="Profile"
-                        class="w-7 h-7 rounded-full object-cover"
-                    />
-                </div>
+            <!-- Avatar -->
+            <div
+                class="w-7 h-7 rounded-full bg-gray-500 flex items-center justify-center flex-shrink-0"
+            >
+                <img
+                    v-if="isLoggedIn"
+                    :src="props.user?.profile_picture"
+                    alt="Profile"
+                    class="w-7 h-7 rounded-full object-cover"
+                />
+            </div>
 
-                <span class="hidden sm:block truncate">
-                    {{ props.user?.given_name }}
-                </span>
+            <span class="hidden sm:block truncate">
+                {{ props.user?.given_name }}
+            </span>
 
-                <svg
-                    class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200"
-                    :class="{ 'rotate-180': isDropdownOpen }"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 9l-7 7-7-7"
-                    />
-                </svg>
-            </button>
-        </ClientOnly>
+            <svg
+                class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200"
+                :class="{ 'rotate-180': isDropdownOpen }"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                />
+            </svg>
+        </button>
 
         <!-- Dropdown Menu -->
-        <ClientOnly>
         <div
-            v-if="isDropdownOpen && isLoggedIn"
+            v-if="authReady && isDropdownOpen && isLoggedIn"
             class="
                 hidden md:block absolute right-8 top-15 mt-2 w-52 z-50
                 bg-[#0D0D0D] border border-[#323232] rounded-xl shadow-lg
@@ -222,35 +219,32 @@
             </button>
 
         </div>
-        </ClientOnly>
         
-        <ClientOnly>
-            <button
-                v-if="!isLoggedIn"
-                @click="$router.push('/client/login')"
-                class="
-                    hidden md:flex justify-between items-center gap-3
-                    bg-[#0D0D0D] border border-[#323232] hover:border-[#C1121F]
-                    text-white text-sm
-                    pl-2 pr-4 py-2 rounded-full
-                    transition-colors duration-200
-                "
-            >
+        <button
+            v-if="authReady && !isLoggedIn"
+            @click="$router.push('/client/login')"
+            class="
+                hidden md:flex justify-between items-center gap-3
+                bg-[#0D0D0D] border border-[#323232] hover:border-[#C1121F]
+                text-white text-sm
+                pl-2 pr-4 py-2 rounded-full
+                transition-colors duration-200
+            "
+        >
 
-                <!-- Avatar -->
-                <div class="w-7 h-7 rounded-full bg-[#C1121F] flex items-center justify-center flex-shrink-0">
-                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-                    </svg>
-                </div>
+            <!-- Avatar -->
+            <div class="w-7 h-7 rounded-full bg-[#C1121F] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+            </div>
 
-                <!-- Name -->
-                <span class="hidden sm:block truncate">
-                    Login
-                </span>
+            <!-- Name -->
+            <span class="hidden sm:block truncate">
+                Login
+            </span>
 
-            </button>
-        </ClientOnly>
+        </button>
 
         <!-- =========================
                 Mobile hamburger
@@ -282,6 +276,7 @@ const props = defineProps<{
         profile_picture?: string 
     } | null,
     isLoggedIn: boolean
+    authReady: boolean
 }>()
 
 const emit = defineEmits<{

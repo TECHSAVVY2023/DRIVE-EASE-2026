@@ -2,7 +2,7 @@
     <!-- Top Navbar -->
     <header
         class="
-            w-full bg-black border-b border-[#1f1f1f] 
+            fixed w-full bg-black border-b border-[#1f1f1f] 
             px-4 py-4
             flex items-center justify-between 
             sm:px-6 lg:px-8
@@ -122,6 +122,7 @@
 
                     <!-- Profile -->
                     <button
+                        @click="$router.push('/client/profile')"
                         class="
                             w-full flex items-center gap-3
                             px-4 py-3

@@ -7,6 +7,7 @@
     <Navbar
         :user="user"
         :is-logged-in="isLoggedIn"
+        :auth-ready="authReady"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
         @open-sidebar="handleOpenSidebar" 
@@ -25,7 +26,7 @@
 
 <script setup lang="ts">
 
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, authReady } = useAuth()
 const { apiFetch } = useApiFetch()
 
 const user = ref<any>(null)

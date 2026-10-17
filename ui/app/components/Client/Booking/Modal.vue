@@ -2,7 +2,7 @@
     <Transition name="fade">
         <div
             v-if="modelValue"
-            class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4"
+            class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-0 sm:p-4"
             @click.self="$emit('update:modelValue', false)"
         >
             <Transition
@@ -17,13 +17,14 @@
                     <div
                         v-if="modelValue"
                         class="
-                            bg-[#111111] border-t-[#C1121F] border-t-5 rounded-xl 
-                            w-full h-[90%] max-w-lg font-[poppins] flex flex-col
+                            bg-[#111111] border-t-[#C1121F] border-t-5 rounded-xl
+                            w-full h-[90dvh] sm:h-[90%] max-h-[100dvh] sm:max-h-[90dvh]
+                            max-w-lg font-[poppins] flex flex-col
                         "
                     >
                         <!-- Header -->
-                        <div class="px-6 pt-6 pb-4 flex-shrink-0">
-                            <h2 class="text-white font-extrabold text-xl">Book this car</h2>
+                        <div class="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 flex-shrink-0">
+                            <h2 class="text-white font-extrabold text-lg sm:text-xl">Book this car</h2>
                             <p class="text-[#929292] text-xs mt-1">Complete all steps to confirm your reservation</p>
                         </div>
 
@@ -33,11 +34,11 @@
                         />
 
                         <!-- Content -->
-                        <div class="scroll-container w-[100%] pl-6 pr-5 py-6 flex flex-col gap-4 overflow-y-auto">
+                        <div class="scroll-container w-full px-4 sm:pl-6 sm:pr-5 py-4 sm:py-6 flex flex-col gap-4 overflow-y-auto">
 
                             <!-- Car summary card -->
                             <div class="flex shrink-0 items-center gap-3 bg-[#1a1a1a] border border-[#C1121F] h-fit rounded-xl overflow-hidden">
-                                <div class="flex-none w-24 h-full overflow-hidden">
+                                <div class="flex-none w-20 sm:w-24 self-stretch overflow-hidden">
                                     <img
                                         :src="`${car?.meta.primary_image}`"
                                         :alt="`${car?.brand} ${car?.model}`"
@@ -46,7 +47,7 @@
                                 </div>
 
                                 <div class="flex-1 min-w-0 py-2">
-                                    <p class="text-white text-sm font-bold">
+                                    <p class="text-white text-sm font-bold truncate">
                                         {{ car?.brand }} {{ car?.model }}
                                     </p>
                                     <p class="text-gray-400 text-xs">
@@ -84,20 +85,20 @@
 
                             <!-- Step 3: Review & Confirm (placeholder) -->
                             <template v-else-if="currentStep === 3">
-                                <div class="bg-[#1a1a1a] border border-[#222] rounded-xl p-4 flex flex-col gap-3 text-sm">
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-400 text-xs">Name</span>
-                                        <span class="text-white text-xs font-semibold">{{ form.firstName }} {{ form.lastName }}</span>
+                                <div class="bg-[#1a1a1a] border border-[#222] rounded-xl p-3 sm:p-4 flex flex-col gap-3 text-sm">
+                                    <div class="flex justify-between gap-3">
+                                        <span class="text-gray-400 text-xs flex-shrink-0">Name</span>
+                                        <span class="text-white text-xs font-semibold text-right min-w-0 break-words">{{ form.firstName }} {{ form.lastName }}</span>
                                     </div>
 
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-400 text-xs">Address</span>
-                                        <span class="text-white text-xs font-semibold">{{ form.address }}</span>
+                                    <div class="flex justify-between gap-3">
+                                        <span class="text-gray-400 text-xs flex-shrink-0">Address</span>
+                                        <span class="text-white text-xs font-semibold text-right min-w-0 break-words">{{ form.address }}</span>
                                     </div>
 
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-400 text-xs">Contact</span>
-                                        <span class="text-white text-xs font-semibold">{{ form.contact }}</span>
+                                    <div class="flex justify-between gap-3">
+                                        <span class="text-gray-400 text-xs flex-shrink-0">Contact</span>
+                                        <span class="text-white text-xs font-semibold text-right min-w-0 break-words">{{ form.contact }}</span>
                                     </div>
 
                                     <div class="border-t border-[#222] pt-2 flex flex-col gap-2">
@@ -107,10 +108,10 @@
                                             <div
                                                 v-for="(url, index) in existingIdImages"
                                                 :key="'id-' + index"
-                                                class="flex items-center justify-between bg-[#0f0f0f] border border-white/10 rounded-lg px-3 py-2"
+                                                class="flex items-center justify-between gap-3 bg-[#0f0f0f] border border-white/10 rounded-lg px-3 py-2"
                                             >
-                                                <div class="flex items-center gap-3">
-                                                    <div class="w-8 h-8 flex items-center justify-center bg-[#1a1a1a] rounded">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-[#1a1a1a] rounded">
                                                         <svg class="w-4 h-4 text-[#C1121F]" fill="currentColor" viewBox="0 0 24 24">
                                                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                                                         </svg>
@@ -119,13 +120,13 @@
                                                     <a
                                                         :href="url"
                                                         target="_blank"
-                                                        class="text-white text-xs hover:text-[#C1121F] transition-colors"
+                                                        class="text-white text-xs truncate hover:text-[#C1121F] transition-colors"
                                                     >
                                                         Valid ID {{ index + 1 }}
                                                     </a>
                                                 </div>
 
-                                                <span class="text-[11px] text-green-400 font-medium">
+                                                <span class="text-[11px] text-green-400 font-medium flex-shrink-0">
                                                     Uploaded
                                                 </span>
                                             </div>
@@ -136,24 +137,24 @@
                                             <div
                                                 v-for="(file, index) in uploadedIdFiles"
                                                 :key="'uploaded-' + index"
-                                                class="flex items-center justify-between bg-[#0f0f0f] border border-white/10 rounded-lg px-3 py-2"
+                                                class="flex items-center justify-between gap-3 bg-[#0f0f0f] border border-white/10 rounded-lg px-3 py-2"
                                             >
-                                                <div class="flex items-center gap-3">
-                                                    <div class="w-8 h-8 flex items-center justify-center bg-[#1a1a1a] rounded">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-[#1a1a1a] rounded">
                                                         <svg class="w-4 h-4 text-[#C1121F]" fill="currentColor" viewBox="0 0 24 24">
                                                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                                                         </svg>
                                                     </div>
 
-                                                    <div class="flex flex-col">
+                                                    <div class="flex flex-col min-w-0">
                                                         <p @click="openImage(file)" 
-                                                            class="text-white text-xs truncate max-w-[100px] font-medium hover:text-[#c1121f] transition-colors cursor-pointer">
+                                                            class="text-white text-xs truncate font-medium hover:text-[#c1121f] transition-colors cursor-pointer">
                                                             {{ file.name }}
                                                         </p>
                                                     </div>
                                                 </div>
 
-                                                <span class="text-[11px] text-green-400 font-medium">
+                                                <span class="text-[11px] text-green-400 font-medium flex-shrink-0">
                                                     Uploaded
                                                 </span>
 
@@ -161,39 +162,39 @@
                                         </template>
                                     </div>
 
-                                    <div class="border-t border-[#222] pt-2 flex justify-between">
-                                        <span class="text-gray-400 text-xs">Pickup date</span>
-                                        <span class="text-white text-xs font-semibold">{{ formatDateTime(form.pickupDate) }}</span>
+                                    <div class="border-t border-[#222] pt-2 flex justify-between gap-3">
+                                        <span class="text-gray-400 text-xs flex-shrink-0">Pickup date</span>
+                                        <span class="text-white text-xs font-semibold text-right min-w-0 break-words">{{ formatDateTime(form.pickupDate) }}</span>
                                     </div>
 
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-400 text-xs">Pickup Location</span>
-                                        <span class="text-white text-xs font-semibold">{{ form.pickupLocation }}</span>
+                                    <div class="flex justify-between gap-3">
+                                        <span class="text-gray-400 text-xs flex-shrink-0">Pickup Location</span>
+                                        <span class="text-white text-xs font-semibold text-right min-w-0 break-words">{{ form.pickupLocation }}</span>
                                     </div>
 
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-400 text-xs">Return date</span>
-                                        <span class="text-white text-xs font-semibold">{{ formatDateTime(form.returnDate) }}</span>
+                                    <div class="flex justify-between gap-3">
+                                        <span class="text-gray-400 text-xs flex-shrink-0">Return date</span>
+                                        <span class="text-white text-xs font-semibold text-right min-w-0 break-words">{{ formatDateTime(form.returnDate) }}</span>
                                     </div>
 
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-400 text-xs">Return Location</span>
-                                        <span class="text-white text-xs font-semibold">{{ form.returnLocation }}</span>
+                                    <div class="flex justify-between gap-3">
+                                        <span class="text-gray-400 text-xs flex-shrink-0">Return Location</span>
+                                        <span class="text-white text-xs font-semibold text-right min-w-0 break-words">{{ form.returnLocation }}</span>
                                     </div>
 
-                                    <div class="border-t border-[#222] pt-2 flex justify-between">
-                                        <span class="text-gray-400 text-xs">Rental Duration</span>
-                                        <span class="text-white text-xs font-semibold">{{ rentalDays }} day(s)</span>
+                                    <div class="border-t border-[#222] pt-2 flex justify-between gap-3">
+                                        <span class="text-gray-400 text-xs flex-shrink-0">Rental Duration</span>
+                                        <span class="text-white text-xs font-semibold text-right">{{ rentalDays }} day(s)</span>
                                     </div>
 
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-400 text-xs">Rate per day</span>
-                                        <span class="text-white text-xs font-semibold">₱{{ car?.price_per_day.toLocaleString() }}</span>
+                                    <div class="flex justify-between gap-3">
+                                        <span class="text-gray-400 text-xs flex-shrink-0">Rate per day</span>
+                                        <span class="text-white text-xs font-semibold text-right">₱{{ car?.price_per_day.toLocaleString() }}</span>
                                     </div>
 
-                                    <div class="flex justify-between border-t border-[#222] pt-5">
-                                        <span class="text-white text-[18px] font-semibold">Total Price</span>
-                                        <span class="text-white text-[18px] font-bold">
+                                    <div class="flex justify-between gap-3 border-t border-[#222] pt-5">
+                                        <span class="text-white text-base sm:text-[18px] font-semibold">Total Price</span>
+                                        <span class="text-white text-base sm:text-[18px] font-bold">
                                             ₱{{ totalPrice.toLocaleString() }}
                                         </span>
                                     </div>
@@ -202,7 +203,7 @@
 
                         </div>
 
-                        <div class="flex flex-col gap-2 mt-4 mb-8 mx-6">
+                        <div class="flex flex-col gap-2 mt-4 mb-5 sm:mb-8 mx-4 sm:mx-6 flex-shrink-0">
                             <button
                                 @click="currentStep === steps.length ? confirmBooking() : nextStep(form, existingIdImages, uploadedIdFiles)"
                                 :disabled="isSubmitting"

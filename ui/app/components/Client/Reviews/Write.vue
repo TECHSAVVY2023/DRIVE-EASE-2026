@@ -181,7 +181,6 @@ interface Props {
     reviewState: ReturnType<typeof useWriteReview>
 }
 
-
 const props = withDefaults(defineProps<Props>(), {
     mode: 'create',
 })

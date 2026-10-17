@@ -8,57 +8,77 @@ export const useApiFetch = () => {
         url: string,
         options: any = {}
     ): Promise<T> => {
-        console.log('apiBase:', apiBase)
-        
+
+        console.log('========== API FETCH START ==========')
+        console.log('URL:', `${apiBase}${url}`)
+        console.log('TOKEN EXISTS:', !!token.value)
+        console.log('TOKEN:', token.value)
+
         const makeRequest = (jwt?: string) => {
-            console.log('making request with token:', jwt)
-            console.log('url:', `${apiBase}${url}`)
-            
+            console.log('--- MAKE REQUEST ---')
+            console.log('JWT EXISTS:', !!jwt)
+            console.log('REQUEST URL:', `${apiBase}${url}`)
+
             return $fetch<T>(`${apiBase}${url}`, {
                 ...options,
                 headers: {
                     ...options.headers,
-                    ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+                    ...(jwt
+                        ? { Authorization: `Bearer ${jwt}` }
+                        : {}),
                 },
             })
         }
 
         try {
-            // 1st attempt
-            console.log('checking if token expired...')
-            return await makeRequest(token.value ?? undefined)
-            
+            console.log('--- FIRST REQUEST ---')
+
+            const result = await makeRequest(
+                token.value ?? undefined
+            )
+
+            console.log('--- FIRST REQUEST SUCCESS ---')
+            console.log(result)
+
+            return result
+
         } catch (err: any) {
 
-            console.log('handling error...')
+            console.log('--- REQUEST ERROR ---')
 
             const status = err?.response?.status || err?.status
 
-            console.log('status:', status)
-            console.log('error:', err)
+            console.log('STATUS:', status)
+            console.log('ERROR:', err)
 
-            // Only handle JWT expiry
             if (status === 401) {
 
-                console.log('getting new refresh token...')
+                console.log('--- TOKEN EXPIRED ---')
+                console.log('STARTING REFRESH...')
 
-                // try refresh
                 const newToken = await refreshAccessToken()
 
+                console.log('REFRESH RESULT:', !!newToken)
+
                 if (!newToken) {
-                    console.log('no new token:', newToken)
+                    console.log('REFRESH FAILED → LOGOUT')
+
                     logout()
                     throw err
                 }
 
-                // retry original request ONCE
-                return await makeRequest(newToken)
+                console.log('--- RETRYING REQUEST ---')
+
+                const result = await makeRequest(newToken)
+
+                console.log('--- RETRY SUCCESS ---')
+
+                return result
             }
 
             throw err
         }
     }
-    console.log('token not expired and all good')
 
     return { apiFetch }
 }

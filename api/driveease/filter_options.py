@@ -6,7 +6,7 @@ from .models import Cars
 def get_filter_options():
     categories = (
         Cars.objects
-        .values("car_type")
+        .values("car_type", "car_type__name")
         .annotate(count=Count("car_id"))
         .order_by("car_type")
     )
@@ -43,7 +43,8 @@ def get_filter_options():
     return {
         "categories": [
             {
-                "label": item["car_type"],
+                "id": item["car_type"],
+                "label": item["car_type__name"],
                 "count": item["count"],
             }
             for item in categories

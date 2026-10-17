@@ -121,9 +121,9 @@
                         <button
                             @click="emit('book')"
                             class="
-                                w-full bg-[#C1121F] hover:shadow-md hover:shadow-[#C1121F]/30
+                                w-full bg-[#C1121F] hover:bg-[#9B0E18]
                                 text-white text-sm font-bold py-3 rounded-lg
-                                transition-all duration-300 cursor-pointer
+                                transition-all duration-200 cursor-pointer
                             "
                         >
                             Book now
@@ -135,7 +135,7 @@
                                 w-full border
                                 text-sm font-semibold
                                 py-3 rounded-lg flex items-center justify-center gap-2
-                                transition-all duration-300 cursor-pointer
+                                transition-all duration-200 cursor-pointer
                                 border border-[#333333] text-[#8F8F8F] hover:text-[#C1121F] hover:border-[#C1121F]
                             "
                         >

@@ -127,29 +127,47 @@ export const useReviews = () => {
         form: {
             rating: number
             review: string
-            images: File[]
+            images?: string[]
         }
     ) => {
-        const formData = new FormData()
-
-        formData.append("rating", String(form.rating))
-        formData.append("review", form.review)
-
-        if (form.images?.length) {
-            form.images.forEach((image) => {
-                formData.append("images", image)
-            })
-        }
-
-        const response = await apiFetch(
+        const response = await apiFetch<{ message: string }>(
             API_ENDPOINTS.REVIEWS.CREATE(carId),
             {
                 method: "POST",
-                body: formData,
+                body: form,
             }
         )
 
-        // Clear the cached reviews for this car
+        // Clear cached reviews for this car
+        Object.keys(carReviewsCache).forEach((key) => {
+            if (key.startsWith(`${carId}-`)) {
+                delete carReviewsCache[key]
+                delete reviewsCacheExpiresAt[key]
+            }
+        })
+
+        return response
+    }
+
+    const updateReview = async (
+        carId: string,
+        reviewId: number,
+        body: {
+            rating: number
+            review: string
+            images: string[]
+            deleted_images?: string[]
+        }
+    ) => {
+        const response = await apiFetch<{ message: string }>(
+            `/reviews/cars/${carId}/edit/${reviewId}/`,
+            {
+                method: "PATCH",
+                body
+            }
+        )
+
+        // Clear cached reviews
         Object.keys(carReviewsCache).forEach((key) => {
             if (key.startsWith(`${carId}-`)) {
                 delete carReviewsCache[key]
@@ -162,6 +180,7 @@ export const useReviews = () => {
 
     return {
         createReview,
+        updateReview,
         fetchCarReviews,
         fetchAllReviews,
         fetchFeaturedReviews,

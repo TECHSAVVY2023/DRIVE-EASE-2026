@@ -13,6 +13,7 @@
     
     <Navbar
         :user="user"
+        :auth-ready="authReady"
         :is-logged-in="isLoggedIn"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
@@ -266,7 +267,7 @@ const hours: Hour[] = [
 ]
 
 //Navbar + User Profile + Working login // Line 244-272 //
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, authReady } = useAuth()
 const { apiFetch } = useApiFetch()
 
 const user = ref<any>(null)

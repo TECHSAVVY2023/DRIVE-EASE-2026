@@ -132,7 +132,7 @@ class GoogleCallbackView(APIView):
 
             if auth_user.is_staff:
                 return redirect(
-                    f"{frontend_url}/admin-dashboard/?access={access_token}&refresh={refresh_token}"
+                    f"{frontend_url}/admin/admin-dashboard/?access={access_token}&refresh={refresh_token}"
                 )
 
             return redirect(
@@ -217,5 +217,6 @@ class CookieTokenRefreshView(TokenRefreshView):
         serializer.is_valid(raise_exception=True)
 
         return Response({
-            "access": serializer.validated_data["access"]
+            "access": serializer.validated_data["access"],
+            "refresh": serializer.validated_data.get("refresh")
         })

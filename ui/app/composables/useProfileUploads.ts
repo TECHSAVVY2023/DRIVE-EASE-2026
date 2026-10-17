@@ -9,12 +9,7 @@ export function useProfileUploads() {
     const existingIdImages = ref<string[]>([])
     const deletedIdImages = ref<string[]>([])
 
-    const profileInput = ref<HTMLInputElement | null>(null)
     const idInput = ref<HTMLInputElement | null>(null)
-
-    function triggerProfileUpload() {
-        profileInput.value?.click()
-    }
 
     function triggerIdUpload() {
         idInput.value?.click()
@@ -22,15 +17,14 @@ export function useProfileUploads() {
 
     function handleProfileChange(e: Event) {
         const input = e.target as HTMLInputElement
+        const file = input.files?.[0]
 
-        if (!input.files) return
-
-        profileImage.value = input.files[0]
-
-        const file = input.files[0]
+        if (!file) return
 
         profileImage.value = file
         profilePreview.value = URL.createObjectURL(file)
+
+        input.value = ''
     }
 
     function handleIdChange(e: Event) {
@@ -59,21 +53,23 @@ export function useProfileUploads() {
 
     const validateFile = async (file: File): Promise<boolean> => {
         const MAX_FILE_SIZE = 50 * 1024 * 1024
-        const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png']
+        const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'pdf']
 
         const extension = file.name.split('.').pop()?.toLowerCase()
 
         if (!extension || !ALLOWED_EXTENSIONS.includes(extension)) {
             $swal.close()
+
             await $swal.fire({
                 icon: 'error',
                 title: 'Invalid File',
-                text: 'Only JPG and PNG images are allowed.',
+                text: 'Only JPG, JPEG, PNG, and PDF files are allowed.',
                 confirmButtonText: 'OK',
                 confirmButtonColor: '#C1121F',
                 background: '#1a1a1a',
                 color: '#ffffff'
             })
+
             return false
         }
 
@@ -81,12 +77,13 @@ export function useProfileUploads() {
             await $swal.fire({
                 icon: 'error',
                 title: 'File Too Large',
-                text: 'Image size must not exceed 50 MB.',
+                text: 'File size must not exceed 50 MB.',
                 confirmButtonText: 'OK',
                 confirmButtonColor: '#C1121F',
                 background: '#1a1a1a',
                 color: '#ffffff'
             })
+
             return false
         }
 
@@ -100,7 +97,7 @@ export function useProfileUploads() {
         existingIdImages.value.splice(index, 1)
     }
 
-    const uploadProfilePicture = async () => {
+    const uploadProfilePicture = async (): Promise<string | false | null> => {
         if (!profileImage.value) {
             return null
         }
@@ -146,9 +143,7 @@ export function useProfileUploads() {
         profileImage,
         validateFile,
         profilePreview,
-        profileInput,
         idInput,
-        triggerProfileUpload,
         triggerIdUpload,
         handleProfileChange,
         handleIdChange,

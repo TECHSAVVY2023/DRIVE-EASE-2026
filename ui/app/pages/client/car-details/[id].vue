@@ -12,7 +12,8 @@
     
     <Navbar
         :user="user"
-        :isLoggedIn="isLoggedIn"
+        :is-logged-in="isLoggedIn"
+        :auth-ready="authReady"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
         @open-sidebar="handleOpenSidebar" 
@@ -142,15 +143,14 @@ import { ref } from 'vue'
 const route = useRoute()
 const router = useRouter()
 
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, authReady } = useAuth()
 const { apiFetch } = useApiFetch()
+const { createReview, updateReview } = useReviews()
 
-const loading = ref(false)
 const OpenWriteReviewModal = ref(false)
 const OpenEditReviewModal = ref(false)
 
 const { $swal } = useNuxtApp()
-const { fetchCarReviews } = useReviews()
 
 const user = ref<any>(null)
 
@@ -163,14 +163,6 @@ const { formattedRatingBreakdown, displayedReviews, totalReviews,
 const { car, getCar } = useCarDetail()
 
 const reviewState = useWriteReview({ carId })
-
-const hasUserReviewed = computed(() => {
-    if (!isLoggedIn.value || !user.value) return false
-
-    return reviews.value.some(
-        review => review.user.id === user.value.id
-    )
-})
 
 const openBooking = async () => {
     if (!user.value) {
@@ -241,10 +233,11 @@ const handleReviewSubmit = async () => {
             body.deleted_images = removedImages
         }
 
-        const res = await apiFetch<{ message: string }>(`/reviews/cars/${carId}/edit/${myReview.value?.id}/`, {
-            method: 'PATCH',
+        const res = await updateReview(
+            carId,
+            myReview.value!.id,
             body
-        })
+        )
 
         $swal.close()
 
@@ -322,10 +315,7 @@ const handleReviewSubmit = async () => {
 
         console.log(body)
 
-        const res = await apiFetch<{ message: string }>(`/reviews/cars/${carId}/create/`, {
-            method: 'POST',
-            body
-        })
+        const res = await createReview(carId, body)
 
         $swal.close()
 

@@ -12,6 +12,7 @@
 
     <Navbar
         :user="user"
+        :auth-ready="authReady"
         :is-logged-in="isLoggedIn"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
@@ -34,9 +35,8 @@
 
             <SidebarFilters
                 :show-filters="showFilters"
-                :filters="filterState.filters"
-                :open="filterState.open"
-                
+                :open="open"
+
                 :carTypeOptions="carTypeOptions"
                 :selectedCarTypes="selectedCarType"
                 @update:selectedCarTypes="selectedCarType = $event"
@@ -60,7 +60,7 @@
                 :max-price="maxPrice"
                 @update:max-price="maxPrice = $event"
 
-                @toggle-section="filterState.toggleSection"
+                @toggle-section="toggleSection"
                 @reset-filters="resetFilters"
             />
 
@@ -134,7 +134,7 @@
 import { ref } from 'vue'
 import type { Car } from '~/utils/api/api'
 
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, authReady } = useAuth()
 const { apiFetch } = useApiFetch()
 
 const router = useRouter()
@@ -150,7 +150,7 @@ watch(isLoggedIn, async (val) => {
     }
 }, { immediate: true })
 
-const { 
+const {
     menuOpen,
     toggleMenu,
     closeMenu,
@@ -158,17 +158,12 @@ const {
     handleOpenSidebar
 } = useNavbar()
 
-/* ✅ SINGLE SOURCE OF TRUTH */
-const filterState = useCarFilters()
-
-/* cars */
-const { cars } = useCars()
-
-const { 
-    fleet, count, currentPage, search, selectedTransmission, selectedFeature, selectedSeat, 
-    selectedCarType, selectedFuel, transmissionOptions, carTypeOptions, fuelTypeOptions, 
-    seatOptions, featureOptions, sortBy, maxPrice, fetchCars, totalPages, showFilters, resetFilters
-} = useFleetList()
+const {
+    fleet, count, currentPage, search, selectedTransmission, selectedFeature, selectedSeat,
+    selectedCarType, selectedFuel, transmissionOptions, carTypeOptions, fuelTypeOptions,
+    seatOptions, featureOptions, sortBy, maxPrice, fetchCars, totalPages, showFilters, resetFilters,
+    open, toggleSection
+} = useFleetList(true)
 
 const showBookingModal = ref(false)
 const selectedCar = ref<Car | null>(null)
@@ -201,6 +196,7 @@ const openBookingModal = async (car: Car) => {
 const toggleFilters = () => {
     showFilters.value = !showFilters.value
 }
+
 
 onMounted(async () => {
     await fetchCars()

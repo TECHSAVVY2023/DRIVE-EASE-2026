@@ -2,7 +2,7 @@
     <!-- Sidebar -->
     <aside
         :class="[
-            'fixed top-0 left-0 z-50 md:static sm:w-64 md:w-56 bg-[#1B1B1B] border-r border-[#1f1f1f] flex flex-col transition-transform duration-300',
+            'fixed top-0 left-0 z-50 min-h-screen md:static sm:w-64 md:w-56 bg-[#1B1B1B] border-r border-[#1f1f1f] flex flex-col transition-transform duration-300',
             sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         ]"
     >
@@ -73,61 +73,25 @@
                 Main
             </p>
 
-            <router-link
+            <AdminCommonSidebarNavItem
                 v-for="item in menu.filter(i => i.section === 'main')"
                 :key="item.key"
-                :to="item.link"
-                class="flex items-center justify-between gap-3 px-4 py-3 md:py-2.5 transition-colors duration-200"
-                :class="activeItem === item.key
-                    ? 'bg-[#252525] text-white font-semibold border-l-4 border-[#c1121f]'
-                    : 'text-[#7E7E7E] hover:text-white hover:bg-[#232323]'"
-            >
-                <div class="flex items-center gap-3 min-w-0">
-                    
-                    <div v-html="icons[item.icon]"></div>
-                    <span class="truncate">
-                        {{ item.label }}
-                    </span>
-
-                </div>
-
-                <span
-                v-if="item.badge"
-                class="bg-[#C1121F] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                >
-                {{ item.badge }}
-                </span>
-            </router-link>
+                :item="item"
+                :active="activeItem === item.key"
+                :icon="icons[item.icon]"
+            />
             
             <p class="text-[#444] uppercase font-bold text-[10px] px-4 mb-1">
                 Report
             </p>
 
-            <router-link
+            <AdminCommonSidebarNavItem
                 v-for="item in menu.filter(i => i.section === 'report')"
                 :key="item.key"
-                :to="item.link"
-                class="flex items-center justify-between gap-3 px-4 py-3 md:py-2.5 transition-colors duration-200"
-                :class="activeItem === item.key
-                    ? 'bg-[#252525] text-white font-semibold border-l-4 border-[#c1121f]'
-                    : 'text-[#7E7E7E] hover:text-white hover:bg-[#232323]'"
-            >
-                <div class="flex items-center gap-3 min-w-0">
-                    
-                    <div v-html="icons[item.icon]"></div>
-                    <span class="truncate">
-                        {{ item.label }}
-                    </span>
-
-                </div>
-
-                <span
-                v-if="item.badge"
-                class="bg-[#C1121F] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                >
-                {{ item.badge }}
-                </span>
-            </router-link>
+                :item="item"
+                :active="activeItem === item.key"
+                :icon="icons[item.icon]"
+            />
 
         </nav>
 
@@ -197,14 +161,21 @@ const icons: Record<string, any> = {
                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
             />
         </svg>
-    `
+    `,
+    star: `
+        <svg class="w-5 h-5 md:w-4 md:h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3z"
+            />
+        </svg>
+    `,
 }
 
 const dashboardItem = {
     key: 'dashboard',
     label: 'Dashboard',
     icon: 'home',
-    link: '/admin-dashboard'
+    link: '/admin/admin-dashboard'
 }
 
 const menu = [
@@ -214,28 +185,35 @@ const menu = [
         icon: 'bell',
         badge: 67,
         section: 'main',
-        link: '/admin/notifications'
+        link: '/admin/admin-notification'
+    },
+    {
+        key: 'ratings',
+        label: 'Reviews',
+        icon: 'star',
+        section: 'main',
+        link: '/admin/admin-review'
     },
     {
         key: 'bookings',
         label: 'Bookings',
         icon: 'clipboard',
         section: 'main',
-        link: '/admin/bookings'
+        link: '/admin/admin-booking'
     },
     {
         key: 'fleet',
         label: 'Fleet',
         icon: 'bolt',
         section: 'main',
-        link: '/admin-fleet'
+        link: '/admin/admin-fleet'
     },
     {
         key: 'users',
         label: 'Users',
         icon: 'users',
         section: 'main',
-        link: '/admin/users'
+        link: '/admin/admin-users'
     },
     {
         key: 'analytics',

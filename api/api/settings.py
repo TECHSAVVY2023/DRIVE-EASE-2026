@@ -33,7 +33,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "chamber-itself-mary-excluding.trycloudflare.com",
+    "berkeley-lucas-eur-symptoms.trycloudflare.com",
 ]
 
 
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework_simplejwt.token_blacklist',
     'driveease',
     'rest_framework',
     'corsheaders',
@@ -139,6 +140,9 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
+
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 WSGI_APPLICATION = 'api.wsgi.application'

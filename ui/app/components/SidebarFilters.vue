@@ -15,7 +15,7 @@
         <!-- Category -->
         <div class="flex flex-col">
 
-            <button @click="toggleSection('category')" class="flex items-center justify-between w-full px-5 py-4">
+            <button @click="toggleSection('category')" class="flex items-center justify-between w-full px-5 py-4 cursor-pointer">
                 
                 <span class="text-white font-semibold">Category</span>
                 <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.category ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -25,36 +25,48 @@
             </button>
 
             <div v-if="open.category" class="flex flex-col gap-1 px-5 pb-4">
-
-                <label 
-                    v-for="cat in props.carTypeOptions" 
-                    :key="cat.label" 
+                <label
+                    v-for="cat in props.carTypeOptions"
+                    :key="cat.id"
                     class="flex items-center justify-between cursor-pointer group rounded-md py-1 px-3 transition-all duration-200 ease-in-out"
-                    :class="props.selectedCarTypes.includes(cat.label) ? 'bg-[#252525] border-l-4 border-[#C1121F]' : 'border-transparent'"
+                    :class="
+                        props.selectedCarTypes.includes(cat.id)
+                            ? 'bg-[#252525] border-l-4 border-[#C1121F]'
+                            : 'border-transparent'
+                    "
                     @click="
                         emit(
                             'update:selectedCarTypes',
-                            props.selectedCarTypes.includes(cat.label)
-                                ? props.selectedCarTypes.filter(c => c !== cat.label)
-                                : [...props.selectedCarTypes, cat.label]
+                            props.selectedCarTypes.includes(cat.id)
+                                ? props.selectedCarTypes.filter(id => id !== cat.id)
+                                : [...props.selectedCarTypes, cat.id]
                         )
                     "
                 >
-
                     <div class="flex items-center gap-2">
                         <span
                             class="text-xs transition-colors duration-200 cursor-pointer"
-                            :class="props.selectedCarTypes.includes(cat.label) ? 'text-white font-semibold' : 'text-[#7E7E7E] group-hover:text-white'"
-                        >{{ cat.label.charAt(0).toUpperCase() + cat.label.slice(1) }}</span>
+                            :class="
+                                props.selectedCarTypes.includes(cat.id)
+                                    ? 'text-white font-semibold'
+                                    : 'text-[#7E7E7E] group-hover:text-white'
+                            "
+                        >
+                            {{ cat.label }}
+                        </span>
                     </div>
 
                     <span
                         class="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                        :class="props.selectedCarTypes.includes(cat.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'"
-                    >{{ cat.count }}</span>
-                    
+                        :class="
+                            props.selectedCarTypes.includes(cat.id)
+                                ? 'bg-[#C1121F] text-white'
+                                : 'bg-[#2a2a2a] text-[#7E7E7E]'
+                        "
+                    >
+                        {{ cat.count }}
+                    </span>
                 </label>
-
             </div>
 
         </div>
@@ -64,7 +76,7 @@
         <!-- Price Range -->
         <div class="flex flex-col">
 
-            <button @click="toggleSection('price')" class="flex items-center justify-between w-full px-5 py-4">
+            <button @click="toggleSection('price')" class="flex items-center justify-between w-full px-5 py-4 cursor-pointer">
                 
                 <span class="text-white font-semibold">Price range</span>
                 <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.price ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,7 +114,7 @@
         <!-- Transmission -->
         <div class="flex flex-col">
 
-            <button @click="toggleSection('transmission')" class="flex items-center justify-between w-full px-5 py-4">
+            <button @click="toggleSection('transmission')" class="flex items-center justify-between w-full px-5 py-4 cursor-pointer">
                 
                 <span class="text-white font-semibold">Transmission</span>
                 <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.transmission ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -149,7 +161,7 @@
         <!-- Fuel Type -->
         <div class="flex flex-col">
             
-            <button @click="toggleSection('fuel')" class="flex items-center justify-between w-full px-5 py-4">
+            <button @click="toggleSection('fuel')" class="flex items-center justify-between w-full px-5 py-4 cursor-pointer">
                 
                 <span class="text-white text-xs font-semibold">Fuel type</span>
                 <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.fuel ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -195,7 +207,7 @@
         <!-- Seats -->
         <div class="flex flex-col">
 
-            <button @click="toggleSection('seats')" class="flex items-center justify-between w-full px-5 py-4">
+            <button @click="toggleSection('seats')" class="flex items-center justify-between w-full px-5 py-4 cursor-pointer">
                 
                 <span class="text-white text-xs font-semibold">Seats</span>
                 <svg class="w-4 h-4 text-[#7E7E7E] transition-transform duration-200" :class="open.seats ? '' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -242,7 +254,7 @@
         <!-- Features -->
         <div class="flex flex-col">
 
-            <button @click="toggleSection('features')" class="flex items-center justify-between w-full px-5 py-4">
+            <button @click="toggleSection('features')" class="flex items-center justify-between w-full px-5 py-4 cursor-pointer">
                 
                 <span class="text-white text-xs font-semibold">Features</span>
 
@@ -269,14 +281,14 @@
                 >
                 <div class="flex items-center gap-2">
 
-                    <span class="text-xs transition-colors duration-200 cursor-pointer" 
+                    <span class="text-xs transition-colors duration-200 cursor-pointer"
                         :class="props.selectedFeature.includes(f.label)
                         ? 'text-white font-semibold'
                         : 'text-[#7E7E7E] group-hover:text-white'"
                     >{{ f.label.charAt(0).toUpperCase() + f.label.slice(1) }}</span>
 
                 </div>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="filters.seats.includes(f.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ f.count }}</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="props.selectedFeature.includes(f.label) ? 'bg-[#C1121F] text-white' : 'bg-[#2a2a2a] text-[#7E7E7E]'">{{ f.count }}</span>
                 </label>
             
             </div>
@@ -291,18 +303,11 @@
     const props = defineProps<{
         showFilters: boolean
         maxPrice: number
-        selectedCarTypes: string[]
+        selectedCarTypes: number[]
         selectedTransmission: string[]
         selectedSeat: string[]
         selectedFuel: string[]
         selectedFeature: string[]
-        filters: {
-            category: string[]
-            transmission: string[]
-            fuel: string[]
-            seats: string[]
-            feature: string[]
-        }
         open: {
             category: boolean
             price: boolean
@@ -312,7 +317,11 @@
             features: boolean
         }
         transmissionOptions: { label: string; count: number }[]
-        carTypeOptions: { label: string; count: number }[]
+        carTypeOptions: {
+            id: number
+            label: string
+            count: number
+        }[]
         fuelTypesOptions: { label: string; count: number }[]
         seatOptions: { label: string; count: number }[]
         featureOptions: { label: string; count: number }[]
@@ -321,7 +330,7 @@
     const emit = defineEmits<{
         toggleSection: [key: 'category' | 'price' | 'transmission' | 'fuel' | 'seats' | 'features']
         resetFilters: []
-        'update:selectedCarTypes': [value: string[]]
+        'update:selectedCarTypes': [value: number[]]
         'update:selectedTransmission': [value: string[]]
         'update:selectedSeat': [value: string[]]
         'update:selectedFuel': [value: string[]]

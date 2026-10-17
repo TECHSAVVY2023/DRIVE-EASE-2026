@@ -1,4 +1,5 @@
 import { type FleetResponse } from '~/utils/api/api'
+import { type FleetStatsResponse } from '~/utils/api/api'
 
 const fleetCacheExpiresAt: Record<string, number> = {}
 const FLEET_CACHE_TTL_MS = 60 * 1000
@@ -22,6 +23,8 @@ export const useFleet = () => {
             features,
             sort,
             max_price,
+            status,
+            prioritize_available = false,
         }: {
             force?: boolean
             page?: number
@@ -34,6 +37,8 @@ export const useFleet = () => {
             features?: string[]
             sort?: string
             max_price?: number
+            status?: string
+            prioritize_available?: boolean
         } = {}
     ): Promise<FleetResponse> => {
 
@@ -47,7 +52,9 @@ export const useFleet = () => {
             `-fuel_type-${fuel_type ?? 'all'}` +
             `-features-${features?.slice().sort().join('-') ?? 'all'}` +
             `-max-${max_price ?? 'none'}` +
-            `-sort-${sort ?? 'newest'}`
+            `-sort-${sort ?? 'newest'}` +
+            `-status-${status ?? 'all'}` +
+            `-prioritize-${prioritize_available}`
 
         const now = Date.now()
 
@@ -80,6 +87,9 @@ export const useFleet = () => {
             params.append("max_price", String(max_price))
         }
 
+        if (status) params.append('status', status)
+        if (prioritize_available) params.append('prioritize_available', 'true')
+
         const request = apiFetch<FleetResponse>(
             `/fleet/?${params.toString()}`
         )
@@ -97,7 +107,12 @@ export const useFleet = () => {
         return request
     }
 
+    const fetchFleetStats = async (): Promise<FleetStatsResponse> => {
+        return await apiFetch<FleetStatsResponse>('/fleet/stats/')
+    }
+
     return {
         fetchFleet,
+        fetchFleetStats,
     }
 }

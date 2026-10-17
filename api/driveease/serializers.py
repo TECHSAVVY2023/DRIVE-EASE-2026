@@ -1,21 +1,62 @@
+import uuid
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import ContactListModel, Cars, FileUploadModel, Reviews, Booking, Payment, Feature, Notification
+from .models import Accounts, ContactListModel, Cars, FileUploadModel, Reviews, Booking, Payment, Feature, Notification, CarType
 
 User = get_user_model()
+
+#Common Serializers
+
+class MiniCarSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cars
+        fields = (
+            "car_id",
+            "brand",
+            "model",
+            "image",
+            "year",
+        )
+
+    def get_image(self, obj):
+        return obj.meta.get("primary_image")
+
+class UserMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "first_name", "last_name", "email", "profile_picture"]
 
 class ContactListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactListModel
         fields = '__all__'
 
+class CarTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarType
+        fields = ["id", "name", "slug"]
+
+class FeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feature
+        fields = ["id", "name", "slug"]
+
 class CarSerializer(serializers.ModelSerializer):
     unavailable_periods = serializers.SerializerMethodField()
+    rental_count = serializers.IntegerField(read_only=True)
+
+    car_type = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="slug",
+    )
 
     features = serializers.SlugRelatedField(
         many=True,
         read_only=True,
-        slug_field="name"
+        slug_field="slug",
     )
 
     class Meta:
@@ -42,15 +83,125 @@ class CarSerializer(serializers.ModelSerializer):
             for booking in bookings
         ]
 
-class UserMiniSerializer(serializers.ModelSerializer):
+class CarCreateSerializer(serializers.ModelSerializer):
+    car_type = serializers.SlugRelatedField(
+        slug_field="slug",
+        queryset=CarType.objects.all(),
+        allow_null=True,
+    )
+
+    features = serializers.SlugRelatedField(
+        many=True,
+        slug_field="slug",
+        queryset=Feature.objects.all(),
+    )
+
     class Meta:
-        model = User
-        fields = ["id", "first_name", "last_name", "profile_picture"]
+        model = Cars
+        fields = [
+            "car_id",
+            "brand",
+            "model",
+            "year",
+            "car_type",
+            "price_per_day",
+            "transmission",
+            "engine",
+            "fuel_type",
+            "seats",
+            "note",
+            "meta",
+            "status",
+            "features",
+        ]
+        read_only_fields = ["car_id"]
+
+    def create(self, validated_data):
+        features = validated_data.pop("features", [])
+
+        validated_data["car_id"] = str(uuid.uuid4())
+        validated_data["created_by"] = self.context["request"].user
+
+        car = Cars.objects.create(**validated_data)
+        car.features.set(features)
+
+        return car
+
+class CarUpdateSerializer(serializers.ModelSerializer):
+    car_type = serializers.SlugRelatedField(
+        slug_field="slug",
+        queryset=CarType.objects.all(),
+        allow_null=True,
+    )
+
+    features = serializers.SlugRelatedField(
+        many=True,
+        slug_field="slug",
+        queryset=Feature.objects.all(),
+    )
+
+    class Meta:
+        model = Cars
+        fields = [
+            "car_id",
+            "brand",
+            "model",
+            "year",
+            "car_type",
+            "price_per_day",
+            "transmission",
+            "engine",
+            "fuel_type",
+            "seats",
+            "note",
+            "meta",
+            "status",
+            "features",
+        ]
+        read_only_fields = ["car_id"]
+
+class AccountsSerializer(serializers.ModelSerializer):
+    given_name = serializers.CharField(source='first_name')
+    family_name = serializers.CharField(source='last_name')
+    status = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
+    rentals = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Accounts
+        fields = [
+            'id',
+            'email',
+            'given_name',
+            'family_name',
+            'contact_number',
+            'address',
+            'profile_picture',
+            'id_images',
+            'date_joined',
+            'status',
+            'role',
+            'rentals',
+        ]
+
+    def get_status(self, obj):
+        if not obj.is_active:
+            return 'Suspended'
+        return 'Active'
+
+    def get_role(self, obj):
+        if obj.is_superuser:
+            return 'Super Admin'
+        if obj.is_staff:
+            return 'Admin'
+        return 'User'
 
 class FileUploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = FileUploadModel
         fields = ['id', 'file']
+
+# Review Serializers
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserMiniSerializer(read_only=True)
@@ -69,6 +220,26 @@ class ReviewSerializer(serializers.ModelSerializer):
 
         return obj.helpful_votes.filter(user=request.user).exists()
 
+class AdminReviewSerializer(serializers.ModelSerializer):
+    user = UserMiniSerializer(read_only=True)
+    car = MiniCarSerializer(read_only=True)
+
+    class Meta:
+        model = Reviews
+        fields = [
+            'id',
+            'car',
+            'user',
+            'rating',
+            'text',
+            'status',
+            'created_at',
+            'images',
+            'helpful_count',
+        ]
+
+# Booking Serializers
+
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
@@ -85,6 +256,7 @@ class TransactionCarSerializer(serializers.ModelSerializer):
             "brand",
             "model",
             "image",
+            "year",
         )
 
     def get_image(self, obj):
@@ -112,6 +284,11 @@ class TransactionSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    payment_status = serializers.CharField(
+        source="payments.status",
+        read_only=True
+    )
+
     class Meta:
         model = Booking
         fields = (
@@ -119,6 +296,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             "status",
             "car",
             "user",
+            "payment_status",
             "payment_method",
             "created_at",
             "pending_approval_at",
@@ -144,6 +322,8 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
+
+# Notification Serializers
 
 class NotificationBookingSerializer(serializers.ModelSerializer):
     class Meta:

@@ -4,10 +4,15 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .pagination import ReviewPagination, FleetPagination, TransactionPagination, NotificationPagination
+
+from .pagination import ( 
+    ReviewPagination, FleetPagination, TransactionPagination, 
+    NotificationPagination, AccountsPagination, AdminReviewPagination
+)
+
 from rest_framework.decorators import api_view, permission_classes
 
-from .models import ContactListModel, Cars, Reviews, ReviewHelpful, FileUploadModel, Booking, Payment, Notification
+from .models import ContactListModel, Cars, Reviews, ReviewHelpful, FileUploadModel, Booking, Payment, Notification, Accounts, CarType, Feature
 from .serializers import ContactListSerializer
 from .forms import ContactListForm
 from .filter_options import get_filter_options
@@ -17,6 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .tasks import create_notification
 
+from rest_framework.permissions import IsAdminUser
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models import F
@@ -32,8 +38,75 @@ import traceback
 import requests
 import json
 
-from .serializers import ReviewSerializer, CarSerializer, FileUploadSerializer, BookingSerializer, PaymentSerializer, TransactionSerializer, NotificationSerializer
+from .serializers import (
+    ReviewSerializer, CarSerializer, FileUploadSerializer, BookingSerializer,
+    PaymentSerializer, TransactionSerializer, NotificationSerializer, AccountsSerializer,
+    CarCreateSerializer, CarTypeSerializer, FeatureSerializer, CarUpdateSerializer,
+    AdminReviewSerializer,
+)
 
+# === Users ===
+
+class AccountsListView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AccountsSerializer
+    pagination_class = AccountsPagination
+
+    def get_queryset(self):
+        queryset = (
+            Accounts.objects
+            .annotate(rentals=Count('bookings'))
+            .order_by('-date_joined')
+        )
+
+        # Search
+        search = self.request.query_params.get('search')
+
+        if search:
+            queryset = queryset.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search)
+            )
+
+        # Status
+        status = self.request.query_params.get('status')
+
+        if status == 'Active':
+            queryset = queryset.filter(is_active=True)
+
+        elif status == 'Suspended':
+            queryset = queryset.filter(is_active=False)
+
+        # Role
+        role = self.request.query_params.get('role')
+
+        if role == 'Super Admin':
+            queryset = queryset.filter(is_superuser=True)
+
+        elif role == 'Admin':
+            queryset = queryset.filter(
+                is_staff=True,
+                is_superuser=False
+            )
+
+        elif role == 'User':
+            queryset = queryset.filter(
+                is_staff=False,
+                is_superuser=False
+            )
+
+        return queryset
+
+class AccountsStatsView(APIView):
+    def get(self, request):
+        stats = Accounts.objects.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(is_active=True)),
+            suspended=Count('id', filter=Q(is_active=False)),
+        )
+
+        return Response(stats)
 
 # === Cars ===
 
@@ -61,6 +134,15 @@ class FleetListView(ListAPIView):
                     Q(brand__icontains=term) |
                     Q(model__icontains=term)
                 )
+
+        # Condition
+        status = self.request.query_params.get("status")
+
+        if status == "available":
+            queryset = queryset.filter(status="available")
+
+        elif status == "maintenance":
+            queryset = queryset.filter(status="maintenance")
 
         # Filter by transmission
         transmission = self.request.query_params.get("transmission")
@@ -100,14 +182,16 @@ class FleetListView(ListAPIView):
 
         # Filter by car type
         car_type = self.request.query_params.get("car_type")
+
         if car_type:
-            car_types = [
-                item.strip()
+            car_type_ids = [
+                int(item.strip())
                 for item in car_type.split(",")
+                if item.strip()
             ]
 
             queryset = queryset.filter(
-                car_type__in=car_types
+                car_type_id__in=car_type_ids
             )
 
         # Filter by features
@@ -132,26 +216,6 @@ class FleetListView(ListAPIView):
         if max_price:
             queryset = queryset.filter(price_per_day__lte=max_price)
 
-        # Filter by features
-        # features = self.request.query_params.get("features")
-
-        # if features:
-        #     feature_list = [
-        #         feature.strip()
-        #         for feature in features.split(",")
-        #     ]
-
-        #     for feature in feature_list:
-        #         queryset = queryset.filter(features__contains=[feature])
-
-        features = self.request.query_params.getlist("features")
-
-        if features:
-            for feature in features:
-                queryset = queryset.filter(
-                    features__name__iexact=feature
-                )
-
         # Check for currently rented cars
         active_bookings = Booking.objects.filter(
             car=OuterRef("pk"),
@@ -164,35 +228,71 @@ class FleetListView(ListAPIView):
         )
 
         queryset = queryset.annotate(
-            has_active_booking=Exists(active_bookings)
+            has_active_booking=Exists(active_bookings),
+            rental_count=Count(
+                "bookings",
+                filter=Q(
+                    bookings__status__in=[
+                        "picked_up",
+                        "returned",
+                        "completed",
+                    ]
+                ),
+                distinct=True,
+            ),
         )
 
         # Sort
         sort = self.request.query_params.get("sort")
+        prioritize_available = (
+            self.request.query_params.get("prioritize_available") == "true"
+        )
 
         if sort == "price-asc":
-            queryset = queryset.order_by(
-                "has_active_booking",
-                "price_per_day",
-            )
+            if prioritize_available:
+                queryset = queryset.order_by(
+                    "has_active_booking",
+                    "price_per_day",
+                )
+            else:
+                queryset = queryset.order_by(
+                    "price_per_day",
+                )
 
         elif sort == "price-desc":
-            queryset = queryset.order_by(
-                "has_active_booking",
-                "-price_per_day",
-            )
+            if prioritize_available:
+                queryset = queryset.order_by(
+                    "has_active_booking",
+                    "-price_per_day",
+                )
+            else:
+                queryset = queryset.order_by(
+                    "-price_per_day",
+                )
 
         elif sort == "name":
-            queryset = queryset.order_by(
-                "has_active_booking",
-                "brand",
-                "model",
-            )
+            if prioritize_available:
+                queryset = queryset.order_by(
+                    "has_active_booking",
+                    "brand",
+                    "model",
+                )
+            else:
+                queryset = queryset.order_by(
+                    "brand",
+                    "model",
+                )
 
         else:
-            queryset = queryset.order_by(
-                "has_active_booking",
-            )
+            if prioritize_available:
+                queryset = queryset.order_by(
+                    "has_active_booking",
+                )
+            else:
+                queryset = queryset.order_by(
+                    "brand",
+                    "model",
+                )
             
         return queryset
 
@@ -223,6 +323,152 @@ class CarDetailView(APIView):
         car = Cars.objects.get(car_id=car_id)
         serializer = CarSerializer(car)
         return Response(serializer.data)
+
+class FleetStatsView(APIView):
+
+    def get(self, request):
+        total_cars = Cars.objects.count()
+        maintenance_count = Cars.objects.filter(status="maintenance").count()
+
+        pending_approval_count = Booking.objects.filter(
+            status="pending_approval"
+        ).values("car_id").distinct().count()
+
+        available_count = Cars.objects.filter(
+            status="available"
+        ).exclude(
+            bookings__status__in=[
+                "pending_payment",
+                "pending_approval",
+                "confirmed",
+                "picked_up",
+            ]
+        ).distinct().count()
+
+        unavailable_count = total_cars - available_count - maintenance_count
+
+        rented_count = Booking.objects.filter(
+            status__in=[
+                "confirmed",
+                "pending_approval",
+                "picked_up",
+            ]
+        ).values("car_id").distinct().count()
+
+        fleet_condition = (
+            round((total_cars - maintenance_count) / total_cars * 100)
+            if total_cars else 0
+        )
+
+        available_percentage = (
+            round(available_count / total_cars * 100)
+            if total_cars else 0
+        )
+
+        return Response({
+            "total_cars": total_cars,
+            "available_count": available_count,
+            "unavailable_count": unavailable_count,
+            "maintenance_count": maintenance_count,
+            "pending_approval_count": pending_approval_count,
+            "fleet_condition": fleet_condition,
+            "available_percentage": available_percentage,
+            "rented_count": rented_count,
+        })
+
+class CarCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CarCreateSerializer(
+            data=request.data,
+            context={"request": request}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+
+class CarTypeListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        car_types = CarType.objects.all()
+        serializer = CarTypeSerializer(car_types, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = CarTypeSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class FeatureListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        features = Feature.objects.all()
+        serializer = FeatureSerializer(features, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = FeatureSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class CarUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, car_id):
+        car = get_object_or_404(Cars, car_id=car_id)
+
+        serializer = CarUpdateSerializer(
+            car,
+            data=request.data,
+            partial=True,
+        )
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK,
+        )
+
+class CarDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, car_id):
+        car = get_object_or_404(Cars, car_id=car_id)
+
+        car.delete()
+
+        return Response(
+            {"message": "Car deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 # === Reviews ===
 
@@ -533,6 +779,136 @@ class DeleteReviewView(APIView):
                     upload.delete()
 
         # Delete the review
+        review.delete()
+
+        return Response(
+            {"message": "Review deleted successfully."},
+            status=status.HTTP_200_OK,
+        )
+
+class AdminReviewListView(ListAPIView):
+    serializer_class = AdminReviewSerializer
+    pagination_class = AdminReviewPagination
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        queryset = Reviews.objects.all()
+
+        search = self.request.query_params.get("search", "").strip()
+
+        if search:
+            queryset = queryset.filter(
+                Q(text__icontains=search) |
+                Q(user__username__icontains=search) |
+                Q(car__brand__icontains=search) |
+                Q(car__model__icontains=search)
+            )
+
+        # Filter by status
+        status_param = self.request.query_params.get("status")
+
+        if status_param and status_param != "all":
+            queryset = queryset.filter(status=status_param)
+
+        # Filter by rating
+        rating = self.request.query_params.get("rating")
+
+        if rating and rating != "all":
+            queryset = queryset.filter(rating=rating)
+
+        return queryset.order_by("-created_at")
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+class AdminReviewStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, review_id):
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Permission denied."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            review = Reviews.objects.get(id=review_id)
+        except Reviews.DoesNotExist:
+            return Response(
+                {"detail": "Review not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        new_status = request.data.get("status")
+
+        if new_status not in ["approved", "rejected"]:
+            return Response(
+                {"detail": "Invalid review status."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        review.status = new_status
+        review.save(update_fields=["status"])
+
+        return Response(
+            {
+                "message": "Review status updated successfully.",
+                "review_id": review.id,
+                "status": review.status,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+class AdminDeleteReviewView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, review_id):
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Permission denied."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            review = Reviews.objects.get(id=review_id)
+        except Reviews.DoesNotExist:
+            return Response(
+                {"detail": "Review not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Delete associated uploaded images
+        for image_url in review.images or []:
+            for upload in FileUploadModel.objects.all():
+                if not upload.file:
+                    continue
+
+                if upload.file.url != image_url:
+                    continue
+
+                try:
+                    upload.file.delete(save=False)
+                    upload.delete()
+                except Exception:
+                    logger.exception(
+                        "Failed to delete review image from storage: %s",
+                        image_url,
+                    )
+
+        # Delete the review even if storage cleanup fails
         review.delete()
 
         return Response(
@@ -875,6 +1251,227 @@ class TransactionDetailView(APIView):
 
         return Response(serializer.data)
 
+class AdminBookingListView(ListAPIView):
+    serializer_class = TransactionSerializer
+    pagination_class = TransactionPagination
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = (
+            Booking.objects
+            .select_related("user", "car", "payments")
+        )
+
+        # Search
+        search = self.request.query_params.get("search")
+
+        if search:
+            queryset = queryset.filter(
+                Q(booking_reference__icontains=search) |
+                Q(car__brand__icontains=search) |
+                Q(car__model__icontains=search) |
+                Q(user__given_name__icontains=search) |
+                Q(user__family_name__icontains=search) |
+                Q(user__email__icontains=search)
+            )
+            
+        # Filter by status
+        status_param = self.request.query_params.get("status")
+
+        if status_param and status_param != "all":
+            statuses = [
+                item.strip()
+                for item in status_param.split(",")
+                if item.strip()
+            ]
+
+            if "overdue" in statuses:
+                queryset = queryset.filter(
+                    status__in=["confirmed", "picked_up"],
+                    return_date__lt=timezone.now(),
+                )
+
+            elif statuses:
+                queryset = queryset.filter(
+                    status__in=statuses
+                )
+
+        # Filter by payment status
+        payment_status = self.request.query_params.get("payment_status")
+
+        if payment_status and payment_status != "all":
+            payment_statuses = [
+                item.strip()
+                for item in payment_status.split(",")
+                if item.strip()
+            ]
+
+            if payment_statuses:
+                queryset = queryset.filter(
+                    payments__status__in=payment_statuses
+                )
+
+        # Sort
+        sort = self.request.query_params.get("sort")
+
+        if sort == "oldest":
+            queryset = queryset.order_by("created_at")
+
+        elif sort == "highest":
+            queryset = queryset.order_by("-total_price")
+
+        elif sort == "lowest":
+            queryset = queryset.order_by("total_price")
+
+        else:
+            queryset = queryset.order_by("-created_at")
+
+        return queryset
+        
+class AdminBookingStatsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        bookings = Booking.objects.all()
+
+        stats = {
+            "total": bookings.count(),
+
+            "pending_approval": bookings.filter(
+                status="pending_approval"
+            ).count(),
+
+            "active_rentals": bookings.filter(
+                status__in=[
+                    "confirmed",
+                    "picked_up",
+                    "returned",
+                ]
+            ).count(),
+
+            "completed": bookings.filter(
+                status="completed"
+            ).count(),
+
+            "cancelled": bookings.filter(
+                status="cancelled"
+            ).count(),
+        }
+
+        return Response(stats)
+
+class AdminCreateBookingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = BookingSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if not serializer.validated_data.get("booking_reference"):
+            import uuid
+            serializer.validated_data["booking_reference"] = (
+                f"BKG-{uuid.uuid4().hex[:10].upper()}"
+            )
+
+        booking = serializer.save()
+
+        return Response(
+            {
+                "message": "Booking created successfully.",
+                "booking_id": booking.id,
+                "booking_reference": booking.booking_reference,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+class AdminUpdateBookingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, booking_reference):
+        try:
+            booking = Booking.objects.get(
+                booking_reference=booking_reference
+            )
+        except Booking.DoesNotExist:
+            return Response(
+                {"message": "Booking not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        old_status = booking.status
+
+        serializer = BookingSerializer(
+            booking,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        booking = serializer.save()
+
+        # Notify the user when the booking status changes
+        if old_status != booking.status:
+            notifications = {
+                "confirmed": (
+                    "Booking Confirmed",
+                    f"Your booking {booking.booking_reference} has been confirmed.",
+                ),
+                "rejected": (
+                    "Booking Rejected",
+                    f"Your booking {booking.booking_reference} has been rejected.",
+                ),
+                "picked_up": (
+                    "Vehicle Picked Up",
+                    f"Your booking {booking.booking_reference} has been marked as picked up.",
+                ),
+                "returned": (
+                    "Vehicle Returned",
+                    f"Your booking {booking.booking_reference} has been marked as returned.",
+                ),
+                "completed": (
+                    "Booking Completed",
+                    f"Your booking {booking.booking_reference} has been completed.",
+                ),
+                "cancelled": (
+                    "Booking Cancelled",
+                    f"Your booking {booking.booking_reference} has been cancelled.",
+                ),
+            }
+
+            notification = notifications.get(booking.status)
+
+            if notification:
+                create_notification.delay(
+                    user_id=booking.user_id,
+                    notification_type="booking_status",
+                    title=notification[0],
+                    message=notification[1],
+                    booking_id=booking.id,
+                )
+
+        return Response(
+            {
+                "message": "Booking updated successfully.",
+                "booking_id": booking.id,
+                "booking_reference": booking.booking_reference,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+class AdminBookingDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, booking_reference):
+        booking = get_object_or_404(Booking, booking_reference=booking_reference)
+
+        booking.delete()
+
+        return Response(
+            {"message": "Booking deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
 # === Payments ===
 
 class CreatePayMongoPaymentView(APIView):
@@ -1020,9 +1617,7 @@ class PayMongoWebhookView(APIView):
         import hmac
         import hashlib
 
-        # print("=" * 60)
-        # print("PAYMONGO WEBHOOK RECEIVED")
-        # print("=" * 60)
+        print("PAYMONGO WEBHOOK RECEIVED")
 
         # print("Headers:")
         # print(dict(request.headers))

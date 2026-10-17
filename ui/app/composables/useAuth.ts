@@ -5,26 +5,17 @@
 
 import { useApiBase } from '~/utils/api/api';
 
-interface AuthUser {
-    id: number | string;
-    given_name?: string;
-    profile_picture?: string;
-}
-
-interface UserProfile extends AuthUser {
-    family_name?: string;
-    email?: string;
-    contact_number?: string;
-    address?: string;
-}
-
 type RefreshResponse = {
     access: string;
+    refresh?: string;
 };
+
+let refreshPromise: Promise<string | null> | null = null
 
 export const useAuth = () => {
     //const user = useState<any>('user', () => null)
     const token = useState<string | null>('token', () => null)
+    const authReady = useState<boolean>('authReady', () => false)
 
     const isLoggedIn = computed(() => !!token.value)
 
@@ -32,26 +23,31 @@ export const useAuth = () => {
 
     // LOGIN CALLBACK
     const setAuth = async (access: string, refresh: string) => {
-        console.log('setting auth with access:', access, 'and refresh:', refresh)
 
         token.value = access
 
         if (import.meta.client) {
             localStorage.setItem('access_token', access)
             localStorage.setItem('refresh_token', refresh)
+
+            // console.log(
+            //     'STORED REFRESH TOKEN:',
+            //     localStorage.getItem('refresh_token')
+            // )
         }
     }
 
     // INIT APP
-    const init = async () => {
+    const init = () => {
         if (!import.meta.client) return
-        console.log('starting init...')
+
         const access = localStorage.getItem('access_token')
 
-        if (!access) return
+        if (access) {
+            token.value = access
+        }
 
-        token.value = access
-        console.log('token set to:', access)
+        authReady.value = true
     }
 
     // REFRESH ACCESS TOKEN
@@ -60,35 +56,57 @@ export const useAuth = () => {
             return null
         }
 
-        const refreshToken = localStorage.getItem('refresh_token')
-
-        console.log(
-            'activating refresh token:',
-            refreshToken
-        )
-
-        if (!refreshToken) {
-            return null
+        if (refreshPromise) {
+            return refreshPromise
         }
 
-        try {
-            const res = await $fetch<RefreshResponse>(
-                `${apiBase}/auth/token/refresh/`,
-                {
-                    method: 'POST',
-                    body: {
-                        refresh: refreshToken
+        refreshPromise = (async () => {
+            const refreshToken =
+                localStorage.getItem('refresh_token')
+
+            if (!refreshToken) {
+                return null
+            }
+
+            try {
+                const res = await $fetch<RefreshResponse>(
+                    `${apiBase}/auth/token/refresh/`,
+                    {
+                        method: 'POST',
+                        body: {
+                            refresh: refreshToken
+                        }
                     }
+                )
+
+                token.value = res.access
+
+                localStorage.setItem(
+                    'access_token',
+                    res.access
+                )
+
+                if (res.refresh) {
+                    localStorage.setItem(
+                        'refresh_token',
+                        res.refresh
+                    )
                 }
-            )
 
-            token.value = res.access
-            localStorage.setItem('access_token', res.access)
+                return res.access
+            } catch (error) {
+                console.error(
+                    'Failed to refresh access token:',
+                    error
+                )
 
-            return res.access
-        } catch {
-            return null
-        }
+                return null
+            } finally {
+                refreshPromise = null
+            }
+        })()
+
+        return refreshPromise
     }
 
     const login = (): void => {
@@ -118,6 +136,7 @@ export const useAuth = () => {
         setAuth,
         refreshAccessToken,
         logout,
-        login
+        login,
+        authReady
     }
 }

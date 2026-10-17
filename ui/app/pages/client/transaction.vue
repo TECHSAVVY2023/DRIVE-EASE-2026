@@ -7,6 +7,7 @@
     <Navbar
         :user="user"
         :is-logged-in="isLoggedIn"
+        :auth-ready="authReady"
         :menu-open="menuOpen"
         @toggle-menu="toggleMenu"
         @open-sidebar="handleOpenSidebar" 
@@ -64,7 +65,7 @@
 import { ref } from 'vue'
 import type { Transaction } from '~/utils/api/api'
 
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, authReady } = useAuth()
 const { apiFetch } = useApiFetch()
 
 const user = ref<any>(null)
