@@ -1,2 +1,11 @@
+# Python generated files
+__pycache__/
 *.pyc
+
+# Django local database
+api/db.sqlite3
+
+# Environment variables
+.env
+.env.*
 api/.env
