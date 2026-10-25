@@ -20,7 +20,7 @@
         @close-sidebar="handleCloseSidebar"
     />
 
-    <div class="min-h-screen w-full bg-[#121212] font-[poppins]">
+    <div class="charcoal-blueprint-surface min-h-screen w-full font-[poppins]">
 
         <Banner 
             subtitle="More info about the car"
@@ -48,7 +48,7 @@
                 />
 
                 <!-- Header -->
-                <div class="bg-[#1B1B1B] font-[poppins] p-6 rounded-xl w-full">
+                <div class="smoked-charcoal-panel font-[poppins] p-6 rounded-xl w-full">
                     <div class="flex justify-between items-center mb-5">
 
                         <h2 class="text-white font-extrabold text-lg">Customer reviews</h2>
@@ -56,14 +56,21 @@
                         <CarReviewWriteButton 
                             v-if="!myReview"
                             :is-logged-in="isLoggedIn" 
-                            @click="OpenWriteReviewModal = true" 
+                            @click="showWriteReviewModal = true"
                         />
 
-                        <ClientReviewsWrite
-                            v-model="OpenWriteReviewModal"
-                            mode="create" 
-                            @submit="handleReviewSubmit"
-                            :review-state="reviewState"
+                        <ClientReviewsWriteModal
+                            v-model="showWriteReviewModal"
+                            @submit="handleCreateReview"
+                        />
+
+                        <ClientReviewsEditModal
+                            v-if="myReview"
+                            v-model="showEditReviewModal"
+                            :my-review="myReview"
+                            :existing-images="existingImages"
+                            @submit="handleEditReview"
+                            @update:existing-images="handleExistingImagesUpdate"
                         />
 
                     </div>
@@ -85,22 +92,15 @@
                         v-if="myReview"
                         :review="myReview"
                         :car-id="carId"
+                        :is-my-review="true"
                         class="mb-4"
-                        @click="OpenEditReviewModal = true" 
+                        @edit="handleEdit"
                         @delete="reviewState.deleteReview(Number(myReview.id), carId)"
                     />
 
-                    <ClientReviewsWrite 
-                        v-model="OpenEditReviewModal"
-                        mode="edit" 
-                        :my-review="myReview"
-                        @submit="handleReviewSubmit"
-                        :review-state="reviewState"
-                    />        
-
                     <ClientReviewsCards
                         v-for="(review, i) in reviews"
-                        :key="i"
+                        :key="review.id"
                         :review="review"
                         :car-id="carId"
                         class="mb-4"
@@ -108,7 +108,7 @@
 
                     <!-- Empty state -->
                     <ClientCommonEmptyState
-                        v-if="reviews.length === 0 && !myReview"
+                        v-if="reviews.length === 0"
                         message="No reviews match the selected filters."
                         button-text="Reset filters"
                         @action="
@@ -120,7 +120,7 @@
                     <ClientCommonViewMoreButton
                         :nextPage="nextPage || ''"
                         :displayed-reviews="displayedReviews"
-                        :total-reviews="totalReviews"
+                        :total-reviews="filteredTotalReviews"
                         @load-more="loadMore"
                     />
                 </div>
@@ -139,30 +139,40 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import type { Review } from '~/utils/api/api'
 
 const route = useRoute()
 const router = useRouter()
 
-const { isLoggedIn, authReady } = useAuth()
+const { init, isLoggedIn, authReady } = useAuth()
 const { apiFetch } = useApiFetch()
-const { createReview, updateReview } = useReviews()
+const { handleSubmitReview } = useReviewsWrite()
+const {
+    handleSubmitEditReview,
+    existingImages,
+    prepareEditReview,
+    resetEditReview,
+} = useReviewsEdit()
 
-const OpenWriteReviewModal = ref(false)
-const OpenEditReviewModal = ref(false)
+const showWriteReviewModal = ref(false)
 
 const { $swal } = useNuxtApp()
 
-const user = ref<any>(null)
+const { user } = useCurrentUser()
 
 const carId = route.params.id as string
+const reviewState = useWriteReview()
 
-const { formattedRatingBreakdown, displayedReviews, totalReviews, 
-        avgRating, reviews, myReview, nextPage, previousPage, sortBy, setRating,
-        selectedRating, ratingBreakdown, fetchReviews, loadMore } = useCarReview({ carId })
+const { formattedRatingBreakdown, displayedReviews, totalReviews,
+        filteredTotalReviews,
+        avgRating, reviews, myReview, nextPage, sortBy,
+        selectedRating, fetchReviews, loadMore } = useReviewsLists()
+
+function handleExistingImagesUpdate(images: string[]) {
+    existingImages.value = images
+}
 
 const { car, getCar } = useCarDetail()
-
-const reviewState = useWriteReview({ carId })
 
 const openBooking = async () => {
     if (!user.value) {
@@ -187,157 +197,35 @@ const openBooking = async () => {
     showBookingModal.value = true
 }
 
-const handleReviewSubmit = async () => {
-    if(OpenEditReviewModal.value){
+const showEditReviewModal = ref(false)
 
-        const removedImages = reviewState.originalImages.value.filter(
-            (url) => !reviewState.existingImages.value.includes(url)
-        )
+const handleEdit = () => {
+    showEditReviewModal.value = true
+}
 
-        for (const file of reviewState.uploadedImages.value) {
-            if (!(await reviewState.validateFile(file))) {
-                return
-            }
-        }
+async function refreshReviews() {
+    reviews.value = []
+    nextPage.value = null
+    await fetchReviews(1, carId)
+}
 
-        $swal.fire({
-            title: 'Saving changes...',
-            text: 'Please wait.',
-            background: '#1a1a1a',
-            color: '#ffffff',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            didOpen: () => {
-                $swal.showLoading()
-            }
-        })
+async function handleCreateReview(form: Review) {
+    const result = await handleSubmitReview(form, carId)
 
-        try {
+    if (!result.success) return
 
-        const newImagesUrls = await reviewState.uploadFiles()
+    showWriteReviewModal.value = false
+    await refreshReviews()
+}
 
-        console.log('new images urls:', newImagesUrls)
+async function handleEditReview(form: Review) {
+    const result = await handleSubmitEditReview(form, carId)
 
-        const imageUrls: string[] = [
-            ...reviewState.existingImages.value,
-            ...newImagesUrls
-        ]
+    if (!result.success) return
 
-        const body: any = {
-            rating: reviewState.form.rating,
-            review: reviewState.form.review,
-            images: imageUrls
-        }
-
-        if (removedImages.length > 0) {
-            body.deleted_images = removedImages
-        }
-
-        const res = await updateReview(
-            carId,
-            myReview.value!.id,
-            body
-        )
-
-        $swal.close()
-
-        await nextTick()
-        await new Promise(resolve => requestAnimationFrame(resolve))
-
-        await $swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: 'Review updated successfully.',
-            confirmButtonColor: '#C1121F',
-            background: '#1a1a1a',
-            color: '#ffffff',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            scrollbarPadding: false
-        })
-        
-        OpenEditReviewModal.value = false
-        } catch (err) {
-            $swal.close()
-
-            await $swal.fire({
-                icon: "error",
-                title: "Update failed",
-                text: "Something went wrong while updating your review."
-            })
-
-            throw err
-        }
-
-        window.location.reload()
-    } else {
-
-        if (reviewState.uploadedImages.value.length > 0) {
-            for (const file of reviewState.uploadedImages.value) {
-                if (!(await reviewState.validateFile(file))) {
-                    return
-                }
-            }
-        }
-
-        $swal.fire({
-            title: 'Saving changes...',
-            text: 'Please wait.',
-            background: '#1a1a1a',
-            color: '#ffffff',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            didOpen: () => {
-                $swal.showLoading()
-            }
-        })
-
-        const ImagesUrls = await reviewState.uploadFiles()
-
-        console.log('Imageurls:', ImagesUrls)
-
-        let body: any = {}
-        
-        if (ImagesUrls.length > 0) {
-            console.log('there is an image')
-            body = {
-                rating: reviewState.form.rating,
-                review: reviewState.form.review,
-                images: ImagesUrls
-            }
-        } else {
-            console.log('there is no image')
-            body = {
-                rating: reviewState.form.rating,
-                review: reviewState.form.review
-            }
-        }
-
-        console.log(body)
-
-        const res = await createReview(carId, body)
-
-        $swal.close()
-
-        await nextTick()
-        await new Promise(resolve => requestAnimationFrame(resolve))
-
-        await $swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: 'Review added successfully.',
-            confirmButtonColor: '#C1121F',
-            background: '#1a1a1a',
-            color: '#ffffff',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            scrollbarPadding: false
-        })
-
-        OpenWriteReviewModal.value = false
-
-        window.location.reload()
-    }
+    showEditReviewModal.value = false
+    resetEditReview()
+    await refreshReviews()
 }
 
 const { 
@@ -350,18 +238,24 @@ const {
 
 const showBookingModal = ref(false)
 
-watch(isLoggedIn, async (val) => {
-    if (val) {
-        user.value = await apiFetch('/auth/me/')
-    } else {
-        user.value = null
-    }
-}, { immediate: true })
+watch(
+    [authReady, isLoggedIn],
+    async ([ready, loggedIn]) => {
+        if (!ready) return
+
+        if (!loggedIn) {
+            myReview.value = null
+        }
+    },
+    { immediate: true }
+)
 
 onMounted(async () => {
-    const id = String(route.params.id)
-    await getCar(id)
-    await fetchReviews(1)
+    await init()
+    if (!authReady.value) return
+
+    await getCar(carId)
+    await fetchReviews(1, carId)
 
     if (route.query.payment === 'success') {
         $swal.fire({
@@ -399,8 +293,13 @@ onMounted(async () => {
 watch([selectedRating, sortBy], () => {
     reviews.value = []
     nextPage.value = null
-    previousPage.value = null
 
-    fetchReviews(1)
+    fetchReviews(1, carId)
+})
+
+watch(showEditReviewModal, (isOpen) => {
+    if (isOpen && myReview.value) {
+        prepareEditReview(myReview.value)
+    }
 })
 </script>

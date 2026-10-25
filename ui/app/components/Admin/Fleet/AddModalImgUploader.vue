@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Car, CarForm, VehicleImage } from '~/utils/api/api'
+import type { Car, CarForm, VehicleImage } from '~/utils/types/fleet'
 const { $swal } = useNuxtApp()
 
 const props = defineProps<{

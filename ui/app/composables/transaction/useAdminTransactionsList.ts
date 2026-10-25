@@ -1,4 +1,4 @@
-import type { Transaction } from '~/utils/api/api'
+import type { Transaction } from '~/utils/types/booking'
 
 const loading = ref(false)
 

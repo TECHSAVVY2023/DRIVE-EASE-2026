@@ -1,10 +1,13 @@
 <template>
     <section 
         ref="sectionRef"
-        class="bg-[#1A1A1A] py-16 px-6 overflow-hidden font-[poppins]">
+        class="landing-quiet-section py-16 px-6 overflow-hidden font-[poppins]">
 
         <Transition name="fade-only">
-            <div v-if="isVisible">
+            <div
+                v-if="isVisible"
+                class="max-w-5xl mx-auto"
+            >
 
                 <!-- Title -->
                 <div class="text-center mb-10">
@@ -25,7 +28,8 @@
                         class="
                         absolute left-0 z-10
                         w-10 h-10 rounded-full
-                        bg-[#121212] hover:bg-[#C1121F]
+                        bg-[#0b0b0d]/90 border border-white/10 hover:bg-[#C1121F]
+                        hover:border-[#C1121F]
                         text-white flex items-center justify-center
                         transition-colors duration-200
                         shadow-lg
@@ -83,7 +87,8 @@
                     class="
                     absolute right-0 z-10
                     w-10 h-10 rounded-full
-                    bg-[#121212] hover:bg-[#C1121F]
+                    bg-[#0b0b0d]/90 border border-white/10 hover:bg-[#C1121F]
+                    hover:border-[#C1121F]
                     text-white flex items-center justify-center
                     transition-colors duration-200
                     shadow-lg

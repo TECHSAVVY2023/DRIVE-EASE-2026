@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import type { Feature } from '~/utils/api/api'
+import type { Feature } from '~/utils/types/fleet'
 
 export function useFeatures() {
     const { apiFetch } = useApiFetch()

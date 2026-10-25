@@ -1,5 +1,5 @@
 
-import type { CarForm } from '~/utils/api/api'
+import type { CarForm } from '~/utils/types/fleet'
 import { uploadFile } from '~/utils/api/upload'
 
 interface CreateCarResult {

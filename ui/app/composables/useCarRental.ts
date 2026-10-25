@@ -1,8 +1,6 @@
-// composables/useCurrentRental.ts
+import type { Car } from '~/utils/types/fleet'
 
-import type { Car } from '~/utils/api/api'
-
-export const unavailableStatuses = [
+const unavailableStatuses = [
     'pending_approval',
     'confirmed',
     'picked_up'

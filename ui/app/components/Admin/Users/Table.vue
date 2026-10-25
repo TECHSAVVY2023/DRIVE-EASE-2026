@@ -133,33 +133,35 @@
                         <td class="px-5 py-3.5 text-sm text-[#e4e4e4]">
                             <div class="flex items-center gap-2.5">
                                 <div
-                                    v-if="user.profile_picture"
-                                    class="w-8 h-8 rounded-full bg-[#2a2a2a]
+                                    class="w-8 h-8 rounded-full bg-[#C1121F]
                                         flex items-center justify-center flex-shrink-0 overflow-hidden"
                                 >
                                     <img
+                                        v-if="user.profile_picture && !failedAvatars.has(user.id)"
+                                        :key="`${user.id}-${avatarRetryCounts[user.id] ?? 0}`"
                                         :src="user.profile_picture"
-                                        :alt="`${user.given_name} ${user.family_name}`"
+                                        alt=""
+                                        referrerpolicy="no-referrer"
                                         class="w-full h-full object-cover"
+                                        @error="handleAvatarError(user.id)"
                                     />
-                                </div>
-
-                                <div
-                                    v-else
-                                    class="w-7 h-7 rounded-full bg-[#C1121F]
-                                        flex items-center justify-center flex-shrink-0"
-                                >
-                                    <svg
+                                    <div
+                                        v-else
                                         class="w-4 h-4 text-white"
-                                        fill="currentColor"
-                                        viewBox="0 0 24 24"
                                     >
-                                        <path
-                                            d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4
-                                            7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6
-                                            1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
-                                        />
-                                    </svg>
+                                        <svg
+                                            class="w-full h-full"
+                                            fill="currentColor"
+                                            viewBox="0 0 24 24"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4
+                                                7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6
+                                                1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
+                                            />
+                                        </svg>
+                                    </div>
                                 </div>
 
                                 <div class="min-w-0">
@@ -189,7 +191,13 @@
                         <!-- Status -->
                         <td class="px-5 py-3.5 text-sm">
                             <span
-                                class="flex items-center gap-[7px] text-[13px] whitespace-nowrap"
+                                class="
+                                    inline-flex items-center gap-2 rounded-md px-2.5 py-1 
+                                    text-xs capitalize whitespace-nowrap"
+                                :class="{
+                                    'bg-[#3ddc78]/10 text-[#3ddc78]': user.status === 'Active',
+                                    'bg-[#c81e2c]/10 text-[#c81e2c]': user.status === 'Suspended'
+                                }"
                             >
                                 <span
                                     class="w-[7px] h-[7px] rounded-full flex-shrink-0"
@@ -217,17 +225,63 @@
                             <div class="flex items-center gap-3 text-[#8a8a8a]">
                                 <button
                                     type="button"
-                                    class="cursor-pointer hover:text-[#c1121f]"
+                                    class="
+                                        hover:border-[#c1121f] cursor-pointer
+                                        hover:text-[#c1121f] inline-flex h-8 items-center 
+                                        gap-1.5 rounded-lg border border-[#292929] 
+                                        bg-[#151515] px-2.5 text-[11px] font-semibold 
+                                        text-[#9b9b9b] transition-all
+                                    "
                                     @click="handleEdit(user)"
                                 >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        class="h-3.5 w-3.5"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                    >
+                                        <path d="M12 20h9" />
+                                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                                    </svg>
                                     Edit
                                 </button>
 
                                 <button
                                     type="button"
-                                    class="cursor-pointer hover:text-[#c1121f]"
+                                    class="
+                                        hover:border-[#c1121f] cursor-pointer
+                                        hover:text-[#c1121f] inline-flex h-8 items-center
+                                        gap-1.5 rounded-lg border border-[#292929]
+                                        bg-[#151515] px-2.5 text-[11px] font-semibold
+                                        text-[#9b9b9b] transition-all
+                                    "
                                     @click="handleSecondaryAction(user)"
                                 >
+                                    <svg
+                                        v-if="user.status === 'Active'"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        class="h-3.5 w-3.5"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                    >
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="m4.93 4.93 14.14 14.14" />
+                                    </svg>
+
+                                    <svg
+                                        v-else
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        class="h-3.5 w-3.5"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                    >
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="m8 12 2.5 2.5L16 9" />
+                                    </svg>
+
                                     {{ user.status === 'Active' ? 'Suspend' : 'Activate' }}
                                 </button>
                             </div>
@@ -310,7 +364,7 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '~/utils/api/api'
+import type { User } from '~/utils/types/accounts'
 
 const props = defineProps<{
     users: User[]
@@ -333,6 +387,30 @@ const emit = defineEmits<{
     edit: [user: User]
     secondaryAction: [user: User]
 }>()
+
+const avatarRetryCounts = reactive<Record<number, number>>({})
+const failedAvatars = reactive(new Set<number>())
+const avatarRetryTimers = new Set<ReturnType<typeof setTimeout>>()
+
+const handleAvatarError = (userId: number) => {
+    const retryCount = avatarRetryCounts[userId] ?? 0
+
+    if (retryCount < 1) {
+        const timer = setTimeout(() => {
+            avatarRetryCounts[userId] = retryCount + 1
+            avatarRetryTimers.delete(timer)
+        }, 750)
+
+        avatarRetryTimers.add(timer)
+        return
+    }
+
+    failedAvatars.add(userId)
+}
+
+onBeforeUnmount(() => {
+    avatarRetryTimers.forEach(clearTimeout)
+})
 
 const handleSearch = (event: Event) => {
     const target = event.target as HTMLInputElement

@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import type { User, UpdateProfilePayload } from '~/utils/api/api'
+import type { User, UpdateProfilePayload } from '~/utils/types/accounts'
 const { apiFetch } = useApiFetch()
 const { $swal } = useNuxtApp()
 

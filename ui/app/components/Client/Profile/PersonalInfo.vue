@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '~/utils/api/api'
+import type { User } from '~/utils/types/accounts'
 
 const props = defineProps<{
     user: User | null

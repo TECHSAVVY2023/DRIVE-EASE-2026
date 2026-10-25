@@ -253,7 +253,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import type { Car } from '~/utils/api/api'
+import type { Car } from '~/utils/types/fleet'
 
 const closeModal = () => {
     if (import.meta.client) {

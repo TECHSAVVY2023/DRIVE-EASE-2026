@@ -14,7 +14,7 @@
         @close-sidebar="handleCloseSidebar"
     />
 
-    <div class="min-h-screen bg-[#0D0D0D] font-[poppins]">
+    <div class="charcoal-blueprint-surface min-h-screen font-[poppins]">
 
         <Banner 
             subtitle="View transactions"
@@ -28,7 +28,7 @@
         <div class="max-w-2xl mx-auto px-4 py-8 flex flex-col gap-5">
 
             <!-- Transactions Table Card -->
-            <div class="bg-[#1a1a1a] border border-[#222] rounded-xl overflow-hidden flex flex-col gap-4">
+            <div class="smoked-charcoal-panel rounded-xl overflow-hidden flex flex-col gap-4">
 
                 <!-- Header -->
                 <div class="px-5 pt-5">
@@ -63,20 +63,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Transaction } from '~/utils/api/api'
+import type { Transaction } from '~/utils/types/booking'
 
 const { isLoggedIn, authReady } = useAuth()
-const { apiFetch } = useApiFetch()
-
-const user = ref<any>(null)
-
-watch(isLoggedIn, async (val) => {
-    if (val) {
-        user.value = await apiFetch('/auth/me/')
-    } else {
-        user.value = null
-    }
-}, { immediate: true })
+const { user } = useCurrentUser()
 
 const { 
     menuOpen,

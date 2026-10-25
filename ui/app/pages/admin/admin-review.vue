@@ -75,16 +75,7 @@ import { type AdminReview } from '~/utils/api/api'
 const { isLoggedIn, authReady } = useAuth()
 const { apiFetch } = useApiFetch()
 const { $swal } = useNuxtApp()
-
-const user = ref<any>(null)
-
-watch(isLoggedIn, async (val) => {
-    if (val) {
-        user.value = await apiFetch('/auth/me/')
-    } else {
-        user.value = null
-    }
-}, { immediate: true })
+const { user } = useCurrentUser()
 
 const sidebarOpen = ref<boolean>(false)
 
@@ -99,7 +90,7 @@ const handleOpenSidebar = (): void => {
 const statCards = computed(() => [
     {
         label: 'Total reviews',
-        value: 100,
+        value: stats.value.total,
         icon: `<svg viewBox="0 0 24 24" fill="none">
             <rect x="4" y="5" width="16" height="15" rx="2"/>
             <path d="M8 3v4M16 3v4M4 9h16"/>
@@ -108,7 +99,7 @@ const statCards = computed(() => [
     },
     {
         label: 'Average rating',
-        value: 4.5,
+        value: stats.value.average_rating.toFixed(1),
         icon: `<svg viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="9"/>
             <path d="M12 7v5l3 2"/>
@@ -116,7 +107,7 @@ const statCards = computed(() => [
     },
     {
         label: 'Pending reviews',
-        value: 30,
+        value: stats.value.pending,
         icon: `<svg viewBox="0 0 24 24" fill="none">
             <path d="M5 16l1.5-6h11L19 16"/>
             <path d="M4 16h16v3H4z"/>
@@ -127,7 +118,7 @@ const statCards = computed(() => [
     },
     {
         label: 'Published reviews',
-        value: 20,
+        value: stats.value.approved,
         icon: `<svg viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="9"/>
             <path d="M7.5 12l3 3 6-6"/>
@@ -135,7 +126,7 @@ const statCards = computed(() => [
     },
 ])
 
-const { reviews, count, nextPage, previousPage, currentPage, search,
+const { reviews, count, stats, nextPage, previousPage, currentPage, search,
         pageSize, totalPages, selectedStatus, selectedRating
     } = useAdminReviewsList()
 

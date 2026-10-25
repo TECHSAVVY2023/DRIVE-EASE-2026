@@ -1,4 +1,4 @@
-import type { User } from "~/utils/api/api"
+import type { User } from "~/utils/types/accounts"
 
 interface BookingProfileForm {
     lastName: string
@@ -18,6 +18,7 @@ interface UpdateUserProfileParams {
 
 export function useBookingProfileUpdate() {
     const { apiFetch } = useApiFetch()
+    const { refreshUser } = useCurrentUser()
 
     async function updateUserProfile({
         user,
@@ -73,6 +74,8 @@ export function useBookingProfileUpdate() {
                 method: 'PATCH',
                 body
             })
+
+            await refreshUser()
         }
     }
 

@@ -34,19 +34,7 @@ export function useBookingSteps(
         return false
     }
 
-    // function previousStep() {
-    //     if (currentStep.value > 1) {
-    //         currentStep.value--
-    //     }
-    // }
-
-    // function reset() {
-    //     currentStep.value = 1
-    // }
-
     return {
         nextStep,
-        // previousStep,
-        // reset
     }
 }

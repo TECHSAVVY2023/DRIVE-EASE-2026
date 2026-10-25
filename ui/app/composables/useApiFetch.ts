@@ -1,82 +1,49 @@
 import { useApiBase } from '~/utils/api/api'
 
 export const useApiFetch = () => {
-    const { token, refreshAccessToken, logout } = useAuth()
+    const { token, authReady, init, refreshAccessToken, invalidateAuth } = useAuth()
     const apiBase = useApiBase()
 
     const apiFetch = async <T>(
         url: string,
-        options: any = {}
+        options: any = {},
     ): Promise<T> => {
+        if (import.meta.client && !authReady.value) {
+            await init()
+        }
 
-        console.log('========== API FETCH START ==========')
-        console.log('URL:', `${apiBase}${url}`)
-        console.log('TOKEN EXISTS:', !!token.value)
-        console.log('TOKEN:', token.value)
+        const makeRequest = (accessToken?: string) => {
+            const headers = new Headers(options.headers as HeadersInit | undefined)
 
-        const makeRequest = (jwt?: string) => {
-            console.log('--- MAKE REQUEST ---')
-            console.log('JWT EXISTS:', !!jwt)
-            console.log('REQUEST URL:', `${apiBase}${url}`)
+            if (accessToken) {
+                headers.set('Authorization', `Bearer ${accessToken}`)
+            }
 
             return $fetch<T>(`${apiBase}${url}`, {
                 ...options,
-                headers: {
-                    ...options.headers,
-                    ...(jwt
-                        ? { Authorization: `Bearer ${jwt}` }
-                        : {}),
-                },
+                headers,
             })
         }
 
         try {
-            console.log('--- FIRST REQUEST ---')
+            return await makeRequest(token.value ?? undefined)
+        } catch (error: unknown) {
+            const fetchError = error as {
+                response?: { status?: number }
+                status?: number
+            }
+            const status = fetchError.response?.status ?? fetchError.status
 
-            const result = await makeRequest(
-                token.value ?? undefined
-            )
+            if (status !== 401 || !import.meta.client) throw error
 
-            console.log('--- FIRST REQUEST SUCCESS ---')
-            console.log(result)
+            const newToken = await refreshAccessToken()
 
-            return result
-
-        } catch (err: any) {
-
-            console.log('--- REQUEST ERROR ---')
-
-            const status = err?.response?.status || err?.status
-
-            console.log('STATUS:', status)
-            console.log('ERROR:', err)
-
-            if (status === 401) {
-
-                console.log('--- TOKEN EXPIRED ---')
-                console.log('STARTING REFRESH...')
-
-                const newToken = await refreshAccessToken()
-
-                console.log('REFRESH RESULT:', !!newToken)
-
-                if (!newToken) {
-                    console.log('REFRESH FAILED → LOGOUT')
-
-                    logout()
-                    throw err
-                }
-
-                console.log('--- RETRYING REQUEST ---')
-
-                const result = await makeRequest(newToken)
-
-                console.log('--- RETRY SUCCESS ---')
-
-                return result
+            if (!newToken) {
+                invalidateAuth()
+                throw error
             }
 
-            throw err
+            return await makeRequest(newToken)
         }
     }
 

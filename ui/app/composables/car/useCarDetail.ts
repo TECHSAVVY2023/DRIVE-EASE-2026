@@ -1,6 +1,6 @@
 
 
-import type { Car } from '~/utils/api/api'
+import type { Car } from '~/utils/types/fleet'
 
 export function useCarDetail() {
     const car = ref<Car | null>(null)

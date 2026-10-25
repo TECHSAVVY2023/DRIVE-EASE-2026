@@ -23,7 +23,7 @@
         ]"
     />
 
-    <div class="min-h-screen bg-[#0b0b0d] text-gray-200 p-4 sm:p-6 lg:p-10">
+    <div class="charcoal-blueprint-surface min-h-screen text-gray-200 p-4 sm:p-6 lg:p-10">
 
         <div class="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-start">
 
@@ -42,20 +42,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Transaction } from '~/utils/api/api';
+import type { Transaction } from '~/utils/types/booking';
 
 const { isLoggedIn, authReady } = useAuth()
-const { apiFetch } = useApiFetch()
-
-const user = ref<any>(null)
-
-watch(isLoggedIn, async (val) => {
-    if (val) {
-        user.value = await apiFetch('/auth/me/')
-    } else {
-        user.value = null
-    }
-}, { immediate: true })
+const { user } = useCurrentUser()
 
 const { 
     menuOpen,

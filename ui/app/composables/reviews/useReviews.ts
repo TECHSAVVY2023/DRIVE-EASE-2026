@@ -16,6 +16,26 @@ const featuredReviewsRequests = new Map<string, Promise<ReviewsResponse>>()
 
 export const useReviews = () => {
     const { apiFetch } = useApiFetch()
+    const { token } = useAuth()
+
+    const clearReviewCaches = (carId: string) => {
+        Object.keys(carReviewsCache).forEach((key) => {
+            if (key.startsWith(`${carId}-`)) {
+                delete carReviewsCache[key]
+                delete reviewsCacheExpiresAt[key]
+            }
+        })
+
+        Object.keys(allReviewsCache).forEach((key) => {
+            delete allReviewsCache[key]
+            delete reviewsCacheExpiresAt[key]
+        })
+
+        Object.keys(featuredReviewsCache).forEach((key) => {
+            delete featuredReviewsCache[key]
+            delete reviewsCacheExpiresAt[key]
+        })
+    }
     
     // Fetch reviews for a specific car
     const fetchCarReviews = async (
@@ -23,7 +43,10 @@ export const useReviews = () => {
         { force = false, page = 1, rating, sort }: { force?: boolean; page?: number; rating?: number; sort?: string } = {}
     ): Promise<CarReviewsResponse> => {
 
-        const cacheKey = `${carId}-page-${page}-rating-${rating ?? 'all'}-sort-${sort ?? 'highest'}`
+        // Car-review responses contain `my_review`, so guest and authenticated
+        // responses must never share the same cache entry.
+        const viewerKey = token.value ? `user-${token.value}` : 'guest'
+        const cacheKey = `${carId}-viewer-${viewerKey}-page-${page}-rating-${rating ?? 'all'}-sort-${sort ?? 'highest'}`
         const now = Date.now()
 
 
@@ -138,13 +161,7 @@ export const useReviews = () => {
             }
         )
 
-        // Clear cached reviews for this car
-        Object.keys(carReviewsCache).forEach((key) => {
-            if (key.startsWith(`${carId}-`)) {
-                delete carReviewsCache[key]
-                delete reviewsCacheExpiresAt[key]
-            }
-        })
+        clearReviewCaches(carId)
 
         return response
     }
@@ -167,13 +184,7 @@ export const useReviews = () => {
             }
         )
 
-        // Clear cached reviews
-        Object.keys(carReviewsCache).forEach((key) => {
-            if (key.startsWith(`${carId}-`)) {
-                delete carReviewsCache[key]
-                delete reviewsCacheExpiresAt[key]
-            }
-        })
+        clearReviewCaches(carId)
 
         return response
     }

@@ -1,8 +1,17 @@
+import os
+import uuid
+
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from storages.backends.s3boto3 import S3Boto3Storage
 from django.utils.text import slugify
+
+
+def unique_upload_path(instance, filename):
+    """Give every uploaded file its own immutable storage key."""
+    extension = os.path.splitext(filename)[1].lower()
+    return f"app/uploads/{uuid.uuid4().hex}{extension}"
 
 def default_car_meta():
     return {
@@ -203,7 +212,10 @@ class ReviewHelpful(models.Model):
 
 class FileUploadModel(models.Model):
 
-    file = models.FileField(storage=S3Boto3Storage(), upload_to='app/fleet/')
+    file = models.FileField(
+        storage=S3Boto3Storage(),
+        upload_to=unique_upload_path,
+    )
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -298,26 +310,53 @@ class Booking(models.Model):
         from django.utils import timezone
         import uuid
 
+        changed_fields = set()
+
         if not self.booking_reference:
             self.booking_reference = f"BKG-{uuid.uuid4().hex[:10].upper()}"
+            changed_fields.add("booking_reference")
 
-        if self.status == "pending_approval" and self.pending_approval_at is None:
-            self.pending_approval_at = timezone.now()
+        milestone_fields = {
+            "pending_approval": ("pending_approval_at",),
+            "confirmed": (
+                "pending_approval_at",
+                "confirmed_at",
+            ),
+            "picked_up": (
+                "pending_approval_at",
+                "confirmed_at",
+                "picked_up_at",
+            ),
+            "returned": (
+                "pending_approval_at",
+                "confirmed_at",
+                "picked_up_at",
+                "returned_at",
+            ),
+            "completed": (
+                "pending_approval_at",
+                "confirmed_at",
+                "picked_up_at",
+                "returned_at",
+                "completed_at",
+            ),
+        }
 
-        if self.status == "confirmed" and self.confirmed_at is None:
-            self.confirmed_at = timezone.now()
+        transition_time = timezone.now()
 
-        if self.status == "picked_up" and self.picked_up_at is None:
-            self.picked_up_at = timezone.now()
-
-        if self.status == "returned" and self.returned_at is None:
-            self.returned_at = timezone.now()
-
-        if self.status == "completed" and self.completed_at is None:
-            self.completed_at = timezone.now()
+        for field_name in milestone_fields.get(self.status, ()):
+            if getattr(self, field_name) is None:
+                setattr(self, field_name, transition_time)
+                changed_fields.add(field_name)
 
         if self.status == "cancelled" and self.cancelled_at is None:
-            self.cancelled_at = timezone.now()
+            self.cancelled_at = transition_time
+            changed_fields.add("cancelled_at")
+
+        # Ensure automatically populated milestones are persisted even when
+        # the caller saves only a restricted set of fields.
+        if kwargs.get("update_fields") is not None:
+            kwargs["update_fields"] = set(kwargs["update_fields"]) | changed_fields
 
         super().save(*args, **kwargs)
 
@@ -429,3 +468,44 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.title}"
+
+class AdminActivityLog(models.Model):
+    ACTION_CHOICES = [
+        ("create", "Create"),
+        ("update", "Update"),
+        ("delete", "Delete"),
+        ("status_change", "Status Change"),
+    ]
+
+    admin = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="activity_logs",
+    )
+
+    action = models.CharField(
+        max_length=20,
+        choices=ACTION_CHOICES,
+    )
+
+    description = models.TextField()
+
+    target_type = models.CharField(
+        max_length=50,
+    )
+
+    target_id = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.admin} - {self.action} - {self.target_type}"

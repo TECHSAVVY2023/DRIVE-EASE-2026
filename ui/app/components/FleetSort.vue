@@ -9,11 +9,9 @@
                 :value="sortBy"
                 @change="emit('update:sortBy', ($event.target as HTMLSelectElement).value)"
                 class="
-                    w-full
-                    bg-[#262626] border border-[#2a2a2a] rounded-lg
-                    text-[#929292] text-sm px-4 py-2.5 pr-10
-                    appearance-none focus:outline-none focus:border-[#C1121F]
-                    cursor-pointer transition-colors duration-200
+                    smoked-control w-full rounded-lg
+                    text-sm px-4 py-2.5 pr-10
+                    appearance-none cursor-pointer
                 "
             >
                 <option value="">Sort: None</option>
@@ -45,10 +43,8 @@
                 @click="emit('toggleFilters')"
                 class="
                     flex items-center justify-center gap-2
-                    w-full bg-[#1a1a1a] border border-white rounded-lg
+                    smoked-control w-full rounded-lg
                     text-white text-sm px-4 py-2.5
-                    transition-colors duration-200
-                    hover:bg-[#252525]
                 "
             >
                 <svg

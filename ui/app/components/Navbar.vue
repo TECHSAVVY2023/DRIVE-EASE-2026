@@ -4,17 +4,17 @@
     ========================== -->
     <nav 
         class="
-            sticky top-0 
-            flex h-[72px] items-center justify-between 
-            px-8 py-4 
-            bg-black z-100 
+            sticky top-0 z-100 h-[76px]
+            border-b border-white/[0.07]
+            bg-[#050506]/98 shadow-[0_10px_30px_rgba(0,0,0,0.3)] backdrop-blur-xl
             font-[poppins]
         "
     >
+        <div class="mx-auto flex h-full w-full max-w-7xl items-center justify-between px-5 sm:px-8">
 
-        <div v-if="authReady" class="flex items-center gap-2 ml-1">
+        <NuxtLink v-if="authReady" to="/" class="group flex items-center gap-3" aria-label="Drive Ease home">
 
-            <div class="w-12 h-12 rounded-full overflow-hidden">
+            <div class="w-11 h-11 rounded-full overflow-hidden ring-1 ring-white/10 group-hover:ring-[#C1121F]/70 transition-colors">
                 <img
                     src="~/assets/images/logo.png"
                     alt="Logo"
@@ -22,25 +22,36 @@
                 />
             </div>
 
-        </div>
+            <div class="hidden lg:flex flex-col leading-none">
+                <span class="text-white text-sm font-extrabold tracking-wide">DRIVE EASE</span>
+                <span class="text-[#85858b] text-[9px] tracking-[0.2em] mt-1">CAR RENTAL</span>
+            </div>
+        </NuxtLink>
 
         <!-- Desktop Nav Links -->
-        <ul v-if="authReady" class="hidden md:flex items-center gap-10 text-white text-sm font-medium tracking-wide">
+        <ul v-if="authReady" class="hidden md:flex items-center gap-1 rounded-full border border-white/[0.06] bg-white/[0.025] p-1 text-sm font-medium">
 
-            <li><a href="/" class="hover:text-[#c1121f] transition-colors duration-200">Home</a></li>
-            <li><a href="/client/fleet" class="hover:text-[#c1121f] transition-colors duration-200">Fleet</a></li>
-            <li><a href="/client/about" class="hover:text-[#c1121f] transition-colors duration-200">About</a></li>
-            <li><a href="/client/contact" class="hover:text-[#c1121f] transition-colors duration-200">Contact</a></li>
+            <li v-for="link in navLinks" :key="link.to">
+                <NuxtLink
+                    :to="link.to"
+                    class="block rounded-full px-5 py-2 text-[#a0a0a5] transition-colors duration-200 hover:bg-white/[0.04] hover:text-white"
+                    :class="isActiveLink(link.to) ? 'bg-white/[0.07] text-white shadow-sm' : ''"
+                >
+                    {{ link.label }}
+                </NuxtLink>
+            </li>
         
         </ul>
 
+        <div v-if="authReady && isLoggedIn" class="relative hidden md:block">
         <button
-            v-if="authReady && isLoggedIn"
             @click="toggleDropdown"
+            type="button"
+            :aria-expanded="isDropdownOpen"
+            aria-label="Open account menu"
             class="
-                relative
-                hidden md:flex items-center gap-2
-                bg-[#0D0D0D] border border-[#323232] hover:border-[#C1121F]
+                relative flex items-center gap-2
+                bg-[#151517] border border-white/10 hover:border-[#C1121F]
                 text-white text-sm
                 pl-2 pr-3 py-2 rounded-full
                 transition-colors duration-200
@@ -66,14 +77,17 @@
 
             <!-- Avatar -->
             <div
-                class="w-7 h-7 rounded-full bg-gray-500 flex items-center justify-center flex-shrink-0"
+                class="w-7 h-7 rounded-full bg-[#c1121f] flex items-center justify-center flex-shrink-0"
             >
                 <img
-                    v-if="isLoggedIn"
+                    v-if="props.user?.profile_picture"
                     :src="props.user?.profile_picture"
                     alt="Profile"
                     class="w-7 h-7 rounded-full object-cover"
                 />
+                <svg v-else class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
             </div>
 
             <span class="hidden sm:block truncate">
@@ -98,24 +112,43 @@
 
         <!-- Dropdown Menu -->
         <div
-            v-if="authReady && isDropdownOpen && isLoggedIn"
+            v-if="isDropdownOpen"
             class="
-                hidden md:block absolute right-8 top-15 mt-2 w-52 z-50
-                bg-[#0D0D0D] border border-[#323232] rounded-xl shadow-lg
+                absolute right-0 top-[calc(100%+0.75rem)] w-64 z-50
+                bg-[#0c0c0e]/98 border border-white/10 rounded-2xl shadow-2xl
                 overflow-hidden
             "
         >
 
+            <div class="flex items-center gap-3 border-b border-white/[0.08] bg-white/[0.025] px-4 py-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#c1121f]">
+                    <img
+                        v-if="props.user?.profile_picture"
+                        :src="props.user.profile_picture"
+                        alt="Profile"
+                        class="h-full w-full object-cover"
+                    />
+                    <svg v-else class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <p class="truncate text-sm font-semibold text-white">{{ props.user?.given_name || 'My account' }}</p>
+                    <p class="mt-0.5 text-[11px] text-[#85858b]">Manage your Drive Ease account</p>
+                </div>
+            </div>
+
             <!-- Profile -->
             <button
-                @click="$router.push('/client/profile')"
+                @click="navigateAccount('/client/profile')"
                 class="
                     w-full flex items-center gap-3
                     px-4 py-3
-                    text-sm text-white
-                    hover:bg-[#1A1A1A]
+                    text-sm text-[#b0b0b5]
+                    hover:bg-white/[0.06]
                     transition-colors duration-200
                 "
+                :class="route.path.startsWith('/client/profile') ? 'bg-white/[0.06] text-white border-l-2 border-[#C1121F]' : ''"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="currentColor" stroke="currentColor" viewBox="0 0 640 640">
                     <path d="M320 312C386.3 312 440 258.3 440 192C440 125.7 386.3 72 320 72C253.7 72 200 125.7 200 192C200 258.3 253.7 312 320 312zM290.3 368C191.8 368 112 447.8 112 546.3C112 562.7 125.3 576 141.7 576L498.3 576C514.7 576 528 562.7 528 546.3C528 447.8 448.2 368 349.7 368L290.3 368z"/>
@@ -126,14 +159,15 @@
 
             <!-- Transactions -->
             <button
-                @click="$router.push('/client/transaction')"
+                @click="navigateAccount('/client/transaction')"
                 class="
                     w-full flex items-center gap-3
                     px-4 py-3
-                    text-sm text-white
-                    hover:bg-[#1A1A1A]
+                    text-sm text-[#b0b0b5]
+                    hover:bg-white/[0.06]
                     transition-colors duration-200
                 "
+                :class="route.path.startsWith('/client/transaction') ? 'bg-white/[0.06] text-white border-l-2 border-[#C1121F]' : ''"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 640 640">
                     <path d="M160 96C142.3 96 128 110.3 128 128L128 576L192 544L256 576L320 544L384 576L448 544L512 576L512 128C512 110.3 497.7 96 480 96L160 96zM224 192L416 192C429.3 192 440 202.7 440 216C440 229.3 429.3 240 416 240L224 240C210.7 240 200 229.3 200 216C200 202.7 210.7 192 224 192zM224 288L416 288C429.3 288 440 298.7 440 312C440 325.3 429.3 336 416 336L224 336C210.7 336 200 325.3 200 312C200 298.7 210.7 288 224 288zM224 384L352 384C365.3 384 376 394.7 376 408C376 421.3 365.3 432 352 432L224 432C210.7 432 200 421.3 200 408C200 394.7 210.7 384 224 384z"/>
@@ -143,14 +177,15 @@
             </button>
 
             <button
-                @click="$router.push('/client/notifications')"
+                @click="navigateAccount('/client/notifications')"
                 class="
                     w-full flex items-center gap-3
                     px-4 py-3
-                    text-sm text-white
-                    hover:bg-[#1A1A1A]
+                    text-sm text-[#b0b0b5]
+                    hover:bg-white/[0.06]
                     transition-colors duration-200
                 "
+                :class="route.path.startsWith('/client/notifications') ? 'bg-white/[0.06] text-white border-l-2 border-[#C1121F]' : ''"
             >
                 <div class="relative">
                     <svg
@@ -193,11 +228,11 @@
 
             <!-- Logout -->
             <button
-                @click="logout"
+                @click="handleLogout"
                 class="
                     w-full px-4 py-3 flex items-center gap-3
                     text-sm text-red-400
-                    hover:bg-[#1A1A1A]
+                    hover:bg-white/[0.06]
                     transition-colors duration-200
                 "
             >
@@ -219,13 +254,14 @@
             </button>
 
         </div>
+        </div>
         
         <button
             v-if="authReady && !isLoggedIn"
             @click="$router.push('/client/login')"
             class="
                 hidden md:flex justify-between items-center gap-3
-                bg-[#0D0D0D] border border-[#323232] hover:border-[#C1121F]
+                bg-[#151517] border border-white/10 hover:border-[#C1121F]
                 text-white text-sm
                 pl-2 pr-4 py-2 rounded-full
                 transition-colors duration-200
@@ -251,7 +287,8 @@
         ========================== -->
         <button 
             @click="emit('toggle-menu')"
-            class="md:hidden text-white"
+            class="md:hidden flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.035] text-white transition hover:border-[#C1121F]"
+            aria-label="Open navigation menu"
         >
             <svg xmlns="http://www.w3.org/2000/svg" 
                 class="w-7 h-7" 
@@ -262,18 +299,35 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
         </button>
+        </div>
     </nav>
 
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-const { logout, token } = useAuth()
+import { ref } from 'vue'
+const { logout } = useAuth()
+const route = useRoute()
+
+const navLinks = [
+    { label: 'Home', to: '/' },
+    { label: 'Fleet', to: '/client/fleet' },
+    { label: 'About', to: '/client/about' },
+    { label: 'Contact', to: '/client/contact' },
+]
+
+const isActiveLink = (to: string): boolean => {
+    if (to === '/') return route.path === '/'
+    if (to === '/client/fleet') {
+        return route.path.startsWith('/client/fleet') || route.path.startsWith('/client/car-details')
+    }
+    return route.path.startsWith(to)
+}
 
 const props = defineProps<{ 
     user: { 
         given_name?: string 
-        profile_picture?: string 
+        profile_picture?: string | null
     } | null,
     isLoggedIn: boolean
     authReady: boolean
@@ -289,6 +343,16 @@ const isDropdownOpen = ref(false)
 
 const toggleDropdown = (): void => {
     isDropdownOpen.value = !isDropdownOpen.value
+}
+
+const navigateAccount = async (path: string): Promise<void> => {
+    isDropdownOpen.value = false
+    await navigateTo(path)
+}
+
+const handleLogout = (): void => {
+    isDropdownOpen.value = false
+    logout()
 }
 
 const { fetchUnreadCount } = useNotification()
@@ -310,12 +374,6 @@ watch(
     },
     { immediate: true }
 )
-
-const mounted = ref(false)
-
-onMounted(() => {
-    mounted.value = true
-})
 
 </script>
 

@@ -234,8 +234,8 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '~/utils/api/api'
-import type { Car } from '~/utils/api/api'
+import type { User } from '~/utils/types/accounts'
+import type { Car } from '~/utils/types/fleet'
 import { steps } from '~/constants/client/bookingSteps'
 import { ref, reactive } from 'vue'
 

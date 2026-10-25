@@ -1,5 +1,6 @@
 import { watch } from 'vue'
-import type { User, Car } from '~/utils/api/api'
+import type { User } from '~/utils/types/accounts'
+import type { Car } from '~/utils/types/fleet'
 import Swal from 'sweetalert2'
 import { useRouter } from 'vue-router'
 

@@ -459,7 +459,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Transaction } from '~/utils/api/api'
+import type { Transaction } from '~/utils/types/booking'
 
 const props = defineProps<{
     bookings: any[]

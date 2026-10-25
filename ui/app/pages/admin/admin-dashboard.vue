@@ -40,29 +40,19 @@
                         </p>
                     </div>
 
-                    <button
-                        class="flex items-center justify-center gap-2
-                               text-gray-300 text-sm
-                               px-4 py-2.5 rounded-lg
-                               bg-[#1a1a1a] border border-[#292929]
-                               hover:bg-[#222] transition"
+                    <select
+                        v-model="selectedRevenueMonth"
+                        aria-label="Revenue month"
+                        class="rounded-lg border border-[#292929] bg-[#1a1a1a] px-4 py-2.5 text-sm text-gray-300 transition hover:bg-[#222] focus:border-[#C1121F] focus:outline-none"
                     >
-                        September 2026
-
-                        <svg
-                            class="w-4 h-4 text-gray-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                        <option
+                            v-for="option in revenueMonthOptions"
+                            :key="option.value"
+                            :value="option.value"
                         >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M19 9l-7 7-7-7"
-                            />
-                        </svg>
-                    </button>
+                            {{ option.label }}
+                        </option>
+                    </select>
 
                 </div>
 
@@ -135,68 +125,7 @@
 
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">
 
-                    <!-- Revenue -->
-                    <div
-                        class="xl:col-span-2 bg-[#1a1a1a]
-                               rounded-xl p-6 border border-[#222]"
-                    >
-
-                        <div class="flex items-center justify-between mb-6">
-
-                            <div>
-                                <h2 class="text-white font-bold text-base">
-                                    Revenue overview
-                                </h2>
-
-                                <p class="text-gray-500 text-xs mt-1">
-                                    Revenue generated this month
-                                </p>
-                            </div>
-
-                            <div class="text-right">
-                                <p class="text-white font-bold text-lg">
-                                    ₱184,000
-                                </p>
-
-                                <p class="text-green-400 text-xs">
-                                    +8.2% from last month
-                                </p>
-                            </div>
-
-                        </div>
-
-                        <!-- Chart placeholder -->
-                        <div class="h-56 flex items-end gap-2 sm:gap-4">
-
-                            <div
-                                v-for="(item, index) in revenue"
-                                :key="index"
-                                class="flex-1 h-full flex items-end"
-                            >
-                                <div
-                                    class="w-full bg-[#C1121F]/80
-                                           hover:bg-[#C1121F]
-                                           rounded-t-md transition"
-                                    :style="{
-                                        height: `${item}%`
-                                    }"
-                                ></div>
-                            </div>
-
-                        </div>
-
-                        <div
-                            class="flex justify-between
-                                   text-[10px] text-gray-500 mt-3"
-                        >
-                            <span>Week 1</span>
-                            <span>Week 2</span>
-                            <span>Week 3</span>
-                            <span>Week 4</span>
-                        </div>
-
-                    </div>
-
+                    <AdminDashboardRevenueOverview :month="selectedRevenueMonth" />
 
                     <!-- Fleet Status -->
                     <div
@@ -524,20 +453,7 @@ import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 
 const { isLoggedIn } = useAuth()
 const { apiFetch } = useApiFetch()
-
-const user = ref<any>(null)
-
-watch(
-    isLoggedIn,
-    async (val) => {
-        if (val) {
-            user.value = await apiFetch('/auth/me/')
-        } else {
-            user.value = null
-        }
-    },
-    { immediate: true }
-)
+const { user } = useCurrentUser()
 
 const sidebarOpen = ref(false)
 
@@ -597,24 +513,22 @@ const statCards = [
 ]
 
 
-/* =========================
-   REVENUE
-========================= */
+const currentMonth = new Date()
+const selectedRevenueMonth = ref(
+    `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`
+)
 
-const revenue = ref([
-    35,
-    48,
-    42,
-    65,
-    58,
-    72,
-    64,
-    82,
-    70,
-    88,
-    78,
-    94,
-])
+const revenueMonthOptions = Array.from({ length: 12 }, (_, index) => {
+    const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - index, 1)
+
+    return {
+        value: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+        label: date.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric',
+        }),
+    }
+})
 
 
 /* =========================

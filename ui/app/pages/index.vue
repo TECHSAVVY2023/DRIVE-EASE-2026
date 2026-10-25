@@ -27,17 +27,7 @@
 <script setup lang="ts">
 
 const { isLoggedIn, authReady } = useAuth()
-const { apiFetch } = useApiFetch()
-
-const user = ref<any>(null)
-
-watch(isLoggedIn, async (val) => {
-    if (val) {
-        user.value = await apiFetch('/auth/me/')
-    } else {
-        user.value = null
-    }
-}, { immediate: true })
+const { user } = useCurrentUser()
 
 const { 
     menuOpen,

@@ -1,4 +1,4 @@
-import type { User } from '~/utils/api/api'
+import type { User } from '~/utils/types/accounts'
 
 const loading = ref(false)
 
@@ -29,11 +29,12 @@ export function useUsersList() {
         Math.ceil(count.value / pageSize)
     )
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (force = false) => {
         loading.value = true
 
         try {
             const res = await fetchUsersList({
+                force,
                 page: currentPage.value,
                 search: search.value,
                 status: selectedStatus.value,
@@ -41,8 +42,6 @@ export function useUsersList() {
             })
 
             users.value = res.results
-
-            console.log('later users:', users.value)
 
             count.value = res.count
 

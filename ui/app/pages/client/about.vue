@@ -24,14 +24,14 @@
       ]"
    />
 
-   <div class="min-h-screen bg-[#121212] font-[poppins]">
+   <div class="charcoal-blueprint-surface min-h-screen font-[poppins]">
 
       <div class="max-w-5xl mx-auto px-6 py-10 flex flex-col gap-5">
 
          <!-- Who We Are -->
          <section class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
 
-            <div class="flex flex-col h-full justify-center gap-4 bg-[#1B1B1B] p-6 rounded-xl">
+            <div class="smoked-charcoal-panel flex flex-col h-full justify-center gap-4 p-6 rounded-xl">
                <h2 class="text-white font-extrabold text-xl">Who we are</h2>
                <p class="text-[#929292] text-sm leading-relaxed">
                   Drive Ease is a trusted car rental service based in Cagayan De Oro City, Philippines.
@@ -65,7 +65,7 @@
          <!-- Mission + Vision -->
          <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            <div class="bg-[#1B1B1B] rounded-xl p-6 flex flex-col gap-3">
+            <div class="smoked-charcoal-panel rounded-xl p-6 flex flex-col gap-3">
 
                <div class="flex items-center gap-3">
 
@@ -98,7 +98,7 @@
 
             </div>
 
-            <div class="bg-[#1B1B1B] rounded-xl p-6 flex flex-col gap-3">
+            <div class="smoked-charcoal-panel rounded-xl p-6 flex flex-col gap-3">
 
                <div class="flex items-center gap-3">
 
@@ -139,7 +139,7 @@
          </section>
 
          <!-- Our Team -->
-         <section class="flex flex-col gap-5 bg-[#1B1B1B] rounded-xl px-6 pt-6 pb-10">
+         <section class="smoked-charcoal-panel flex flex-col gap-5 rounded-xl px-6 pt-6 pb-10">
             
             <h2 class="text-white font-extrabold text-xl">Our team</h2>
 
@@ -192,7 +192,7 @@
          </section>
 
          <!-- Our Journey -->
-         <section class="flex flex-col gap-5 bg-[#1B1B1B] rounded-xl px-6 pt-6 pb-10">
+         <section class="smoked-charcoal-panel flex flex-col gap-5 rounded-xl px-6 pt-6 pb-10">
 
             <h2 class="text-white font-extrabold text-xl">Our journey</h2>
 
@@ -200,7 +200,7 @@
                <div
                   v-for="(milestone, i) in journey"
                   :key="milestone.year + i"
-                  class="flex items-center gap-4 bg-[#1a1a1a] border border-[#222] rounded-xl px-6 py-5"
+                  class="flex items-center gap-4 bg-[#111113]/95 border border-white/[0.07] rounded-xl px-6 py-5"
                >
                   <!-- Year -->
                   <span class="text-white font-extrabold text-xl w-14 flex-shrink-0">{{ milestone.year }}</span>
@@ -229,17 +229,7 @@
 
 //Navbar + User Profile + Working login
 const { isLoggedIn, authReady } = useAuth()
-const { apiFetch } = useApiFetch()
-
-const user = ref<any>(null)
-
-watch(isLoggedIn, async (val) => {
-    if (val) {
-        user.value = await apiFetch('/auth/me/')
-    } else {
-        user.value = null
-    }
-}, { immediate: true })
+const { user } = useCurrentUser()
 
 const { 
     menuOpen,

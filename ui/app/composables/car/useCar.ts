@@ -1,5 +1,7 @@
 
-import { API_ENDPOINTS, type Car } from '~/utils/api/api'
+import { API_ENDPOINTS } from '~/utils/api/api'
+import type { Car } from '~/utils/types/fleet'
+
 
 let carCache = new Map<string, Car>()
 let carCacheExpiresAt = new Map<string, number>()
@@ -99,6 +101,7 @@ export const useCar = () => {
                 primary_image: string | null
                 images: string[]
             }
+            deleted_images: string[]
         }>
     ): Promise<Car> => {
         const response = await apiFetch<Car>(

@@ -12,7 +12,7 @@
                 <input
                     v-model="props.form.given_name"
                     type="text"
-                    class="w-full bg-[#111] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#C1121F] transition-colors"
+                    :class="fieldClass"
                 />
             </div>
 
@@ -26,7 +26,7 @@
                 <input
                     v-model="props.form.family_name"
                     type="text"
-                    class="w-full bg-[#111] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#C1121F] transition-colors"
+                    :class="fieldClass"
                 />
             </div>
         </div>
@@ -44,7 +44,7 @@
             v-model="props.form.email"
             type="email"
             readonly
-            class="w-full bg-[#111] border border-white/10 rounded px-3 py-2 text-[#ABABAB] text-sm focus:outline-none focus:border-[#C1121F] transition-colors"
+            :class="fieldClass"
         />
     </div>
 
@@ -60,7 +60,7 @@
             <input
                 v-model="props.form.contact_number"
                 type="text"
-                class="w-full bg-[#111] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#C1121F] transition-colors"
+                :class="fieldClass"
             />
         </div>
 
@@ -74,7 +74,7 @@
             <input
                 v-model="props.form.address"
                 type="text"
-                class="w-full bg-[#111] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#C1121F] transition-colors"
+                :class="fieldClass"
             />
         </div>
     </div>
@@ -90,4 +90,6 @@ const props = defineProps<{
         address: string
     }
 }>()
+
+const fieldClass = 'w-full rounded-lg border border-[#2a2a2a] bg-[#0f0f0f] px-3.5 py-2.5 text-[13px] text-[#e4e4e4] outline-none transition-colors placeholder:text-neutral-600 hover:border-[#3a3a3a] focus:border-[#C1121F]'
 </script>

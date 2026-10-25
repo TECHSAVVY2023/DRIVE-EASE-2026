@@ -20,7 +20,7 @@
         @close-sidebar="handleCloseSidebar"
     />
 
-    <div class="min-h-screen bg-[#121212] font-[poppins]">
+    <div class="charcoal-blueprint-surface min-h-screen font-[poppins]">
 
         <Banner 
             subtitle="Find Your Perfect Ride"
@@ -34,6 +34,7 @@
         <div class="max-w-7xl px-4 py-8 flex flex-col mx-auto md:flex-row gap-6">
 
             <SidebarFilters
+                class="smoked-charcoal-panel"
                 :show-filters="showFilters"
                 :open="open"
 
@@ -67,7 +68,7 @@
             <!-- =========================
                     Main Content
             ========================== -->
-            <div class="flex-1 flex flex-col gap-5 bg-[#1a1a1a] rounded-xl px-12 py-8">
+            <div class="smoked-charcoal-panel flex-1 flex flex-col gap-5 rounded-xl px-12 py-8">
 
                 <!-- Results Header -->
                 <div>
@@ -132,23 +133,13 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Car } from '~/utils/api/api'
+import type { Car } from '~/utils/types/fleet'
 
 const { isLoggedIn, authReady } = useAuth()
-const { apiFetch } = useApiFetch()
+const { user } = useCurrentUser()
 
 const router = useRouter()
 const { $swal } = useNuxtApp()
-
-const user = ref<any>(null)
-
-watch(isLoggedIn, async (val) => {
-    if (val) {
-        user.value = await apiFetch('/auth/me/')
-    } else {
-        user.value = null
-    }
-}, { immediate: true })
 
 const {
     menuOpen,

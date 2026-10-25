@@ -1,4 +1,18 @@
 <template>
+
+    <AdminUsersAssignRoleModal
+        v-model="roleModalOpen"
+        :users="users"
+        :user="selectedRoleUser"
+        @save="handleAssignRole"
+    />
+
+    <AdminUsersEditUserModal
+        v-model="editModalOpen"
+        :user="selectedEditUser"
+        @save="handleEditUser"
+    />
+
     <div class="flex h-screen bg-[#0D0D0D] font-[poppins] overflow-hidden text-white">
 
         <!-- Sidebar -->
@@ -25,9 +39,15 @@
                         <h2 class="text-[22px] font-extrabold">Users</h2>
                         <div class="text-[#8a8a8a] text-[13px] mt-1">Manage customer and staff accounts</div>
                     </div>
-                    <button class="bg-[#c81e2c] hover:bg-[#b31a27] text-white font-bold text-sm px-5 py-[11px] rounded-lg">
-                        + Add user
+
+                    <button
+                        type="button"
+                        class="rounded-lg bg-[#c81e2c] px-5 py-[11px] text-sm font-bold text-white hover:bg-[#b31a27]"
+                        @click="openAssignRoleModal"
+                    >
+                        Assign role
                     </button>
+
                 </div>
 
                 <!-- Stat cards -->
@@ -62,24 +82,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { User } from '~/utils/api/api'
+import type { AdminEditUserPayload, User, UserRole } from '~/utils/types/accounts'
 
 const { isLoggedIn } = useAuth()
-const { apiFetch } = useApiFetch()
-
-const user = ref<any>(null)
-
-watch(
-    isLoggedIn,
-    async (val) => {
-        if (val) {
-            user.value = await apiFetch('/auth/me/')
-        } else {
-            user.value = null
-        }
-    },
-    { immediate: true }
-)
+const { user } = useCurrentUser()
 
 const sidebarOpen = ref<boolean>(false)
 
@@ -89,15 +95,6 @@ const handleCloseSidebar = (): void => {
 
 const handleOpenSidebar = (): void => {
     sidebarOpen.value = true
-}
-
-const handleAddUser = () => {
-    // Open add-user modal
-}
-
-const handleEdit = (user: User) => {
-    // Open edit-user modal
-    console.log('Edit user:', user)
 }
 
 const handleSecondaryAction = (user: User) => {
@@ -115,27 +112,9 @@ const currentDate = new Date().toLocaleDateString('en-US', {
     day: 'numeric',
 })
 
-const { 
-        loading,
-        users,
-        count,
-        nextPage,
-        previousPage,
-        currentPage,
-        pageSize,
-
-        search,
-        selectedStatus,
-        selectedRole,
-
-        fetchUsers,
-        totalPages,
-        resetFilters,
-
-        fetchStats,
-        totalUsers,
-        activeUsers,
-        suspendedUsers,
+const { loading, users, count, nextPage, previousPage, currentPage,
+        pageSize, search, selectedStatus, selectedRole, fetchUsers, totalPages,
+        resetFilters, fetchStats, totalUsers, activeUsers, suspendedUsers,
 } = useUsersList()
 
 const statCards = computed(() => [
@@ -156,7 +135,58 @@ const statCards = computed(() => [
     }
 ])
 
-console.log(totalUsers.value, activeUsers.value, suspendedUsers.value);
+const roleModalOpen = ref(false)
+const selectedRoleUser = ref<User | null>(null)
+const editModalOpen = ref(false)
+const selectedEditUser = ref<User | null>(null)
+
+const openAssignRoleModal = () => {
+    selectedRoleUser.value = null
+    roleModalOpen.value = true
+}
+
+const handleEdit = (account: User) => {
+    selectedEditUser.value = account
+    editModalOpen.value = true
+}
+
+const { handleAssignRole: assignRole, handleEditUser: editUser } = useUserAdminEdit()
+
+const handleAssignRole = async ({userId, role}: { userId: number, role: UserRole }) => {
+    const result = await assignRole(userId, role)
+
+    if (!result.success) return
+
+    roleModalOpen.value = false
+    selectedRoleUser.value = null
+
+    await Promise.all([
+        fetchUsers(true),
+        fetchStats(),
+    ])
+}
+
+const handleEditUser = async ({userId,body}: { userId: number, body: AdminEditUserPayload }) => {
+    const result = await editUser(userId, body)
+
+    if (!result.success) return
+
+    editModalOpen.value = false
+    selectedEditUser.value = null
+
+    await Promise.all([
+        fetchUsers(true),
+        fetchStats(),
+    ])
+}
+
+watch(roleModalOpen, isOpen => {
+    if (!isOpen) selectedRoleUser.value = null
+})
+
+watch(editModalOpen, isOpen => {
+    if (!isOpen) selectedEditUser.value = null
+})
 
 onMounted(async () => {
     await Promise.all([

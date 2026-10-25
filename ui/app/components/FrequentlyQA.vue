@@ -1,7 +1,7 @@
 <template>
     <section
         ref="sectionRef"
-        class="relative overflow-hidden bg-[#111111] font-[poppins]">
+        class="charcoal-blueprint-surface relative overflow-hidden font-[poppins]">
         <div
             class="
                 relative z-10
@@ -133,10 +133,10 @@
         </div>
 
         <!-- Desktop Accent -->
-        <div class="absolute top-0 right-0 hidden md:block w-[35%] h-full bg-[#C1121F]"></div>
+        <div class="red-diagonal-panel absolute top-0 right-0 hidden md:block w-[35%] h-full bg-[#C1121F]"></div>
 
         <!-- Mobile Accent -->
-        <div class="absolute bottom-0 left-0 right-0 h-[192px] md:hidden bg-[#C1121F]"></div>
+        <div class="red-diagonal-panel absolute bottom-0 left-0 right-0 h-[192px] md:hidden bg-[#C1121F]"></div>
 
     </section>
 </template>

@@ -21,7 +21,7 @@
         @updated="fetchUser"
     />
 
-  <div class="h-fit bg-[#0D0D0D] font-[poppins]">
+  <div class="charcoal-blueprint-surface min-h-screen font-[poppins]">
     
     <Banner 
         subtitle="Manage account"
@@ -41,7 +41,7 @@
             />
 
             <!-- Personal Information -->
-            <div class="bg-[#1a1a1a] border border-[#222] rounded-xl p-5 flex flex-col gap-4">
+            <div class="smoked-charcoal-panel rounded-xl p-5 flex flex-col gap-4">
                 <h3 class="text-white font-bold text-base">Personal information</h3>
 
                 <div class="border-b border-[#323232] w-full"></div>
@@ -77,7 +77,7 @@
             </div>
 
             <!-- License & ID -->
-            <div class="bg-[#1a1a1a] border border-[#222] rounded-xl p-5 flex flex-col gap-4">
+            <div class="smoked-charcoal-panel rounded-xl p-5 flex flex-col gap-4">
                 <h3 class="text-white font-bold text-sm">License & ID</h3>
 
                 <div class="border-b border-[#323232] w-full"></div>
@@ -133,25 +133,7 @@ import { ref } from 'vue'
 const showEditProfileModal = ref(false)
 
 const { isLoggedIn, authReady } = useAuth()
-const { apiFetch } = useApiFetch()
-
-const user = ref<any>(null)
-
-const fetchUser = async () => {
-    if (!isLoggedIn.value) {
-        user.value = null
-        return
-    }
-    user.value = await apiFetch('/auth/me/')
-}
-
-watch(isLoggedIn, async (val) => {
-    if (val) {
-        await fetchUser()
-    } else {
-        user.value = null
-    }
-}, { immediate: true })
+const { user, refreshUser: fetchUser } = useCurrentUser()
 
 const { 
     menuOpen,

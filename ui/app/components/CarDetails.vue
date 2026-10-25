@@ -1,6 +1,6 @@
 <template>
     <!-- Top Section: Images + Info -->
-    <div class="flex flex-col justify-center gap-4 items-center bg-[#1B1B1B] w-full px-4 py-4 rounded-xl">
+    <div class="smoked-charcoal-panel flex flex-col justify-center gap-4 items-center w-full px-4 py-4 rounded-xl">
         
         <div class="flex flex-col w-full md:flex-row md:items-center gap-6">
             <!-- Left: Image Gallery -->
@@ -257,7 +257,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { Car } from '~/utils/api/api'
+import type { Car } from '~/utils/types/fleet'
 
 const props = defineProps<{
     car: Car

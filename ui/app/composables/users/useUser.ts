@@ -1,10 +1,21 @@
-import { type UsersResponse, type UsersStats } from "~/utils/api/api"
+import {
+    type AdminEditUserPayload, type AdminEditUserResponse,
+    type AssignRoleResponse, type UserRole, type UsersResponse, type UsersStats,
+    type UpdateUserStatusResponse
+} from "~/utils/types/accounts"
 
 const userCacheExpiresAt: Record<string, number> = {}
 const USER_CACHE_TTL_MS = 60 * 1000
 
 const UserCache: Record<string, UsersResponse> = {}
 const UserRequests = new Map<string, Promise<UsersResponse>>()
+
+const clearUserCache = () => {
+    Object.keys(UserCache).forEach(key => delete UserCache[key])
+    Object.keys(userCacheExpiresAt).forEach(
+        key => delete userCacheExpiresAt[key]
+    )
+}
 
 export const useUsers = () => {
     const { apiFetch } = useApiFetch()
@@ -91,8 +102,44 @@ export const useUsers = () => {
         return await apiFetch<UsersStats>('/users/stats/')
     }
 
+    const assignUserRole = async (
+        userId: number,
+        role: UserRole,
+    ): Promise<AssignRoleResponse> => {
+        const response = await apiFetch<AssignRoleResponse>(
+            `/users/${userId}/role/`,
+            {
+                method: 'PATCH',
+                body: { role },
+            },
+        )
+
+        clearUserCache()
+
+        return response
+    }
+
+    const updateUserAdmin = async (
+        userId: number,
+        body: AdminEditUserPayload,
+    ): Promise<AdminEditUserResponse> => {
+        const response = await apiFetch<AdminEditUserResponse>(
+            `/admin/accounts/${userId}/`,
+            {
+                method: "PATCH",
+                body
+            }
+        )
+
+        clearUserCache()
+
+        return response
+    }
+
     return {
         fetchUsersStats,
         fetchUsersList,
+        assignUserRole,
+        updateUserAdmin,
     }
 }

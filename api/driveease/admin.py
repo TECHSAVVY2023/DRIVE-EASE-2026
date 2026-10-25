@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Cars, Accounts, FileUploadModel, ContactListModel, Reviews, ReviewHelpful, Booking, Payment, Feature, Notification, CarType
+from .models import Cars, Accounts, AdminActivityLog, FileUploadModel, ContactListModel, Reviews, ReviewHelpful, Booking, Payment, Feature, Notification, CarType
 from .tasks import create_notification
 
 admin.site.register(Cars)
@@ -187,7 +187,6 @@ class FileUploadModelAdmin(admin.ModelAdmin):
         "uploaded_at",
     )
 
-
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = (
@@ -202,3 +201,42 @@ class NotificationAdmin(admin.ModelAdmin):
     search_fields = ("title", "message")
     readonly_fields = ("created_at",)
     date_hierarchy = "created_at"
+
+@admin.register(AdminActivityLog)
+class AdminActivityLogAdmin(admin.ModelAdmin):
+    list_display = [
+        "admin",
+        "action",
+        "target_type",
+        "target_id",
+        "created_at",
+    ]
+
+    list_filter = [
+        "action",
+        "target_type",
+    ]
+
+    search_fields = [
+        "admin__email",
+        "description",
+        "target_id",
+    ]
+
+    ordering = ["-created_at"]
+
+    # Activity logs should not be manually edited.
+    readonly_fields = [
+        "admin",
+        "action",
+        "description",
+        "target_type",
+        "target_id",
+        "created_at",
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

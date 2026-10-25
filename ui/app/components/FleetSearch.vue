@@ -8,12 +8,9 @@
             type="text"
             :placeholder="placeholder || 'Search'"
             class="
-                w-full bg-[#262626] border border-[#2a2a2a]
+                smoked-control w-full
                 px-4 py-2.5 pr-10 rounded-lg
                 text-white text-sm
-                focus:outline-none focus:border-[#C1121F]
-                placeholder-[#929292]
-                transition-colors duration-200
             "
         />
 

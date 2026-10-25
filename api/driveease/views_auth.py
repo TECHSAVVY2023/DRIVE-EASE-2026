@@ -1,14 +1,15 @@
 import os
 import requests
 from django.conf import settings
+from django.core import signing
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.shortcuts import redirect
 import urllib.parse
-import base64
 
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from .utils.auth import is_authorized
@@ -18,8 +19,51 @@ from .models import FileUploadModel
 
 User = get_user_model()
 
+def set_refresh_cookie(response, refresh_token):
+    response.set_cookie(
+        key=settings.JWT_REFRESH_COOKIE_NAME,
+        value=str(refresh_token),
+        max_age=int(settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()),
+        httponly=True,
+        secure=settings.JWT_REFRESH_COOKIE_SECURE,
+        samesite=settings.JWT_REFRESH_COOKIE_SAMESITE,
+        domain=settings.JWT_REFRESH_COOKIE_DOMAIN,
+        path=settings.JWT_REFRESH_COOKIE_PATH,
+    )
+    return response
+
+def delete_refresh_cookie(response):
+    response.delete_cookie(
+        key=settings.JWT_REFRESH_COOKIE_NAME,
+        domain=settings.JWT_REFRESH_COOKIE_DOMAIN,
+        path=settings.JWT_REFRESH_COOKIE_PATH,
+        samesite=settings.JWT_REFRESH_COOKIE_SAMESITE,
+    )
+    return response
+
 def get_frontend_url():
-    return os.getenv("FRONTEND_DRIVEEASE_URL", "http://localhost:3000").rstrip('/')
+    return os.getenv(
+        "FRONTEND_DRIVEEASE_URL",
+        os.getenv("FRONTEND_URL", "http://localhost:3000"),
+    ).rstrip('/')
+
+def get_allowed_frontend_urls():
+    configured_urls = os.getenv("FRONTEND_ALLOWED_ORIGINS", "")
+    allowed_urls = {
+        url.strip().rstrip('/')
+        for url in configured_urls.split(',')
+        if url.strip()
+    }
+    allowed_urls.add(get_frontend_url())
+    return allowed_urls
+
+def get_safe_frontend_url(candidate):
+    normalized = (candidate or "").rstrip('/')
+    return normalized if normalized in get_allowed_frontend_urls() else get_frontend_url()
+
+def has_allowed_browser_origin(request):
+    origin = request.headers.get("Origin")
+    return not origin or origin.rstrip('/') in get_allowed_frontend_urls()
 
 def get_backend_url(request):
     host = request.get_host()
@@ -33,13 +77,12 @@ class GoogleLoginView(APIView):
         client_id = os.getenv("GOOGLE_CLIENT_ID")
         redirect_uri = f"{get_backend_url(request)}/api/driveease/auth/google/callback/"
         
-        origin = request.GET.get('origin', get_frontend_url())
+        origin = get_safe_frontend_url(request.GET.get('origin'))
         state_data = {
             'redirect_uri': redirect_uri,
-            'frontend_url': origin.rstrip('/')
+            'frontend_url': origin,
         }
-        import json
-        state = base64.b64encode(json.dumps(state_data).encode('utf-8')).decode('utf-8')
+        state = signing.dumps(state_data, salt='driveease-google-oauth')
         
         url = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode({
             "client_id": client_id,
@@ -79,14 +122,21 @@ class GoogleCallbackView(APIView):
 
         if state_param:
             try:
-                import json
-                state_data = json.loads(base64.b64decode(state_param).decode('utf-8'))
+                state_data = signing.loads(
+                    state_param,
+                    salt='driveease-google-oauth',
+                    max_age=600,
+                )
 
                 redirect_uri = state_data.get('redirect_uri', redirect_uri)
-                frontend_url = state_data.get('frontend_url', frontend_url)
+                frontend_url = get_safe_frontend_url(
+                    state_data.get('frontend_url')
+                )
 
-            except Exception:
-                pass
+            except signing.BadSignature:
+                return redirect(f"{frontend_url}/client/login?error=oauth_failed")
+        else:
+            return redirect(f"{frontend_url}/client/login?error=oauth_failed")
 
         try:
 
@@ -127,17 +177,12 @@ class GoogleCallbackView(APIView):
 
             refresh = RefreshToken.for_user(auth_user)
 
-            access_token = str(refresh.access_token)
-            refresh_token = str(refresh)
-
             if auth_user.is_staff:
-                return redirect(
-                    f"{frontend_url}/admin/admin-dashboard/?access={access_token}&refresh={refresh_token}"
-                )
+                response = redirect(f"{frontend_url}/admin/admin-dashboard/")
+                return set_refresh_cookie(response, refresh)
 
-            return redirect(
-                f"{frontend_url}/?access={access_token}&refresh={refresh_token}"
-            )
+            response = redirect(f"{frontend_url}/")
+            return set_refresh_cookie(response, refresh)
 
         except Exception:
             return redirect(f"{frontend_url}/client/login?error=oauth_failed")
@@ -181,26 +226,35 @@ class AuthMeView(APIView):
             "address",
             user.address
         )
+        
+        old_profile_picture = user.profile_picture
 
-        user.profile_picture = data.get(
+        new_profile_picture = data.get(
             "profile_picture",
-            user.profile_picture
+            old_profile_picture,
         )
+
+        user.profile_picture = new_profile_picture
 
         user.id_images = data.get(
             "id_images",
-            user.id_images
+            user.id_images,
         )
 
-        deleted_images = data.get("deleted_images", [])
+        deleted_images = list(data.get("deleted_images", []))
 
-        for upload in FileUploadModel.objects.all():
-
-            if upload.file and upload.file.url in deleted_images:
-                upload.file.delete(save=False)
-                upload.delete()
+        if (
+            old_profile_picture
+            and new_profile_picture != old_profile_picture
+        ):
+            deleted_images.append(old_profile_picture)
 
         user.save()
+
+        for upload in FileUploadModel.objects.exclude(file=""):
+            if upload.file.url in deleted_images:
+                upload.file.delete(save=False)
+                upload.delete()
 
         return Response({
             "message": "Profile updated successfully"
@@ -208,7 +262,10 @@ class AuthMeView(APIView):
 
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
-        refresh_token = request.data.get("refresh")
+        if not has_allowed_browser_origin(request):
+            return Response({"detail": "Invalid origin"}, status=403)
+
+        refresh_token = request.COOKIES.get(settings.JWT_REFRESH_COOKIE_NAME)
 
         if not refresh_token:
             return Response({"detail": "No refresh token"}, status=401)
@@ -216,7 +273,32 @@ class CookieTokenRefreshView(TokenRefreshView):
         serializer = self.get_serializer(data={"refresh": refresh_token})
         serializer.is_valid(raise_exception=True)
 
-        return Response({
+        response = Response({
             "access": serializer.validated_data["access"],
-            "refresh": serializer.validated_data.get("refresh")
         })
+        rotated_refresh = serializer.validated_data.get("refresh")
+
+        if rotated_refresh:
+            set_refresh_cookie(response, rotated_refresh)
+
+        return response
+
+class LogoutView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        if not has_allowed_browser_origin(request):
+            return Response({"detail": "Invalid origin"}, status=403)
+
+        refresh_token = request.COOKIES.get(settings.JWT_REFRESH_COOKIE_NAME)
+
+        if refresh_token:
+            try:
+                RefreshToken(refresh_token).blacklist()
+            except TokenError:
+                # Logout is intentionally idempotent. An expired, malformed,
+                # or already-blacklisted token is already unusable.
+                pass
+
+        response = Response(status=status.HTTP_204_NO_CONTENT)
+        return delete_refresh_cookie(response)

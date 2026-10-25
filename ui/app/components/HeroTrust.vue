@@ -1,7 +1,7 @@
 <template>
-    <section ref="sectionRef" class="relative bg-[#1A1A1A] font-[poppins] py-16 px-20 overflow-hidden">
+    <section ref="sectionRef" class="landing-quiet-section relative font-[poppins] py-16 px-6 md:px-20 overflow-hidden">
             <Transition name="fade-only">
-                <div v-if="isVisible">
+                <div v-if="isVisible" class="max-w-7xl mx-auto">
 
                     <!-- =========================
                         Trust section
@@ -13,7 +13,7 @@
                     <!-- =========================
                             Trusts cards
                     ========================== -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.07]">
 
                         <div
                             v-for="(stat, index) in stats"
@@ -21,11 +21,12 @@
                             class="
                                 flex flex-col items-center 
                                 justify-center text-center gap-1 
-                                bg-[#222222] rounded-xl px-8 py-8
+                                bg-[#19191b] px-6 py-8
+                                transition-colors duration-200 hover:bg-[#1d1d20]
                             "
                         >
                             <span class="text-white text-2xl font-extrabold md:text-3xl">{{ stat.value }}</span>
-                            <span class="text-white text-sm">{{ stat.label }}</span>
+                            <span class="text-[#a0a0a5] text-sm">{{ stat.label }}</span>
                         </div>
 
                     </div>

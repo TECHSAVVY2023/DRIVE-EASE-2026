@@ -9,7 +9,7 @@
             <input
                 v-model="form.lastName"
                 type="text"
-                class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#444] focus:outline-none focus:border-[#C1121F] transition-colors duration-200"
+                class="smoked-control rounded-lg px-3 py-2.5 text-white text-sm"
             />
         </div>
 
@@ -23,7 +23,7 @@
                 required
                 v-model="form.address"
                 type="text"
-                class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#444] focus:outline-none focus:border-[#C1121F] transition-colors duration-200"
+                class="smoked-control rounded-lg px-3 py-2.5 text-white text-sm"
             />
         </div>
 
@@ -37,7 +37,7 @@
                 required
                 v-model="form.contact"
                 type="tel"
-                class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#444] focus:outline-none focus:border-[#C1121F] transition-colors duration-200"
+                class="smoked-control rounded-lg px-3 py-2.5 text-white text-sm"
             />
         </div>
 

@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import type { CarType } from '~/utils/api/api'
+import type { CarType } from '~/utils/types/fleet'
 
 export function useCarTypes() {
     const { apiFetch } = useApiFetch()

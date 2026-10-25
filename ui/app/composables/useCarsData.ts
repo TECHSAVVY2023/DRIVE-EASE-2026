@@ -190,23 +190,3 @@ export const cars: Car[] = [
 
 
 
-// const car: Car = {
-//     name: 'Toyota Wigo 2026',
-//     available: true,
-//     rating: 4.8,
-//     reviews: 120,
-//     pricePerDay: 1200,
-//     images: [
-//         car3,
-//         car3,
-//         car3,
-//         car3,
-//     ],
-//     specifications: [
-//         { label: 'Engine', value: '1.0L DOHC' },
-//         { label: 'Transmission', value: 'Automatic' },
-//         { label: 'Year model', value: '2024' },
-//     ],
-//     ownerNote:
-//         "Hi there! Thanks for choosing my Wigo. The car is in great condition — freshly detailed before every rental. Please return it with a full tank, as you'll receive it that way. No smoking inside the vehicle. Feel free to reach out if you need early pickup or have any questions. Enjoy your trip!",
-// }

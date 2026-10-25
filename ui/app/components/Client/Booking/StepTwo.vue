@@ -20,7 +20,11 @@
                 type="text"
                 required
                 placeholder="e.g. Cagayan De Oro City"
-                class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#444] focus:outline-none focus:border-[#C1121F] transition-colors duration-200"
+                class="
+                    rounded-lg px-3 py-2.5 text-white text-sm 
+                    bg-[#0f0f0f] border border-[#2a2a2a]
+                    placeholder:text-neutral-600
+                "
             />
         </div>
 
@@ -44,7 +48,7 @@
                 type="text"
                 required
                 placeholder="e.g. Cagayan De Oro City"
-                class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#444] focus:outline-none focus:border-[#C1121F] transition-colors duration-200"
+                class="rounded-lg px-3 py-2.5 text-white text-sm bg-[#0f0f0f] border border-[#2a2a2a] placeholder:text-neutral-600"
             />
         </div>
     </div>
@@ -54,7 +58,7 @@
 import { computed } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import type { FlowConfig } from '@vuepic/vue-datepicker'
-import type { Car } from '~/utils/api/api'
+import type { Car } from '~/utils/types/fleet'
 
 const props = defineProps<{
     form: any

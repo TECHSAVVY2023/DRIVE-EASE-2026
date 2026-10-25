@@ -21,7 +21,7 @@
             <select
                 :value="props.sortBy"
                 @change="emit('update:sortBy', ($event.target as HTMLSelectElement).value)"
-                class="bg-[#111] border border-[#2a2a2a] text-white text-xs px-4 py-2 pr-8 rounded-lg appearance-none focus:outline-none focus:border-[#C1121F] cursor-pointer transition-colors duration-200"
+                class="smoked-control text-white text-xs px-4 py-2 pr-8 rounded-lg appearance-none cursor-pointer"
             >
                 <option
                     v-for="option in sortOptions"
@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Tab, SortOption } from '~/utils/api/api'
+import type { Tab, SortOption } from '~/utils/types/booking'
 
 const props = defineProps<{
     tabs: Tab[]

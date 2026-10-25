@@ -14,7 +14,7 @@
         @close-sidebar="handleCloseSidebar"
     />
 
-    <div class="min-h-screen bg-[#0D0D0D] font-[poppins]">
+    <div class="charcoal-blueprint-surface min-h-screen font-[poppins]">
 
         <Banner 
             subtitle="Stay updated"
@@ -26,7 +26,7 @@
         />
 
         <div class="max-w-2xl mx-auto px-4 py-8">
-            <div class="bg-[#1a1a1a] border border-[#222] rounded-xl overflow-hidden flex flex-col">
+            <div class="smoked-charcoal-panel rounded-xl overflow-hidden flex flex-col">
 
                 <!-- Header -->
                 <NotificationHeader
@@ -49,17 +49,7 @@
 import { ref, computed } from 'vue'
 
 const { isLoggedIn, authReady } = useAuth()
-const { apiFetch } = useApiFetch()
-
-const user = ref<any>(null)
-
-watch(isLoggedIn, async (val) => {
-    if (val) {
-        user.value = await apiFetch('/auth/me/')
-    } else {
-        user.value = null
-    }
-}, { immediate: true })
+const { user } = useCurrentUser()
 
 const { 
     menuOpen,

@@ -288,7 +288,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CarForm, CarType, Feature } from '~/utils/api/api'
+import type { CarForm, CarType, Feature } from '~/utils/types/fleet'
 
 const props = defineProps<{
     form: CarForm

@@ -100,7 +100,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { Car, CarForm } from '~/utils/api/api'
+import type { Car, CarForm } from '~/utils/types/fleet'
 
 const { isLoggedIn } = useAuth()
 const { user } = useCurrentUser()
@@ -214,9 +214,15 @@ async function handleCreateVehicle(form: CarForm) {
 const isEditing = ref(false)
 
 const selectedVehicle = ref<CarForm | null>(null)
+const originalVehicleImageUrls = ref<string[]>([])
 
 const handleEdit = (car: Car) => {
     isEditing.value = true
+
+    originalVehicleImageUrls.value = [
+        car.meta?.primary_image,
+        ...(car.meta?.images ?? []),
+    ].filter((url): url is string => Boolean(url))
 
     selectedVehicle.value = {
         id: car.car_id,
@@ -234,7 +240,11 @@ const handleEdit = (car: Car) => {
 
         features: [...car.features],
 
-        images: (car.meta?.images ?? []).map(url => ({ url })),
+        images: [...new Set([
+            car.meta?.primary_image,
+            ...(car.meta?.images ?? []),
+        ].filter((url): url is string => Boolean(url)))]
+            .map(url => ({ url })),
         thumbnail_url: car.meta?.primary_image ?? null,
     }
 
@@ -248,7 +258,10 @@ const { handleUpdateVehicle: updateVehicle, handleSecondaryAction: updateStatus,
  } = useCarAdminEdit()
 
 async function handleUpdateVehicle(form: CarForm) {
-    const result = await updateVehicle(form)
+    const result = await updateVehicle(
+        form,
+        originalVehicleImageUrls.value,
+    )
 
     if (!result.success) return
 

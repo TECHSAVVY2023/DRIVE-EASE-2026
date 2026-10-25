@@ -1,12 +1,13 @@
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware(async (to) => {
     if (import.meta.server) return
 
-    // Allow OAuth callback
-    if (to.query.token) return
-
-    const { isLoggedIn } = useAuth()
+    const { init, isLoggedIn } = useAuth()
+    await init()
 
     if (!isLoggedIn.value) {
-        return navigateTo('/login')
+        return navigateTo({
+            path: '/client/login',
+            query: { redirect: to.fullPath },
+        })
     }
 })

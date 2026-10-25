@@ -9,12 +9,19 @@ urlpatterns = [
     path('auth/google/callback/', views_auth.GoogleCallbackView.as_view(), name='auth-google-callback'),
     path('auth/me/', views_auth.AuthMeView.as_view(), name='auth-me'),
 
-    path('auth/token/refresh/', views_auth.CookieTokenRefreshView.as_view()),
+    path('auth/token/refresh/', views_auth.CookieTokenRefreshView.as_view(), name='token-refresh'),
+    path('auth/logout/', views_auth.LogoutView.as_view(), name='auth-logout'),
 
     path("uploads/", views.FileUploadView.as_view(), name="file-upload"),
 
     path('users/', views.AccountsListView.as_view(), name='accounts-list'),
     path('users/stats/', views.AccountsStatsView.as_view(), name='accounts-stats'),
+    path('users/<int:user_id>/role/', views.AssignAccountRoleView.as_view(), name='account-assign-role'),
+
+    path("admin/accounts/<int:user_id>/", views.AdminEditAccountView.as_view(), name="admin-edit-account"),
+    path("admin/accounts/<int:user_id>/status/", views.AccountStatusUpdateView.as_view(), name="account-update-status"),
+
+    path("admin/dashboard/revenue/", views.AdminDashboardRevenueView.as_view(), name="admin-dashboard-revenue"),
 
     path('contact/list/', views.ContactListView.as_view()),
     path('contact/<int:pk>/', views.ContactDetailView.as_view()),

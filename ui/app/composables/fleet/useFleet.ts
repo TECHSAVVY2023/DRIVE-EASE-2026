@@ -1,5 +1,4 @@
-import { type FleetResponse } from '~/utils/api/api'
-import { type FleetStatsResponse } from '~/utils/api/api'
+import type { FleetResponse, FleetStatsResponse } from '~/utils/types/fleet'
 
 const fleetCacheExpiresAt: Record<string, number> = {}
 const FLEET_CACHE_TTL_MS = 60 * 1000

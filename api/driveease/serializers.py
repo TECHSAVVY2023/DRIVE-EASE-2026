@@ -2,11 +2,16 @@ import uuid
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Accounts, ContactListModel, Cars, FileUploadModel, Reviews, Booking, Payment, Feature, Notification, CarType
+from .models import Accounts, ContactListModel, Cars, FileUploadModel, Reviews, Booking, Payment, Feature, Notification, CarType, AdminActivityLog
 
 User = get_user_model()
 
 #Common Serializers
+
+class FileUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileUploadModel
+        fields = ['id', 'file']
 
 class MiniCarSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
@@ -160,6 +165,8 @@ class CarUpdateSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["car_id"]
 
+# Account Serializers
+
 class AccountsSerializer(serializers.ModelSerializer):
     given_name = serializers.CharField(source='first_name')
     family_name = serializers.CharField(source='last_name')
@@ -196,10 +203,183 @@ class AccountsSerializer(serializers.ModelSerializer):
             return 'Admin'
         return 'User'
 
-class FileUploadSerializer(serializers.ModelSerializer):
+class AdminEditAccountSerializer(serializers.ModelSerializer):
+    given_name = serializers.CharField(
+        source="first_name",
+        required=False,
+        allow_blank=True,
+        max_length=150,
+    )
+    family_name = serializers.CharField(
+        source="last_name",
+        required=False,
+        allow_blank=True,
+        max_length=150,
+    )
+    email = serializers.EmailField(
+        required=False,
+        allow_blank=True,
+    )
+    contact_number = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        max_length=20,
+    )
+    address = serializers.CharField(
+        required=False,
+        allow_blank=True,
+    )
+
+    remove_profile_picture = serializers.BooleanField(
+        required=False,
+        default=False,
+        write_only=True,
+    )
+    profile_removal_reason = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        write_only=True,
+    )
+
+    remove_id_images = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+        default=list,
+        write_only=True,
+    )
+    id_removal_reason = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        write_only=True,
+    )
+
     class Meta:
-        model = FileUploadModel
-        fields = ['id', 'file']
+        model = Accounts
+        fields = [
+            "given_name",
+            "family_name",
+            "email",
+            "contact_number",
+            "address",
+            "remove_profile_picture",
+            "profile_removal_reason",
+            "remove_id_images",
+            "id_removal_reason",
+        ]
+
+    def validate_email(self, value):
+        existing = Accounts.objects.filter(email__iexact=value)
+
+        if self.instance:
+            existing = existing.exclude(pk=self.instance.pk)
+
+        if existing.exists():
+            raise serializers.ValidationError(
+                "This email address is already in use."
+            )
+
+        return value
+
+    def validate(self, attrs):
+        remove_profile = attrs.get(
+            "remove_profile_picture", False
+        )
+        profile_reason = attrs.get(
+            "profile_removal_reason", ""
+        ).strip()
+
+        selected_ids = attrs.get("remove_id_images", [])
+        id_reason = attrs.get("id_removal_reason", "").strip()
+
+        if remove_profile:
+            if not self.instance.profile_picture:
+                raise serializers.ValidationError({
+                    "remove_profile_picture":
+                        "This account has no profile picture to remove."
+                })
+
+            if not profile_reason:
+                raise serializers.ValidationError({
+                    "profile_removal_reason":
+                        "A reason is required to remove the profile picture."
+                })
+
+        if selected_ids:
+            current_images = (
+                self.instance.id_images or {}
+            ).get("images", [])
+
+            if not isinstance(current_images, list):
+                raise serializers.ValidationError({
+                    "remove_id_images":
+                        "The account's ID image data is invalid."
+                })
+
+            if len(selected_ids) != len(set(selected_ids)):
+                raise serializers.ValidationError({
+                    "remove_id_images":
+                        "Duplicate ID image selections are not allowed."
+                })
+
+            missing_images = [
+                image for image in selected_ids
+                if image not in current_images
+            ]
+
+            if missing_images:
+                raise serializers.ValidationError({
+                    "remove_id_images":
+                        "One or more selected ID images no longer exist. Refresh and try again."
+                })
+
+            if not id_reason:
+                raise serializers.ValidationError({
+                    "id_removal_reason":
+                        "A reason is required to remove ID images."
+                })
+
+        return attrs
+
+    def update(self, instance, validated_data):
+        remove_profile = validated_data.pop(
+            "remove_profile_picture", False
+        )
+        validated_data.pop("profile_removal_reason", None)
+
+        selected_ids = validated_data.pop(
+            "remove_id_images", []
+        )
+        validated_data.pop("id_removal_reason", None)
+
+        if remove_profile:
+            instance.profile_picture = None
+
+        if selected_ids:
+            id_images = instance.id_images or {}
+            remaining_images = [
+                image
+                for image in id_images.get("images", [])
+                if image not in selected_ids
+            ]
+
+            instance.id_images = {
+                **id_images,
+                "images": remaining_images,
+            }
+
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+
+        instance.save()
+        return instance
+
+class RoleAssignmentSerializer(serializers.Serializer):
+    role = serializers.ChoiceField(
+        choices=["User", "Admin", "Super Admin"]
+    )
+
+class AccountStatusSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()
 
 # Review Serializers
 
@@ -210,7 +390,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reviews
-        fields = ["id", "user", "car", "rating", "text", "helpful_count", "images", "created_at", "helpful","is_mine"]
+        fields = ["id", "user", "car", "rating", "text", "status", "helpful_count", "images", "created_at", "helpful","is_mine"]
 
     def get_helpful(self, obj):
         request = self.context.get("request")
@@ -361,4 +541,30 @@ class NotificationSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+# Logs Serializers
 
+class AdminActivityLogSerializer(serializers.ModelSerializer):
+    admin_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AdminActivityLog
+        fields = [
+            "id",
+            "admin",
+            "admin_name",
+            "action",
+            "description",
+            "target_type",
+            "target_id",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+    def get_admin_name(self, obj):
+        if obj.admin:
+            return (
+                obj.admin.get_full_name()
+                or obj.admin.email
+                or obj.admin.username
+            )
+        return "Deleted Admin"

@@ -1,6 +1,6 @@
 <template>
     <!-- Left: Contact Form -->
-    <div class="md:col-span-3 bg-[#1a1a1a] rounded-xl p-6 flex flex-col gap-5">
+    <div class="smoked-charcoal-panel md:col-span-3 rounded-xl p-6 flex flex-col gap-5">
         <div>
             <h2 class="text-white font-bold text-lg">How can we help you?</h2>
             <p class="text-[#9E9E9E] text-xs mt-1">Fill out the form below and our team will get back to you within 24 hours.</p>
@@ -20,10 +20,7 @@
                         type="text"
                         placeholder="Juan"
                         class="
-                            bg-[#111111] border border-[#2a2a2a] rounded-lg 
-                            px-3 py-2.5 text-white text-sm placeholder-[#444] 
-                            focus:outline-none focus:border-[#C1121F] 
-                            transition-colors duration-200"
+                            smoked-control rounded-lg px-3 py-2.5 text-white text-sm"
                     />
                 </div>
 
@@ -34,10 +31,7 @@
                         type="text"
                         placeholder="Dela Cruz"
                         class="
-                            bg-[#111111] border border-[#2a2a2a] rounded-lg 
-                            px-3 py-2.5 text-white text-sm placeholder-[#444] 
-                            focus:outline-none focus:border-[#C1121F] 
-                            transition-colors duration-200"
+                            smoked-control rounded-lg px-3 py-2.5 text-white text-sm"
                     />
                 </div>
 
@@ -53,10 +47,7 @@
                         required
                         placeholder="juan@email.com"
                         class="
-                            bg-[#111111] border border-[#2a2a2a] rounded-lg 
-                            px-3 py-2.5 text-white text-sm placeholder-[#444] 
-                            focus:outline-none focus:border-[#C1121F] 
-                            transition-colors duration-200"
+                            smoked-control rounded-lg px-3 py-2.5 text-white text-sm"
                     />
                 </div>
 
@@ -68,10 +59,7 @@
                         required
                         placeholder="+63 912 345 6789"
                         class="
-                            bg-[#111111] border border-[#2a2a2a] rounded-lg 
-                            px-3 py-2.5 text-white text-sm placeholder-[#444] 
-                            focus:outline-none focus:border-[#C1121F] 
-                            transition-colors duration-200"
+                            smoked-control rounded-lg px-3 py-2.5 text-white text-sm"
                     />
                 </div>
 
@@ -84,10 +72,7 @@
                     rows="5"
                     placeholder="Write your message here..."
                     class="
-                        bg-[#111111] border border-[#2a2a2a] rounded-lg 
-                        px-3 py-2.5 text-white text-sm placeholder-[#444] 
-                        focus:outline-none focus:border-[#C1121F] 
-                        transition-colors duration-200 resize-none"
+                        smoked-control rounded-lg px-3 py-2.5 text-white text-sm resize-none"
                 ></textarea>
             </div>
 

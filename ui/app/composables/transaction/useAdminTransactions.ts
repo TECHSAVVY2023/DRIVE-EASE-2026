@@ -1,6 +1,6 @@
 import type { Booking } from "~/components/Admin/Booking/bookingmodal.vue"
-import { type TransactionResponse, type BookingStatsResponse } from "~/utils/api/api"
-import { API_ENDPOINTS, type BookingForm } from '~/utils/api/api'
+import type { TransactionResponse, BookingStatsResponse, BookingForm } from "~/utils/types/booking"
+import { API_ENDPOINTS } from '~/utils/api/api'
 
 const TRANSACTION_CACHE_TTL_MS = 60 * 1000
 

@@ -1,28 +1,30 @@
 <template>
     <div
+        v-bind="$attrs"
         class="border rounded-xl p-5 flex flex-col gap-4"
         :class="
-            review.is_mine
-                ? 'border-[#C1121F] bg-[#212121]'
-                : 'border-[#222] bg-[#1a1a1a]'
+            isMyReview
+                ? 'border-[#C1121F] bg-white/[0.025]'
+                : 'border-white/[0.08] bg-white/[0.025]'
         "
     >
-        <div v-if="review.is_mine" class="flex items-center justify-between gap-4">
+        <div v-if="isMyReview" class="flex items-center justify-between gap-4">
 
             <div class="text-white bg-[#c1121f] px-7 py-1 rounded-4xl h-fit flex items-center">
                 <p class="text-sm">Your review</p>
             </div>
 
             <div class="flex gap-2">
+
+                <!-- Edit Button -->
                 <button
-                    @click="$emit('click')"
+                    @click="$emit('edit')"
                     class="
                         cursor-pointer flex items-center gap-2 
                         border border-[#3D3D3D] text-[#929292] hover:text-white hover:border-white
                         px-3 py-2 rounded-lg transition-colors
                     "
                 >
-                    <!-- Edit Icon -->
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="w-4 h-4"
@@ -41,6 +43,7 @@
                     <span class="text-xs">Edit</span>
                 </button>
 
+                <!-- Delete Button -->
                 <button
                     @click="$emit('delete')"
                     class="
@@ -49,7 +52,6 @@
                         px-4 rounded-lg transition-colors
                     "
                 >
-                    <!-- Trash Icon -->
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="w-4 h-4"
@@ -120,22 +122,39 @@
             {{ review.text }}
         </p>
 
-        <!-- Images -->
+        <!-- Image gallery -->
         <div
-            v-if="review.images && review.images.length"
-            class="flex gap-2 flex-wrap"
+            v-if="reviewImages.length"
+            class="grid gap-1.5 overflow-hidden rounded-xl bg-[#111]"
+            :class="reviewImages.length === 1
+                ? 'w-full max-w-sm grid-cols-1'
+                : 'h-44 w-full grid-cols-2 sm:h-56 sm:grid-cols-4'"
         >
-            <div
-                v-for="(img, j) in review.images"
-                :key="j"
-                class="w-16 h-12 rounded-lg bg-[#111] border border-[#2a2a2a] overflow-hidden flex-shrink-0"
+            <button
+                v-for="(image, index) in reviewImages"
+                :key="`${image}-${index}`"
+                type="button"
+                class="group relative min-h-0 overflow-hidden bg-[#111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#C1121F]"
+                :class="galleryItemClass(index)"
+                :aria-label="`View review image ${index + 1} of ${reviewImages.length}`"
+                @click="openViewer(index)"
             >
                 <img
-                :src="img"
-                :alt="'Review image ' + (Number(j) + 1)"
-                class="w-full h-full object-cover"
+                    :src="image"
+                    :alt="`Review image ${index + 1}`"
+                    class="transition duration-300 group-hover:scale-105 group-hover:brightness-75"
+                    :class="reviewImages.length === 1
+                        ? 'block h-auto w-full object-contain'
+                        : 'h-full w-full object-cover'"
+                    loading="lazy"
                 />
-            </div>
+
+                <span class="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/20 group-hover:opacity-100">
+                    <svg class="h-7 w-7 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m15 15 6 6m-11-4a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z" />
+                    </svg>
+                </span>
+            </button>
         </div>
 
         <!-- Helpful -->
@@ -167,23 +186,62 @@
         </div>
 
     </div>
+
+    <ClientReviewsImageViewer
+        v-model="viewerOpen"
+        :images="reviewImages"
+        :initial-index="activeImageIndex"
+    />
+
 </template>
 
 <script setup lang="ts">
-import type { Review } from '~/utils/api/api'
+import type { Review, Review1 } from '~/utils/api/api'
+
+defineOptions({ inheritAttrs: false })
 
 const { apiFetch } = useApiFetch()
 
-defineProps<{
+const props = defineProps<{
     review: any
     carId?: string | null
-    myReview?: Review | null
+    myReview?: Review1 | null
+    isMyReview?: boolean
 }>()
 
-defineEmits<{
-    click: []
-    delete: []
+const emit = defineEmits<{
+    (e: 'edit'): void
+    (e: 'delete'): void
 }>()
+
+const viewerOpen = ref(false)
+const activeImageIndex = ref(0)
+
+const reviewImages = computed<string[]>(() =>
+    (props.review.images || [])
+        .map((image: string | { url?: string }) =>
+            typeof image === 'string' ? image : image.url
+        )
+        .filter((image: string | undefined): image is string => Boolean(image))
+        .slice(0, 5)
+)
+
+const galleryItemClass = (index: number) => {
+    const count = reviewImages.value.length
+
+    if (count === 1) return ''
+    if (count === 2) return 'sm:col-span-2'
+    if (count === 3 && index === 0) return 'row-span-2 sm:col-span-2'
+    if (count >= 4 && index === 0) return 'row-span-2 sm:col-span-2'
+    if (count === 4 && index === 3) return 'col-span-2'
+
+    return ''
+}
+
+const openViewer = (index: number) => {
+    activeImageIndex.value = index
+    viewerOpen.value = true
+}
 
 const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("en-US", {

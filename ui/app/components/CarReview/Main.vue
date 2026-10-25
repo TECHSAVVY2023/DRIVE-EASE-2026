@@ -104,10 +104,7 @@ const { formattedRatingBreakdown, displayedReviews, totalReviews,
         avgRating, reviews, myReview, nextPage, previousPage, sortBy, setRating,
         selectedRating, ratingBreakdown } = useCarReview()
 
-const reviewState = useWriteReview({
-    carId: props.carId,
-    myReview: myReview.value,
-})
+const reviewState = useWriteReview()
 
 const fetchReviews = async (page: number) => {
     loading.value = true

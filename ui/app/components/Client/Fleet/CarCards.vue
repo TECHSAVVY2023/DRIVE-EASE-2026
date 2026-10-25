@@ -3,8 +3,9 @@
         v-for="car in paginatedCars"
         :key="car.car_id"
         class="
-            bg-[#1a1a1a] rounded-xl border border-[#222] hover:border-[#C1121F]
-            transition-colors duration-200 flex flex-col overflow-hidden
+            bg-[#202023] rounded-xl border border-white/10 hover:border-[#C1121F]
+            shadow-[0_10px_24px_rgba(0,0,0,0.14)]
+            transition-all duration-200 flex flex-col overflow-hidden
         "
     >
         <!-- Clickable Car Content -->
@@ -87,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Car } from '~/utils/api/api'
+import type { Car } from '~/utils/types/fleet'
 
 defineProps<{
     paginatedCars: Car[]

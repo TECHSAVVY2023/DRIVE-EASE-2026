@@ -186,7 +186,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { Car } from '~/utils/api/api'
+import type { Car } from '~/utils/types/fleet'
 
 const props = defineProps<{
     car: Car

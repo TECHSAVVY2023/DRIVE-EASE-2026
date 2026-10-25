@@ -10,9 +10,9 @@ def create_notification(
     title,
     message,
     booking_id=None,
+    action_url=None,
 ):
     booking = None
-    action_url = None
 
     if booking_id:
         booking = Booking.objects.get(id=booking_id)

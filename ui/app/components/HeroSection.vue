@@ -1,10 +1,13 @@
 <template>
-    <div class="bg-[#111111] font-sans">
+    <div class="hero-shell font-sans">
 
         <!-- =========================
              Hero Section
         ========================== -->
-        <section class="relative flex items-center min-h-[700px] overflow-hidden">
+        <section class="hero-backdrop relative flex items-center min-h-[700px] overflow-hidden">
+
+            <!-- Subtle automotive / blueprint texture -->
+            <div class="hero-grid" aria-hidden="true"></div>
 
             <!-- Hero Content -->
              <Transition name="slide-left">
@@ -78,7 +81,7 @@
                     absolute top-0 right-0
                     hidden md:block
                     h-full w-[35%]
-                    bg-[#C1121F]
+                    hero-red-panel bg-[#C1121F]
                     overflow-visible
                 "
             >
@@ -91,7 +94,7 @@
                         absolute top-1/2 -translate-y-1/2
                         md:-left-20 lg:-left-40
                         w-full scale-[1.3]
-                        object-contain drop-shadow-2xl
+                        object-contain drop-shadow-2xl z-10
                     "
                     />
                 </Transition>
@@ -106,7 +109,7 @@
                 <div
                     class="
                         absolute bottom-0 left-0 right-0
-                        h-[55%] bg-[#C1121F]
+                        hero-red-panel h-[55%] bg-[#C1121F]
                     "
                 ></div>
 
@@ -144,6 +147,85 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
+.hero-shell {
+    background: #0d0d0e;
+}
+
+.hero-backdrop {
+    isolation: isolate;
+    background:
+        linear-gradient(118deg, #171719 0%, #111113 44%, #0b0b0c 100%);
+}
+
+.hero-grid {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        repeating-linear-gradient(
+            135deg,
+            transparent 0,
+            transparent 72px,
+            rgba(255, 255, 255, 0.018) 72px,
+            rgba(255, 255, 255, 0.018) 73px
+        );
+    background-size: 46px 46px, 46px 46px, auto;
+    mask-image: linear-gradient(to right, black 0%, rgba(0, 0, 0, 0.72) 48%, transparent 76%);
+}
+
+.hero-tread {
+    position: absolute;
+    top: -8%;
+    bottom: -8%;
+    left: 1.5rem;
+    z-index: 0;
+    width: 5rem;
+    opacity: 0.12;
+    pointer-events: none;
+    transform: skewY(-12deg);
+    background:
+        repeating-linear-gradient(
+            135deg,
+            transparent 0 18px,
+            rgba(255, 255, 255, 0.2) 18px 21px,
+            transparent 21px 39px
+        );
+    mask-image: linear-gradient(to bottom, transparent, black 18%, black 78%, transparent);
+}
+
+.hero-red-panel {
+    box-shadow: inset 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.hero-red-panel::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+        135deg,
+        transparent 0,
+        transparent 28px,
+        rgba(0, 0, 0, 0.04) 28px,
+        rgba(0, 0, 0, 0.04) 30px
+    );
+}
+
+@media (max-width: 767px) {
+    .hero-tread {
+        left: -1rem;
+        width: 4rem;
+        opacity: 0.09;
+    }
+
+    .hero-grid {
+        mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.75) 48%, transparent 78%);
+    }
+}
 
 .slide-right-enter-active {
     transition: all 0.8s ease-out;

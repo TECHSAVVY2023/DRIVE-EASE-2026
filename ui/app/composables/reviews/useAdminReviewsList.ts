@@ -1,10 +1,16 @@
-import type { AdminReview, AdminReviewsResponse } from '~/utils/api/api'
+import type { AdminReview, AdminReviewsResponse, AdminReviewStats } from '~/utils/api/api'
 
 const loading = ref(false)
 
 const reviews = ref<AdminReview[]>([])
 
 const count = ref(0)
+const stats = ref<AdminReviewStats>({
+    total: 0,
+    average_rating: 0,
+    pending: 0,
+    approved: 0,
+})
 
 const nextPage = ref<string | null>(null)
 const previousPage = ref<string | null>(null)
@@ -40,6 +46,7 @@ export function useAdminReviewsList() {
 
             reviews.value = res.results
             count.value = res.count
+            stats.value = res.stats
 
             nextPage.value = res.next ?? null
             previousPage.value = res.previous ?? null
@@ -81,6 +88,7 @@ export function useAdminReviewsList() {
 
         reviews,
         count,
+        stats,
 
         nextPage,
         previousPage,

@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CarForm } from '~/utils/api/api'
+import type { CarForm } from '~/utils/types/fleet'
 
 const form = ref<CarForm>(blank())
 

@@ -1,4 +1,4 @@
-import { type TransactionResponse, type Transaction } from "~/utils/api/api"
+import type { TransactionResponse, Transaction } from "~/utils/types/booking"
 
 const transactionCacheExpiresAt: Record<string, number> = {}
 const TRANSACTION_CACHE_TTL_MS = 60 * 1000

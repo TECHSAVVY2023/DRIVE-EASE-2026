@@ -484,7 +484,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Car, CarTypeFilterOption } from '~/utils/api/api'
+import type { Car, CarTypeFilterOption } from '~/utils/types/fleet'
 
 const props = defineProps<{
     cars: Car[]

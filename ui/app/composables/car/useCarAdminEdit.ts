@@ -1,4 +1,4 @@
-import type { CarForm, Car } from '~/utils/api/api'
+import type { CarForm, Car } from '~/utils/types/fleet'
 import { uploadFile } from '~/utils/api/upload'
 
 interface CreateCarResult {
@@ -82,7 +82,8 @@ export const useCarAdminEdit = () => {
     }
 
     const handleUpdateVehicle = async (
-        form: CarForm
+        form: CarForm,
+        originalImageUrls: string[],
     ): Promise<CreateCarResult> => {
 
         const validation = validateForm(form)
@@ -152,6 +153,18 @@ export const useCarAdminEdit = () => {
             // Include all existing and newly uploaded images
             const imageUrls = uploadedImages.map(image => image.url)
 
+            // Keep an original URL when it is still used as either the
+            // primary image or a gallery image.
+            const keptImageUrls = new Set(
+                [primaryImage, ...imageUrls].filter(
+                    (url): url is string => Boolean(url)
+                )
+            )
+
+            const deletedImages = [...new Set(originalImageUrls)].filter(
+                url => !keptImageUrls.has(url)
+            )
+
             const body = {
                 brand: form.brand,
                 model: form.model,
@@ -169,6 +182,7 @@ export const useCarAdminEdit = () => {
                     primary_image: primaryImage,
                     images: imageUrls,
                 },
+                deleted_images: deletedImages,
             }
 
             if (!form.id) {

@@ -1,6 +1,6 @@
 <template>
     <!-- MAIN CARD -->
-    <div class="lg:col-span-2 bg-[#1a1a1a] border border-white/10 rounded-2xl p-5 sm:p-6">
+    <div class="smoked-charcoal-panel lg:col-span-2 rounded-2xl p-5 sm:p-6">
 
         <!-- Header -->
         <div class="flex items-start justify-between gap-4">
@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Transaction } from '~/utils/api/api'
+import type { Transaction } from '~/utils/types/booking'
 
 const props = defineProps<{
     booking: Transaction | null

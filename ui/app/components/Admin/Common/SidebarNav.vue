@@ -169,6 +169,13 @@ const icons: Record<string, any> = {
             />
         </svg>
     `,
+    document: `
+        <svg class="w-5 h-5 md:w-4 md:h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6M9 8h2m-4-5h7l5 5v13H7V3Zm7 0v5h5"
+            />
+        </svg>
+    `,
 }
 
 const dashboardItem = {
@@ -216,6 +223,13 @@ const menu = [
         link: '/admin/admin-users'
     },
     {
+        key: 'content',
+        label: 'Content',
+        icon: 'document',
+        section: 'main',
+        link: '/admin/admin-content'
+    },
+    {
         key: 'analytics',
         label: 'Analytics',
         icon: 'chart',
@@ -227,7 +241,7 @@ const menu = [
         label: 'Activity logs',
         icon: 'clock',
         section: 'report',
-        link: '/admin/logs'
+        link: '/admin/admin-logs'
     }
 ]
 

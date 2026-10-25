@@ -1,6 +1,5 @@
 import { ref, reactive, computed, watch } from 'vue'
-import type { Car } from '~/utils/api/api'
-import type { FilterOption, CarTypeFilterOption } from '~/utils/api/api'
+import type { Car, FilterOption, CarTypeFilterOption } from '~/utils/types/fleet'
 
 export type OpenState = {
     category: boolean

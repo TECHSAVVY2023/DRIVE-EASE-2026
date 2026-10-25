@@ -103,13 +103,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { BookingForm, Transaction } from '~/utils/api/api'
+import type { BookingForm, Transaction } from '~/utils/types/booking'
 
 const { isLoggedIn } = useAuth()
 const { $swal } = useNuxtApp()
 const { apiFetch } = useApiFetch()
-
-const user = ref<any>(null)
+const { user } = useCurrentUser()
 
 const { loading, bookings, count, nextPage, previousPage, currentPage,
         pageSize, totalPages, search, selectedStatus, selectedPayment, fetchStats,
@@ -119,18 +118,6 @@ const { loading, bookings, count, nextPage, previousPage, currentPage,
 const { users, fetchUsers } = useUsersList()
 
 const { fleet, fetchCars } = useFleetList()
-
-watch(
-    isLoggedIn,
-    async (val) => {
-        if (val) {
-            user.value = await apiFetch('/auth/me/')
-        } else {
-            user.value = null
-        }
-    },
-    { immediate: true }
-)
 
 const sidebarOpen = ref<boolean>(false)
 

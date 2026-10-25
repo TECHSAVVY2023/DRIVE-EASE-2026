@@ -1,4 +1,4 @@
-import type { BookingForm } from '~/utils/api/api'
+import type { BookingForm } from '~/utils/types/booking'
 
 interface CreateBookingResult {
     success: boolean

@@ -316,7 +316,7 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '~/utils/api/api'
+import type { User } from '~/utils/types/accounts'
 const { apiFetch } = useApiFetch()
 const { $swal } = useNuxtApp()
 

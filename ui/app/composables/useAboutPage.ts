@@ -1,6 +1,3 @@
-import { ref } from 'vue'
-
-
 export const useAboutPage = () => {
 
     interface Stat {

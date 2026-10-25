@@ -1,6 +1,6 @@
-import type { Review, ReviewForm, CarReviewsResponse } from '~/utils/api/api'
+import type { ReviewForm, CarReviewsResponse } from '~/utils/api/api'
 
-export function useWriteReview(props: { carId: string , myReview?: Review | null}) {
+export function useWriteReview() {
     const { apiFetch } = useApiFetch()
     const { $swal } = useNuxtApp()
 
@@ -18,9 +18,6 @@ export function useWriteReview(props: { carId: string , myReview?: Review | null
     const deletedImages = ref<string[]>([])
 
     const imageInput = ref<HTMLInputElement | null>(null)
-
-    const OpenWriteReviewModal = ref(false)
-    const OpenEditReviewModal = ref(false)
 
     const triggerUpload = () => {
         imageInput.value?.click()
@@ -96,7 +93,7 @@ export function useWriteReview(props: { carId: string , myReview?: Review | null
         uploadedImages.value.splice(index, 1)
     }
 
-    const removeExistingImage = (index: number, url: string) => {
+    const removeExistingImage = (index: number) => {
         existingImages.value.splice(index, 1)
     }
 
@@ -200,9 +197,7 @@ export function useCarReview(props?: { carId?: string }) {
         }))
     })
 
-    const displayedReviews = computed(() => {
-        return reviews.value.length + (myReview.value ? 1 : 0)
-    })
+    const displayedReviews = computed(() => reviews.value.length)
 
     const fetchReviews = async (page: number) => {
         loading.value = true
@@ -232,6 +227,18 @@ export function useCarReview(props?: { carId?: string }) {
                 totalReviews.value = res.total_reviews
                 avgRating.value = res.avg_rating
                 ratingBreakdown.value = res.rating_breakdown
+
+                console.log('Total reviews:', res.total_reviews)
+                console.log('Reviews on this page:', res.results.length)
+                console.log('Reviews:', res.results)
+
+                console.table(
+                    res.results.map(review => ({
+                        id: review.id,
+                        status: review.status,
+                        rating: review.rating,
+                    }))
+                )
 
                 if (props?.carId) {
                     myReview.value = (res as CarReviewsResponse).my_review

@@ -10,7 +10,7 @@
                 :class="
                     selectedRating === 0
                     ? 'bg-[#C1121F] border-[#C1121F] text-white'
-                    : 'bg-[#1a1a1a] border-[#222] text-[#929292] hover:border-[#C1121F]'
+                    : 'bg-white/[0.025] border-white/[0.08] text-[#a0a0a5] hover:bg-white/[0.06] hover:border-[#C1121F]'
                 "
             >
                 All
@@ -24,7 +24,7 @@
                 :class="
                     selectedRating === star
                     ? 'bg-[#C1121F] border-[#C1121F] text-white'
-                    : 'bg-[#1a1a1a] border-[#222] text-[#929292] hover:border-[#C1121F]'
+                    : 'bg-white/[0.025] border-white/[0.08] text-[#a0a0a5] hover:bg-white/[0.06] hover:border-[#C1121F]'
                 "
             >
                 {{ star }}
@@ -35,19 +35,37 @@
         </div>
 
         <!-- Sort -->
-        <select
-            :value="sortBy"
-            @change="emit(
-                'update:sortBy',
-                ($event.target as HTMLSelectElement).value as SortBy
-            )"
-            class="bg-[#1a1a1a] border border-[#222] text-white text-sm rounded-lg px-4 py-2 outline-none hover:border-[#C1121F] transition-colors duration-200"
+        <div class="relative flex-1 sm:flex-none">
+            <select
+                :value="sortBy"
+                @change="emit(
+                    'update:sortBy',
+                    ($event.target as HTMLSelectElement).value as SortBy
+                )"
+                class="smoked-control w-full rounded-lg
+                    text-sm px-4 py-2.5 pr-10
+                    appearance-none cursor-pointer"
+                >
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="highest">Highest Likes</option>
+                <option value="lowest">Lowest Likes</option>
+            </select>
+
+            <svg
+                class="w-4 h-4 text-[#929292] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
             >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="highest">Highest Likes</option>
-            <option value="lowest">Lowest Likes</option>
-        </select>
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                />
+            </svg>
+        </div>
 
     </div>
 </template>

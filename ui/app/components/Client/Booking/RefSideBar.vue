@@ -3,7 +3,7 @@
     <div class="flex flex-col gap-4 sm:gap-6">
 
         <!-- Status -->
-        <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl p-5 sm:p-6">
+        <div class="smoked-charcoal-panel rounded-2xl p-5 sm:p-6">
             <h2 class="text-xs font-semibold tracking-wider text-gray-500 uppercase">
                 Status
             </h2>
@@ -49,7 +49,7 @@
         </div>
 
         <!-- Payment -->
-        <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl p-5 sm:p-6">
+        <div class="smoked-charcoal-panel rounded-2xl p-5 sm:p-6">
 
             <h2 class="text-xs font-semibold tracking-wider text-gray-500 uppercase">Payment</h2>
             <div class="mt-4 space-y-3">
@@ -95,7 +95,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Transaction } from '~/utils/api/api'
+import type { Transaction } from '~/utils/types/booking'
 
 defineEmits(['download-receipt', 'cancel-booking'])
 

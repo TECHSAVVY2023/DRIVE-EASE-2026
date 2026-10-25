@@ -339,7 +339,9 @@
 </template>
 
 <script setup lang="ts">
-import type { BookingForm, User, Car } from '~/utils/api/api'
+import type { BookingForm } from '~/utils/types/booking'
+import type { Car } from '~/utils/types/fleet'
+import type { User } from '~/utils/types/accounts'
 import { computed } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import type { FlowConfig } from '@vuepic/vue-datepicker'
