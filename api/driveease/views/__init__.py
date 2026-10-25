@@ -5,6 +5,7 @@ from .accounts import (
     AccountsStatsView,
     AssignAccountRoleView,
     AdminEditAccountView,
+    AccountStatusUpdateView,
 )
 
 from .dashboard import (
@@ -112,4 +113,5 @@ __all__ = [
     'UserNotificationListView',
     'UserUnreadNotificationCountView',
     'MarkNotificationAsReadView',
+    'AccountStatusUpdateView',
 ]
