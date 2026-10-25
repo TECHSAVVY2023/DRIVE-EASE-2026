@@ -2,6 +2,16 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
+
+  ssr: false,
+
+  nitro: {
+    prerender: {
+      crawlLinks: false,
+      routes: ['/'],
+    },
+  },
+
   srcDir: 'app',
   imports: {
     dirs: [
