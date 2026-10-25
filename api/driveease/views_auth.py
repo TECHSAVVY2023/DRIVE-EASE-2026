@@ -66,16 +66,24 @@ def has_allowed_browser_origin(request):
     return not origin or origin.rstrip('/') in get_allowed_frontend_urls()
 
 def get_backend_url(request):
+    configured_url = os.getenv("BACKEND_URL", "").strip().rstrip("/")
+    if configured_url:
+        return configured_url
+
     host = request.get_host()
-    if host.startswith('127.0.0.1'):
-        host = host.replace('127.0.0.1', 'localhost')
+    if host.startswith("127.0.0.1"):
+        host = host.replace("127.0.0.1", "localhost")
+
     return f"{request.scheme}://{host}"
 
 class GoogleLoginView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
         client_id = os.getenv("GOOGLE_CLIENT_ID")
-        redirect_uri = f"{get_backend_url(request)}/api/driveease/auth/google/callback/"
+        redirect_uri = (
+            f"{get_backend_url(request)}"
+            "/api/driveease/auth/google/callback/"
+        )
         
         origin = get_safe_frontend_url(request.GET.get('origin'))
         state_data = {
@@ -116,7 +124,10 @@ class GoogleCallbackView(APIView):
         client_id = os.getenv("GOOGLE_CLIENT_ID")
         client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
 
-        redirect_uri = f"{get_backend_url(request)}/auth/google/callback/"
+        redirect_uri = (
+            f"{get_backend_url(request)}"
+            "/api/driveease/auth/google/callback/"
+        )
 
         state_param = request.GET.get('state')
 
