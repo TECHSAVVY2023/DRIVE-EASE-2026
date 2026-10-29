@@ -3,7 +3,7 @@ import type { User } from '~/utils/types/accounts'
 let userRequest: Promise<User | null> | null = null
 
 export function useCurrentUser() {
-    const { token, isLoggedIn } = useAuth()
+    const { token, isLoggedIn, authReady } = useAuth()
     const { apiFetch } = useApiFetch()
 
     const user = useState<User | null>('currentUser', () => null)
@@ -36,7 +36,10 @@ export function useCurrentUser() {
                 userLoaded.value = true
                 return currentUser
             } catch (error) {
-                clearUser()
+                user.value = null
+                // The request has settled. Do not leave account UI loading
+                // forever when the profile endpoint returns an error.
+                userLoaded.value = true
                 throw error
             } finally {
                 userRequest = null
@@ -55,8 +58,14 @@ export function useCurrentUser() {
         { immediate: true }
     )
 
+    const authLoading = computed(() =>
+        !authReady.value || (isLoggedIn.value && !userLoaded.value)
+    )
+
     return {
         user,
+        userLoaded,
+        authLoading,
         fetchUser,
         refreshUser: () => fetchUser(true),
         clearUser,

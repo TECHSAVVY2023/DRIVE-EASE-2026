@@ -35,16 +35,16 @@
         <div class="flex justify-center items-center">
             <div v-if="car" class="max-w-5xl w-full h-fit flex justify-center items-center flex-col gap-6 px-4 py-8">
 
-                <CarDetails 
+                <ClientReviewsCarDetails
                     :car="car"
                     :avg-rating="avgRating"
                     :total-reviews="totalReviews"
                     @book="openBooking"
                     @reserve="showBookingModal = true"
                 />
-        
-                <OwnerNote
-                    :note="car.note" 
+
+                <ClientReviewsOwnersNote
+                    :note="car.note"
                 />
 
                 <!-- Header -->
@@ -53,11 +53,28 @@
 
                         <h2 class="text-white font-extrabold text-lg">Customer reviews</h2>
 
-                        <CarReviewWriteButton 
-                            v-if="!myReview"
-                            :is-logged-in="isLoggedIn" 
+                        <button v-if="isLoggedIn && !myReview"
+                            class="bg-[#C1121F] hover:bg-[#9B0E18] transition-colors duration-200 text-white text-xs px-4 py-2 rounded-lg flex items-center gap-2"
                             @click="showWriteReviewModal = true"
-                        />
+                        >
+
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="w-5 h-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M16.5 3.5a2.121 2.121 0 113 3L12 14l-4 1 1-4 7.5-7.5z"
+                                />
+                            </svg>
+                            Write a Review
+
+                        </button>
 
                         <ClientReviewsWriteModal
                             v-model="showWriteReviewModal"
@@ -81,7 +98,7 @@
                         :formatted-rating-breakdown="formattedRatingBreakdown"
                     />
 
-                    <CarReviewFilterSort
+                    <ClientReviewsCarFilterSort 
                         :selected-rating="selectedRating"
                         :sort-by="sortBy"
                         @update:selected-rating="selectedRating = $event"

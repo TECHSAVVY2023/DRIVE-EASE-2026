@@ -50,7 +50,14 @@
             </header>
 
             <div class="flex-1 overflow-y-auto px-5 py-5">
+                <AuthLoading
+                    v-if="authLoading"
+                    message="Loading your account..."
+                    class="mb-6 min-h-20 rounded-2xl border border-white/[0.08] bg-white/[0.035]"
+                />
+
                 <button
+                    v-else
                     type="button"
                     class="mb-6 flex w-full items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4 text-left transition hover:border-[#C1121F]/60 hover:bg-white/[0.055]"
                     @click="navigateToAccount"
@@ -141,8 +148,10 @@
             </div>
 
             <footer class="shrink-0 border-t border-white/[0.08] p-5">
+                <AuthLoading v-if="authLoading" compact />
+
                 <button
-                    v-if="isLoggedIn"
+                    v-else-if="isLoggedIn"
                     type="button"
                     class="flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/[0.06] px-4 py-3 text-sm font-semibold text-red-400 transition hover:border-red-500/40 hover:bg-red-500/10"
                     @click="handleLogout"
@@ -176,7 +185,7 @@ const emit = defineEmits<{
 }>()
 
 const { logout, isLoggedIn } = useAuth()
-const { user } = useCurrentUser()
+const { user, authLoading } = useCurrentUser()
 const { fetchUnreadCount } = useNotification()
 const route = useRoute()
 const unreadCount = ref(0)

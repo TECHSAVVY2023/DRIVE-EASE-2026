@@ -19,7 +19,7 @@
     <LandingReviews />
     <Carcarousel />
     <FrequentlyQA />
-    <SigninBanner v-if="!isLoggedIn" />
+    <SigninBanner v-if="authReady && !isLoggedIn" />
     <Footer />
 
 </template>

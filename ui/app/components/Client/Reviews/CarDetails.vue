@@ -6,7 +6,10 @@
             <!-- Left: Image Gallery -->
             <div class="flex flex-1 flex-col justify-center gap-2 w-full h-full">
                 <!-- Main Image -->
-                <div class="relative bg-[#1a1a1a] rounded-xl overflow-hidden aspect-[16/10] flex items-center justify-center border border-[#222]">
+                <div
+                    class="relative bg-[#1a1a1a] rounded-xl overflow-hidden aspect-[16/10] flex items-center justify-center border border-[#222] cursor-pointer"
+                    @click="openImageViewer(activeImage)"
+                >
                     <img
                         :src="galleryImages[activeImage] as string"
                         :alt="car.model"
@@ -15,7 +18,7 @@
 
                     <!-- Prev -->
                     <button
-                        @click="prevImage"
+                        @click.stop="prevImage"
                         class="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors duration-200"
                         >
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -25,7 +28,7 @@
 
                     <!-- Next -->
                     <button
-                        @click="nextImage"
+                        @click.stop="nextImage"
                         class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors duration-200"
                         >
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -36,19 +39,21 @@
     
                 <!-- Thumbnails -->
                 <div class="flex gap-2">
-                <button
-                    v-for="(img, i) in galleryImages"
-                    :key="i"
-                    @click="activeImage = i"
-                    class="w-16 h-12 rounded-lg overflow-hidden border-2 transition-colors duration-200 flex-shrink-0"
-                    :class="activeImage === i ? 'border-[#C1121F]' : 'border-[#222] hover:border-[#444]'"
-                >
-                    <img
-                    :src="img as string"
-                    :alt="`Thumbnail ${i + 1}`"
-                    class="w-full h-full object-cover"
-                    />
-                </button>
+
+                    <button
+                        v-for="(img, i) in galleryImages"
+                        :key="i"
+                        @click="openImageViewer(i)"
+                        class="w-16 h-12 rounded-lg overflow-hidden border-2 transition-colors duration-200 flex-shrink-0 cursor-pointer"
+                        :class="activeImage === i ? 'border-[#C1121F]' : 'border-[#222] hover:border-[#444]'"
+                    >
+                        <img
+                        :src="img as string"
+                        :alt="`Thumbnail ${i + 1}`"
+                        class="w-full h-full object-cover"
+                        />
+                    </button>
+                    
                 </div>
             </div>
     
@@ -179,6 +184,12 @@
 
         </div>
 
+        <ClientReviewsImageViewer
+            v-model="viewerOpen"
+            :images="galleryImages"
+            :initial-index="activeImage"
+        />
+
         <div class="flex flex-col w-full md:flex-row gap-6">
             <!-- Rental Terms -->
             <div class="w-full overflow-hidden mt-1">
@@ -278,6 +289,7 @@ interface RentalTerm {
 }
  
 const activeImage = ref<number>(0)
+const viewerOpen = ref(false)
 
 const perks: string[] = [
     'Free cancellation',
@@ -324,11 +336,16 @@ const specifications = computed(() => {
 const galleryImages = computed(() => {
     if (!props.car?.meta) return []
 
-    return [
+    return [...new Set([
         props.car.meta.primary_image,
         ...props.car.meta.images
-    ].filter(Boolean)
+    ].filter((image): image is string => Boolean(image)))]
 })
+
+function openImageViewer(index: number): void {
+    activeImage.value = index
+    viewerOpen.value = true
+}
  
 function prevImage(): void {
   const total = galleryImages.value.length

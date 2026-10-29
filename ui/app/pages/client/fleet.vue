@@ -33,7 +33,7 @@
 
         <div class="max-w-7xl px-4 py-8 flex flex-col mx-auto md:flex-row gap-6">
 
-            <SidebarFilters
+            <ClientFleetSidebarFilters 
                 class="smoked-charcoal-panel"
                 :show-filters="showFilters"
                 :open="open"
@@ -86,14 +86,14 @@
                 ========================== -->
                 <div class="flex flex-col justify-between md:flex-row md:items-center gap-3 w-full">
 
-                    <FleetSort
+                    <ClientFleetSort
                         :sort-by="sortBy"
                         :show-filters="showFilters"
                         @update:sortBy="sortBy = $event"
                         @toggle-filters="toggleFilters"
                     />
 
-                    <FleetSearch
+                    <ClientFleetSearch
                         :search="search"
                         @update:search="search = $event"
                     />

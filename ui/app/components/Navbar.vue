@@ -12,7 +12,7 @@
     >
         <div class="mx-auto flex h-full w-full max-w-7xl items-center justify-between px-5 sm:px-8">
 
-        <NuxtLink v-if="authReady" to="/" class="group flex items-center gap-3" aria-label="Drive Ease home">
+        <NuxtLink to="/" class="group flex items-center gap-3" aria-label="Drive Ease home">
 
             <div class="w-11 h-11 rounded-full overflow-hidden ring-1 ring-white/10 group-hover:ring-[#C1121F]/70 transition-colors">
                 <img
@@ -29,7 +29,7 @@
         </NuxtLink>
 
         <!-- Desktop Nav Links -->
-        <ul v-if="authReady" class="hidden md:flex items-center gap-1 rounded-full border border-white/[0.06] bg-white/[0.025] p-1 text-sm font-medium">
+        <ul class="hidden md:flex items-center gap-1 rounded-full border border-white/[0.06] bg-white/[0.025] p-1 text-sm font-medium">
 
             <li v-for="link in navLinks" :key="link.to">
                 <NuxtLink
@@ -43,7 +43,9 @@
         
         </ul>
 
-        <div v-if="authReady && isLoggedIn" class="relative hidden md:block">
+        <AuthLoading v-if="authLoading" compact class="hidden md:flex" />
+
+        <div v-else-if="isLoggedIn" class="relative hidden md:block">
         <button
             @click="toggleDropdown"
             type="button"
@@ -257,7 +259,7 @@
         </div>
         
         <button
-            v-if="authReady && !isLoggedIn"
+            v-else
             @click="$router.push('/client/login')"
             class="
                 hidden md:flex justify-between items-center gap-3
@@ -307,6 +309,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 const { logout } = useAuth()
+const { authLoading } = useCurrentUser()
 const route = useRoute()
 
 const navLinks = [

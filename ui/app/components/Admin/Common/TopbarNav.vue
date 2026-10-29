@@ -99,7 +99,9 @@
 
         <!-- Right Side -->
         <div class="flex items-center gap-2 sm:gap-4">
+            <AuthLoading v-if="authLoading" compact />
             <AdminCommonTopbarNavUserMenu
+                v-else
                 :user="user"
                 :logout="logout"
             />
@@ -109,6 +111,7 @@
 
 <script setup lang="ts">
 const { logout } = useAuth()
+const { authLoading } = useCurrentUser()
 
 const props = defineProps<{
     user?: {

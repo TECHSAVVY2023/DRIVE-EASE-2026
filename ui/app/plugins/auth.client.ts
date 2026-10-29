@@ -12,9 +12,11 @@ const removeLegacyOAuthTokensFromUrl = () => {
     window.history.replaceState(window.history.state, '', url.toString())
 }
 
-export default defineNuxtPlugin(async () => {
+export default defineNuxtPlugin(() => {
     const { init } = useAuth()
 
     removeLegacyOAuthTokensFromUrl()
-    await init()
+    // Authentication should not block the application from mounting. Public
+    // pages can render immediately while the refresh-cookie check completes.
+    void init()
 })

@@ -32,7 +32,12 @@
         ]"
     />
 
-        <div class="max-w-lg mx-auto px-4 py-8 flex flex-col gap-4">
+        <AuthLoading
+            v-if="authLoading"
+            message="Loading your profile..."
+        />
+
+        <div v-else class="max-w-lg mx-auto px-4 py-8 flex flex-col gap-4">
 
             <!-- Profile Card -->
             <ClientProfileCard 
@@ -133,7 +138,7 @@ import { ref } from 'vue'
 const showEditProfileModal = ref(false)
 
 const { isLoggedIn, authReady } = useAuth()
-const { user, refreshUser: fetchUser } = useCurrentUser()
+const { user, authLoading, refreshUser: fetchUser } = useCurrentUser()
 
 const { 
     menuOpen,

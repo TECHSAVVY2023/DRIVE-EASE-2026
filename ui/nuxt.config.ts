@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
 
-  ssr: false,
+  ssr: true,
 
   nitro: {
     prerender: {
@@ -12,7 +12,14 @@ export default defineNuxtConfig({
     },
   },
 
+  experimental: {
+    appManifest: false,
+  },
+
   srcDir: 'app',
+  dir: {
+    public: '../public',
+  },
   imports: {
     dirs: [
       'composables',
@@ -32,6 +39,11 @@ export default defineNuxtConfig({
         {
           rel: 'stylesheet',
           href: 'https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap'
+        },
+        {
+          rel: 'icon',
+          type: 'image/x-icon',
+          href: '/favicon.ico?v=20261025'
         }
       ]
     }
