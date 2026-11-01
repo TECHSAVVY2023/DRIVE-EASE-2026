@@ -45,6 +45,11 @@ class Migration(migrations.Migration):
             name='log_reference',
             field=models.CharField(editable=False, max_length=30, null=True),
         ),
+        migrations.AlterField(
+            model_name='cars',
+            name='car_id',
+            field=models.CharField(default=driveease.models.generate_car_reference, editable=False, max_length=30, unique=True),
+        ),
         migrations.AddField(
             model_name='cars',
             name='id',
@@ -59,11 +64,6 @@ class Migration(migrations.Migration):
             model_name='booking',
             name='booking_reference',
             field=models.CharField(default=driveease.models.generate_booking_reference, editable=False, max_length=30, unique=True),
-        ),
-        migrations.AlterField(
-            model_name='cars',
-            name='car_id',
-            field=models.CharField(default=driveease.models.generate_car_reference, editable=False, max_length=30, unique=True),
         ),
         migrations.RunPython(
             populate_public_references,
