@@ -15,7 +15,7 @@ export default defineNuxtConfig({
 
   srcDir: 'app',
   dir: {
-    public: '../public',
+    public: 'public',
   },
   imports: {
     dirs: [
