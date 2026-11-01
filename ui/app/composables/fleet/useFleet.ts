@@ -59,7 +59,7 @@ export const useFleet = () => {
 
         const expiresAt = fleetCacheExpiresAt[cacheKey]
         if (!force && cacheKey in FleetCache && expiresAt && now < expiresAt) {
-            return FleetCache[cacheKey]
+            return FleetCache[cacheKey]!
         }
 
         const existingRequest = FleetRequests.get(cacheKey)

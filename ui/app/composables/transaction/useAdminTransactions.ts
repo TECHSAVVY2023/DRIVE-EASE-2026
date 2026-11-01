@@ -1,5 +1,4 @@
-import type { Booking } from "~/components/Admin/Booking/bookingmodal.vue"
-import type { TransactionResponse, BookingStatsResponse, BookingForm } from "~/utils/types/booking"
+import type { TransactionResponse, BookingStatsResponse, BookingForm, Transaction } from "~/utils/types/booking"
 import { API_ENDPOINTS } from '~/utils/api/api'
 
 const TRANSACTION_CACHE_TTL_MS = 60 * 1000
@@ -48,7 +47,7 @@ export const useAdminTransactions = () => {
             expiresAt &&
             now < expiresAt
         ) {
-            return AdminBookingCache[cacheKey]
+            return AdminBookingCache[cacheKey]!
         }
 
         // Prevent duplicate requests
@@ -114,8 +113,8 @@ export const useAdminTransactions = () => {
     const updateBooking = async (
         bookingId: string,
         form: Partial<BookingForm>
-    ): Promise<Booking> => {
-        const response = await apiFetch<Booking>(
+    ): Promise<Transaction> => {
+        const response = await apiFetch<Transaction>(
             API_ENDPOINTS.BOOKINGS.UPDATE(bookingId),
             {
                 method: 'PATCH',

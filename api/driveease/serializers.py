@@ -1,5 +1,3 @@
-import uuid
-
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Accounts, ContactListModel, Cars, FileUploadModel, Reviews, Booking, Payment, Feature, Notification, CarType, AdminActivityLog
@@ -19,7 +17,7 @@ class MiniCarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cars
         fields = (
-            "car_id",
+            "car_reference",
             "brand",
             "model",
             "image",
@@ -32,7 +30,7 @@ class MiniCarSerializer(serializers.ModelSerializer):
 class UserMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "first_name", "last_name", "email", "profile_picture"]
+        fields = ["id", "user_reference", "first_name", "last_name", "email", "profile_picture"]
 
 class ContactListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -104,7 +102,7 @@ class CarCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cars
         fields = [
-            "car_id",
+            "car_reference",
             "brand",
             "model",
             "year",
@@ -119,12 +117,11 @@ class CarCreateSerializer(serializers.ModelSerializer):
             "status",
             "features",
         ]
-        read_only_fields = ["car_id"]
+        read_only_fields = ["car_reference"]
 
     def create(self, validated_data):
         features = validated_data.pop("features", [])
 
-        validated_data["car_id"] = str(uuid.uuid4())
         validated_data["created_by"] = self.context["request"].user
 
         car = Cars.objects.create(**validated_data)
@@ -148,7 +145,7 @@ class CarUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cars
         fields = [
-            "car_id",
+            "car_reference",
             "brand",
             "model",
             "year",
@@ -163,7 +160,7 @@ class CarUpdateSerializer(serializers.ModelSerializer):
             "status",
             "features",
         ]
-        read_only_fields = ["car_id"]
+        read_only_fields = ["car_reference"]
 
 # Account Serializers
 
@@ -178,6 +175,7 @@ class AccountsSerializer(serializers.ModelSerializer):
         model = Accounts
         fields = [
             'id',
+            'user_reference',
             'email',
             'given_name',
             'family_name',
@@ -390,7 +388,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reviews
-        fields = ["id", "user", "car", "rating", "text", "status", "helpful_count", "images", "created_at", "helpful","is_mine"]
+        fields = ["id", "review_reference", "user", "car", "rating", "text", "status", "helpful_count", "images", "created_at", "helpful","is_mine"]
 
     def get_helpful(self, obj):
         request = self.context.get("request")
@@ -408,6 +406,7 @@ class AdminReviewSerializer(serializers.ModelSerializer):
         model = Reviews
         fields = [
             'id',
+            'review_reference',
             'car',
             'user',
             'rating',
@@ -421,10 +420,27 @@ class AdminReviewSerializer(serializers.ModelSerializer):
 # Booking Serializers
 
 class BookingSerializer(serializers.ModelSerializer):
+    user_reference = serializers.SlugRelatedField(
+        source="user",
+        slug_field="user_reference",
+        queryset=Accounts.objects.all(),
+        write_only=True,
+    )
+    car_reference = serializers.SlugRelatedField(
+        source="car",
+        slug_field="car_reference",
+        queryset=Cars.objects.all(),
+        write_only=True,
+    )
+
     class Meta:
         model = Booking
         fields = '__all__'
         read_only_fields = ['booking_reference', 'created_at', 'updated_at']
+        extra_kwargs = {
+            'user': {'read_only': True},
+            'car': {'read_only': True},
+        }
 
 class TransactionCarSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
@@ -432,7 +448,7 @@ class TransactionCarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cars
         fields = (
-            "car_id",
+            "car_reference",
             "brand",
             "model",
             "image",
@@ -447,6 +463,7 @@ class TransactionUserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             "id",
+            "user_reference",
             "email",
             "first_name",
             "last_name",
@@ -545,6 +562,11 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 class AdminActivityLogSerializer(serializers.ModelSerializer):
     admin_name = serializers.SerializerMethodField()
+    admin_reference = serializers.CharField(
+        source="admin.user_reference",
+        read_only=True,
+        allow_null=True,
+    )
 
     class Meta:
         model = AdminActivityLog
@@ -552,6 +574,7 @@ class AdminActivityLogSerializer(serializers.ModelSerializer):
             "id",
             "admin",
             "admin_name",
+            "admin_reference",
             "action",
             "description",
             "target_type",

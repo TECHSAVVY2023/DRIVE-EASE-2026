@@ -59,7 +59,8 @@ const props = defineProps<{
 }>()
 
 const getExtension = (url: string) => {
-  const match = url.split('?')[0].split('.').pop()
+  const path = url.split('?')[0] ?? ''
+  const match = path.split('.').pop()
   return match ? match.toUpperCase() : 'FILE'
 }
 </script>

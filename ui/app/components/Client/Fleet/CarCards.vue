@@ -1,7 +1,7 @@
 <template>
     <div
         v-for="car in paginatedCars"
-        :key="car.car_id"
+        :key="car.car_reference"
         class="
             bg-[#202023] rounded-xl border border-white/10 hover:border-[#C1121F]
             shadow-[0_10px_24px_rgba(0,0,0,0.14)]
@@ -10,7 +10,7 @@
     >
         <!-- Clickable Car Content -->
         <NuxtLink
-            :to="`/client/car-details/${car.car_id}`"
+            :to="`/client/car-details/${car.car_reference}`"
             class="flex flex-col flex-1"
         >
             <!-- Car Image -->
@@ -72,7 +72,7 @@
 
             <!-- View Details -->
             <NuxtLink
-                :to="`/client/car-details/${car.car_id}`"
+                :to="`/client/car-details/${car.car_reference}`"
                 class="
                     w-full border border-[#2a2a2a]
                     hover:border-white rounded-lg
@@ -89,6 +89,7 @@
 
 <script setup lang="ts">
 import type { Car } from '~/utils/types/fleet'
+import { useCurrentRental } from '~/composables/useCarRental'
 
 defineProps<{
     paginatedCars: Car[]
@@ -98,7 +99,4 @@ const emit = defineEmits<{
     book: [car: Car]
 }>()
 
-const openBookingModal = (car: Car) => {
-    emit('book', car)
-}
 </script>

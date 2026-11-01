@@ -7,28 +7,28 @@ def get_filter_options():
     categories = (
         Cars.objects
         .values("car_type", "car_type__name")
-        .annotate(count=Count("car_id"))
+        .annotate(count=Count("id"))
         .order_by("car_type")
     )
 
     transmissions = (
         Cars.objects
         .values("transmission")
-        .annotate(count=Count("car_id"))
+        .annotate(count=Count("id"))
         .order_by("transmission")
     )
 
     seats = (
         Cars.objects
         .values("seats")
-        .annotate(count=Count("car_id"))
+        .annotate(count=Count("id"))
         .order_by("seats")
     )
 
     fuel = (
         Cars.objects
         .values("fuel_type")
-        .annotate(count=Count("car_id"))
+        .annotate(count=Count("id"))
         .order_by("fuel_type")
     )
 
@@ -36,7 +36,7 @@ def get_filter_options():
         Cars.objects
         .filter(features__isnull=False)
         .values("features__name")
-        .annotate(count=Count("car_id", distinct=True))
+        .annotate(count=Count("id", distinct=True))
         .order_by("features__name")
     )
 

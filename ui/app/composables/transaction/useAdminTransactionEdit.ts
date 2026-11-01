@@ -10,14 +10,14 @@ export const useAdminTransactionEdit = () => {
     const { $swal } = useNuxtApp()
 
     const validateForm = (form: BookingForm) => {
-        if (!form.user) {
+        if (!form.user_reference) {
             return {
                 success: false,
                 message: 'Please select a user.',
             }
         }
 
-        if (!form.car) {
+        if (!form.car_reference) {
             return {
                 success: false,
                 message: 'Please select a vehicle.',

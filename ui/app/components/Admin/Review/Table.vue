@@ -127,7 +127,7 @@
                 <tbody>
                     <tr
                         v-for="(review, i) in props.reviews"
-                        :key="review.id"
+                        :key="review.review_reference"
                         :class="
                             i !== props.reviews.length - 1
                                 ? 'border-b border-[#1c1c1c]'
@@ -263,7 +263,8 @@
                                 whitespace-nowrap
                             "
                         >
-                            {{ new Date(review.created_at).toLocaleDateString() }}
+                            <div>{{ new Date(review.created_at).toLocaleDateString() }}</div>
+                            <p class="mt-0.5 text-xs text-[#666]">{{ review.review_reference }}</p>
                         </td>
 
                     <!-- Actions -->

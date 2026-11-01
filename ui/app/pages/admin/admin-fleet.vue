@@ -225,7 +225,7 @@ const handleEdit = (car: Car) => {
     ].filter((url): url is string => Boolean(url))
 
     selectedVehicle.value = {
-        id: car.car_id,
+        id: car.car_reference,
         car_type: car.car_type, // Map this if your options use strings
         brand: car.brand,
         model: car.model,

@@ -137,7 +137,7 @@
                         >
                             <button
                                 v-for="car in filteredCars"
-                                :key="car.car_id"
+                                :key="car.car_reference"
                                 type="button"
                                 class="block w-full px-3 py-2 text-left text-sm text-white hover:bg-neutral-800"
                                 @mousedown.prevent="selectCar(car)"
@@ -378,7 +378,7 @@ const filteredUsers = computed(() => {
 })
 
 function selectUser(user: User) {
-    form.value.user = user.id
+    form.value.user_reference = user.user_reference
     userSearch.value = `${user.given_name} ${user.family_name}`
     showUserDropdown.value = false
 }
@@ -407,7 +407,7 @@ const filteredCars = computed(() => {
 })
 
 function selectCar(car: Car) {
-    form.value.car = car.car_id
+    form.value.car_reference = car.car_reference
     carSearch.value = `${car.brand} ${car.model}`
     showCarDropdown.value = false
 }
@@ -436,7 +436,7 @@ const returnMinDate = computed(() => {
 })
 
 const selectedCar = computed(() =>
-    props.cars.find(car => car.car_id === form.value.car)
+    props.cars.find(car => car.car_reference === form.value.car_reference)
 )
 
 const disabledDates = (date: Date) => {
@@ -473,13 +473,13 @@ watch(
         if (booking) {
             form.value = {
                 ...booking,
-                user: booking.user.id,
-                car: booking.car.car_id,
+                user_reference: booking.user.user_reference,
+                car_reference: booking.car.car_reference,
                 cancel_reason: booking.cancel_reason || '',
             }
 
             const selectedUser = props.users.find(
-                user => user.id === booking.user.id
+                user => user.user_reference === booking.user.user_reference
             )
 
             userSearch.value = selectedUser
@@ -487,7 +487,7 @@ watch(
                 : ''
 
             const selectedCar = props.cars.find(
-                car => car.car_id === booking.car.car_id
+                car => car.car_reference === booking.car.car_reference
             )
 
             carSearch.value = selectedCar
@@ -529,8 +529,8 @@ const hasValidDates = computed(() => rentalDays.value > 0)
 function blank(): BookingForm {
     return {
         booking_reference: '',
-        car: '',
-        user: 0,
+        car_reference: '',
+        user_reference: '',
 
         status: '',
         cancel_reason: '',

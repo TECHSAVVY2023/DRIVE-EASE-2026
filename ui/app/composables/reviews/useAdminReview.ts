@@ -88,11 +88,11 @@ export const useAdminReview = () => {
 
     // Update review status
     const updateReviewStatus = async (
-        reviewId: number,
+        reviewReference: string,
         status: 'approved' | 'rejected'
     ): Promise<AdminReview> => {
         return await apiFetch<AdminReview>(
-            API_ENDPOINTS.ADMIN_REVIEWS.UPDATE_STATUS(reviewId),
+            API_ENDPOINTS.ADMIN_REVIEWS.UPDATE_STATUS(reviewReference),
             {
                 method: 'PATCH',
                 body: { status },
@@ -101,9 +101,9 @@ export const useAdminReview = () => {
     }
 
     // Delete review
-    const deleteAdminReview = async (reviewId: number): Promise<void> => {
+    const deleteAdminReview = async (reviewReference: string): Promise<void> => {
         await apiFetch(
-            API_ENDPOINTS.ADMIN_REVIEWS.DELETE(reviewId),
+            API_ENDPOINTS.ADMIN_REVIEWS.DELETE(reviewReference),
             {
                 method: 'DELETE',
             }

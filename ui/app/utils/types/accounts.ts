@@ -2,6 +2,7 @@ export type UserRole = 'User' | 'Admin' | 'Super Admin'
 
 export interface User {
     id: number
+    user_reference: string
     email: string
     given_name: string
     family_name: string

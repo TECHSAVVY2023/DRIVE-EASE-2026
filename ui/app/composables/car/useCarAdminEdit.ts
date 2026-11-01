@@ -240,7 +240,7 @@ export const useCarAdminEdit = () => {
                 : 'maintenance'
 
         try {
-            await updateCar(car.car_id, {
+            await updateCar(car.car_reference, {
                 status: newStatus,
             })
 
@@ -254,7 +254,7 @@ export const useCarAdminEdit = () => {
 
     const handleDeleteVehicle = async (car: Car) => {
         try {
-            await deleteCar(car.car_id)
+            await deleteCar(car.car_reference)
 
             return { success: true }
         } catch (error) {

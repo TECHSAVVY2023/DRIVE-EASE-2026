@@ -1,4 +1,5 @@
 import tailwindcss from "@tailwindcss/vite";
+import { defineNuxtConfig } from "nuxt/config";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -12,10 +13,6 @@ export default defineNuxtConfig({
     },
   },
 
-  experimental: {
-    appManifest: false,
-  },
-
   srcDir: 'app',
   dir: {
     public: '../public',
@@ -27,7 +24,7 @@ export default defineNuxtConfig({
     ]
   },
   devtools: { enabled: true },
-  css: ['./app/assets/css/main.css'],
+  css: ['~/assets/css/main.css'],
   vite: {
     plugins: [
       tailwindcss(),
@@ -43,7 +40,7 @@ export default defineNuxtConfig({
         {
           rel: 'icon',
           type: 'image/x-icon',
-          href: '/favicon.ico?v=20261025'
+          href: '/favicon.ico'
         }
       ]
     }

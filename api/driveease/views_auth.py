@@ -282,7 +282,17 @@ class CookieTokenRefreshView(TokenRefreshView):
             return Response({"detail": "No refresh token"}, status=401)
 
         serializer = self.get_serializer(data={"refresh": refresh_token})
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError:
+            # A revoked, expired, or malformed refresh token is an
+            # authentication failure, not an application error. In
+            # particular, token rotation can make a concurrently reused
+            # token hit this path.
+            return Response(
+                {"detail": "Refresh token is invalid or expired"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         response = Response({
             "access": serializer.validated_data["access"],

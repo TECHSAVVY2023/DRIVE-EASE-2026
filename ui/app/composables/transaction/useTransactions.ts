@@ -43,7 +43,7 @@ export const useTransactions = () => {
             expiresAt &&
             now < expiresAt
         ) {
-            return TransactionCache[cacheKey]
+            return TransactionCache[cacheKey]!
         }
 
         const existingRequest = TransactionRequests.get(cacheKey)
@@ -95,7 +95,7 @@ export const useTransactions = () => {
             expiresAt &&
             now < expiresAt
         ) {
-            return TransactionDetailCache[cacheKey] //
+            return TransactionDetailCache[cacheKey]! //
         }
 
         const existingRequest = TransactionDetailRequests.get(cacheKey)

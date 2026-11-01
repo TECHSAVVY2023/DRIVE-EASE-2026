@@ -24,6 +24,30 @@ def default_user_id():
         "images": []
     }
 
+
+def _public_reference(prefix):
+    return f"{prefix}-{uuid.uuid4().hex[:10].upper()}"
+
+
+def generate_user_reference():
+    return _public_reference("USR")
+
+
+def generate_car_reference():
+    return _public_reference("CAR")
+
+
+def generate_booking_reference():
+    return _public_reference("BKG")
+
+
+def generate_review_reference():
+    return _public_reference("REV")
+
+
+def generate_log_reference():
+    return _public_reference("LOG")
+
 class Feature(models.Model):
     name = models.CharField(
         max_length=100,
@@ -62,9 +86,11 @@ class Cars(models.Model):
         ('maintenance', 'Maintenance'),
     ]
 
-    car_id = models.CharField(
-        max_length=50,
-        primary_key=True
+    car_reference = models.CharField(
+        max_length=30,
+        unique=True,
+        default=generate_car_reference,
+        editable=False,
     )
 
     brand = models.CharField(max_length=100)
@@ -126,9 +152,16 @@ class Cars(models.Model):
         verbose_name_plural = "Cars"
 
     def __str__(self):
-        return f"{self.brand} {self.model} ({self.car_id})"
+        return f"{self.brand} {self.model} ({self.car_reference})"
 
 class Accounts(AbstractUser):
+    user_reference = models.CharField(
+        max_length=30,
+        unique=True,
+        default=generate_user_reference,
+        editable=False,
+    )
+
     contact_number = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)
 
@@ -139,6 +172,13 @@ class Accounts(AbstractUser):
         return self.username
 
 class Reviews(models.Model):
+
+    review_reference = models.CharField(
+        max_length=30,
+        unique=True,
+        default=generate_review_reference,
+        editable=False,
+    )
 
     REVIEW_STATUS = [
         ("pending", "Pending"),
@@ -263,7 +303,8 @@ class Booking(models.Model):
     booking_reference = models.CharField(
         max_length=30,
         unique=True,
-        blank=True
+        default=generate_booking_reference,
+        editable=False,
     )
 
     pickup_date = models.DateTimeField()
@@ -311,10 +352,6 @@ class Booking(models.Model):
         import uuid
 
         changed_fields = set()
-
-        if not self.booking_reference:
-            self.booking_reference = f"BKG-{uuid.uuid4().hex[:10].upper()}"
-            changed_fields.add("booking_reference")
 
         milestone_fields = {
             "pending_approval": ("pending_approval_at",),
@@ -470,6 +507,13 @@ class Notification(models.Model):
         return f"{self.user} - {self.title}"
 
 class AdminActivityLog(models.Model):
+    log_reference = models.CharField(
+        max_length=30,
+        unique=True,
+        default=generate_log_reference,
+        editable=False,
+    )
+
     ACTION_CHOICES = [
         ("create", "Create"),
         ("update", "Update"),

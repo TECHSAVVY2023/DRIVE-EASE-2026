@@ -1,6 +1,7 @@
 import type { Transaction } from '~/utils/types/booking'
 
 const loading = ref(false)
+const error = ref<string | null>(null)
 
 const bookings = ref<Transaction[]>([])
 
@@ -33,6 +34,7 @@ export function useAdminTransactionsList() {
 
     const fetchBookings = async () => {
         loading.value = true
+        error.value = null
 
         try {
             const isOverdueFilter = selectedStatus.value === 'overdue'
@@ -61,6 +63,10 @@ export function useAdminTransactionsList() {
             nextPage.value = res.next ?? null
             previousPage.value = res.previous ?? null
 
+        } catch (fetchError: unknown) {
+            error.value = fetchError instanceof Error
+                ? fetchError.message
+                : 'Unable to load bookings.'
         } finally {
             loading.value = false
         }
@@ -86,9 +92,13 @@ export function useAdminTransactionsList() {
         ],
         () => {
             fetchBookings()
-        },
-        { immediate: true }
+        }
     )
+
+    onMounted(() => {
+        fetchBookings()
+    })
+
 
     // Reset pagination when filters/search change
     watch(

@@ -112,7 +112,7 @@
                         :is-my-review="true"
                         class="mb-4"
                         @edit="handleEdit"
-                        @delete="reviewState.deleteReview(Number(myReview.id), carId)"
+                        @delete="reviewState.deleteReview(myReview.review_reference, carId)"
                     />
 
                     <ClientReviewsCards

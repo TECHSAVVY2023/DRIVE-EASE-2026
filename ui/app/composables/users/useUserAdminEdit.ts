@@ -12,7 +12,7 @@ export const useUserAdminEdit = () => {
     const { $swal } = useNuxtApp()
 
     const handleAssignRole = async (
-        userId: number,
+        userReference: string,
         role: UserRole,
     ): Promise<AssignRoleResult> => {
         $swal.fire({
@@ -26,7 +26,7 @@ export const useUserAdminEdit = () => {
         })
 
         try {
-            const response = await assignUserRole(userId, role)
+            const response = await assignUserRole(userReference, role)
 
             $swal.close()
 
@@ -71,7 +71,7 @@ export const useUserAdminEdit = () => {
     }
 
     const handleEditUser = async (
-        userId: number,
+        userReference: string,
         body: AdminEditUserPayload,
     ): Promise<AdminEditUserResult> => {
         if (!body.email.trim()) {
@@ -112,7 +112,7 @@ export const useUserAdminEdit = () => {
         })
 
         try {
-            const response = await updateUserAdmin(userId, body)
+            const response = await updateUserAdmin(userReference, body)
 
             $swal.close()
 

@@ -1,10 +1,11 @@
-import type { ReviewForm, CarReviewsResponse } from '~/utils/api/api'
+import type { CarReviewsResponse, Review, ReviewForm } from '~/utils/api/api'
 
 export function useWriteReview() {
     const { apiFetch } = useApiFetch()
     const { $swal } = useNuxtApp()
 
     const form = reactive<ReviewForm>({
+        car: '',
         rating: 0,
         review: "",
         images: [],
@@ -113,7 +114,7 @@ export function useWriteReview() {
         )
     }
 
-    const deleteReview = async (reviewId: number, carId: string) => {
+    const deleteReview = async (reviewReference: string, carReference: string) => {
         const result = await $swal.fire({
             title: 'Delete review?',
             text: 'This action cannot be undone.',
@@ -128,7 +129,7 @@ export function useWriteReview() {
 
         if (!result.isConfirmed) return
 
-        await apiFetch(`/reviews/cars/${carId}/delete/${reviewId}/`, {
+        await apiFetch(`/reviews/cars/${carReference}/delete/${reviewReference}/`, {
             method: 'DELETE'
         })
 
@@ -241,7 +242,13 @@ export function useCarReview(props?: { carId?: string }) {
                 )
 
                 if (props?.carId) {
-                    myReview.value = (res as CarReviewsResponse).my_review
+                    const currentReview = (res as CarReviewsResponse).my_review
+                    myReview.value = currentReview
+                        ? {
+                            ...currentReview,
+                            images: currentReview.images.map(url => ({ url })),
+                        }
+                        : null
                 }
         } finally {
             loading.value = false

@@ -52,7 +52,7 @@ export const useReviews = () => {
 
         const expiresAt = reviewsCacheExpiresAt[cacheKey]
         if (!force && cacheKey in carReviewsCache && expiresAt && now < expiresAt) {
-            return carReviewsCache[cacheKey]
+            return carReviewsCache[cacheKey]!
         }
 
         const existingRequest = carReviewsRequests.get(cacheKey)
@@ -87,7 +87,7 @@ export const useReviews = () => {
 
         const expiresAt = reviewsCacheExpiresAt[cacheKey]
         if (!force && cacheKey in allReviewsCache && expiresAt && now < expiresAt) {
-            return allReviewsCache[cacheKey]
+            return allReviewsCache[cacheKey]!
         }
 
         const existingRequest = allReviewsRequests.get(cacheKey)
@@ -122,7 +122,7 @@ export const useReviews = () => {
 
         const expiresAt = reviewsCacheExpiresAt[cacheKey]
         if (!force && cacheKey in featuredReviewsCache && expiresAt && now < expiresAt) {
-            return featuredReviewsCache[cacheKey]
+            return featuredReviewsCache[cacheKey]!
         }
 
         const existingRequest = featuredReviewsRequests.get(cacheKey)
@@ -167,8 +167,8 @@ export const useReviews = () => {
     }
 
     const updateReview = async (
-        carId: string,
-        reviewId: number,
+        carReference: string,
+        reviewReference: string,
         body: {
             rating: number
             review: string
@@ -177,14 +177,14 @@ export const useReviews = () => {
         }
     ) => {
         const response = await apiFetch<{ message: string }>(
-            `/reviews/cars/${carId}/edit/${reviewId}/`,
+            `/reviews/cars/${carReference}/edit/${reviewReference}/`,
             {
                 method: "PATCH",
                 body
             }
         )
 
-        clearReviewCaches(carId)
+        clearReviewCaches(carReference)
 
         return response
     }

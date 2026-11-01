@@ -18,3 +18,6 @@ class NotificationPagination(PageNumberPagination):
 
 class AccountsPagination(PageNumberPagination):
     page_size = 5
+
+class AdminActivityLogPagination(PageNumberPagination):
+    page_size = 5

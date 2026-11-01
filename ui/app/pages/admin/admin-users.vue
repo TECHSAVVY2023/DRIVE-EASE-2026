@@ -152,8 +152,8 @@ const handleEdit = (account: User) => {
 
 const { handleAssignRole: assignRole, handleEditUser: editUser } = useUserAdminEdit()
 
-const handleAssignRole = async ({userId, role}: { userId: number, role: UserRole }) => {
-    const result = await assignRole(userId, role)
+const handleAssignRole = async ({userReference, role}: { userReference: string, role: UserRole }) => {
+    const result = await assignRole(userReference, role)
 
     if (!result.success) return
 
@@ -166,8 +166,8 @@ const handleAssignRole = async ({userId, role}: { userId: number, role: UserRole
     ])
 }
 
-const handleEditUser = async ({userId,body}: { userId: number, body: AdminEditUserPayload }) => {
-    const result = await editUser(userId, body)
+const handleEditUser = async ({userReference, body}: { userReference: string, body: AdminEditUserPayload }) => {
+    const result = await editUser(userReference, body)
 
     if (!result.success) return
 

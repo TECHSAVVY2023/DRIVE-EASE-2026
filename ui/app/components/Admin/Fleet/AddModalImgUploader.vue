@@ -175,7 +175,7 @@ const addFiles = async (files: File[]) => {
     ])
 
     if (!props.thumbnailUrl && newImages.length > 0) {
-        emit('update:thumbnailUrl', newImages[0].url)
+        emit('update:thumbnailUrl', newImages[0]?.url ?? null)
     }
 }
 

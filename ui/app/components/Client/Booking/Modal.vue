@@ -328,11 +328,11 @@ async function confirmBooking(): Promise<void> {
             uploadIdFiles
         })
 
-        const bookingRes = await apiFetch<{ message: string; booking_id: number; booking_reference: string }>('/bookings/create/', {
+        const bookingRes = await apiFetch<{ message: string; booking_reference: string }>('/bookings/create/', {
             method: 'POST',
             body: {
-                user: props.user?.id,
-                car: props.car?.car_id,
+                user_reference: props.user?.user_reference,
+                car_reference: props.car?.car_reference,
                 pickup_date: form.pickupDate,
                 return_date: form.returnDate,
                 pickup_location: form.pickupLocation,
@@ -351,7 +351,7 @@ async function confirmBooking(): Promise<void> {
                 amount: Math.round(totalPrice.value * 100),
                 description: `Car rental: ${props.car?.brand} ${props.car?.model} - Booking: ${bookingRes.booking_reference}`,
                 currency: 'PHP',
-                booking_id: bookingRes.booking_id
+                booking_reference: bookingRes.booking_reference
             }
         })
 

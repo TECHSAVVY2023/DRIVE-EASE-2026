@@ -43,3 +43,7 @@
 
     </div>
 </template>
+
+<script setup lang="ts">
+import { cars } from '~/composables/useCarsData'
+</script>

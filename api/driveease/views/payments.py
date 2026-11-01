@@ -52,7 +52,7 @@ class CreatePayMongoPaymentView(APIView):
         amount = request.data.get('amount')
         description = request.data.get('description')
         currency = request.data.get('currency', 'PHP')
-        booking_id = request.data.get('booking_id')
+        booking_reference = request.data.get('booking_reference')
 
         if not amount:
             return Response(
@@ -60,9 +60,9 @@ class CreatePayMongoPaymentView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if not booking_id:
+        if not booking_reference:
             return Response(
-                {"error": "Booking ID is required"},
+                {"error": "Booking reference is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -74,7 +74,6 @@ class CreatePayMongoPaymentView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        print(repr(paymongo_secret_key))
         try:
             # Create PayMongo checkout session
             encoded_key = base64.b64encode(
@@ -87,7 +86,10 @@ class CreatePayMongoPaymentView(APIView):
                 "Accept": "application/json",
             }
 
-            booking = Booking.objects.filter(id=booking_id).select_related("car").first()
+            booking = Booking.objects.filter(
+                booking_reference=booking_reference,
+                user=request.user,
+            ).select_related("car").first()
 
             if not booking:
                 return Response(
@@ -95,15 +97,15 @@ class CreatePayMongoPaymentView(APIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-            car_id = booking.car.car_id   # or booking.car.id
+            car_reference = booking.car.car_reference
 
             success_url = (
-                f"{settings.FRONTEND_URL}/client/car-details/{car_id}"
-                f"?payment=success&booking_id={booking_id}"
+                f"{settings.FRONTEND_URL}/client/car-details/{car_reference}"
+                f"?payment=success&booking_reference={booking.booking_reference}"
             )
 
             cancel_url = (
-                f"{settings.FRONTEND_URL}/client/car-details/{car_id}"
+                f"{settings.FRONTEND_URL}/client/car-details/{car_reference}"
                 f"?payment=cancelled"
             )
 
@@ -128,7 +130,7 @@ class CreatePayMongoPaymentView(APIView):
                         "cancel_url": cancel_url,
                         "send_email_receipt": True,
                         "metadata": {
-                            "booking_id": booking_id
+                            "booking_id": str(booking.id)
                         }
                     }
                 }
@@ -153,17 +155,15 @@ class CreatePayMongoPaymentView(APIView):
             checkout_url = response_data["data"]["attributes"]["checkout_url"]
 
             # Create Payment record
-            booking = Booking.objects.filter(id=booking_id).first()
-            if booking:
-                Payment.objects.create(
-                    booking=booking,
-                    checkout_session_id=checkout_session_id,
-                    payment_intent_id=payment_intent_id,
-                    amount=amount / 100,  # Convert back from cents
-                    currency=currency,
-                    status='pending',
-                    paymongo_response=response_data
-                )
+            Payment.objects.create(
+                booking=booking,
+                checkout_session_id=checkout_session_id,
+                payment_intent_id=payment_intent_id,
+                amount=int(amount) / 100,  # Convert back from centavos
+                currency=currency,
+                status='pending',
+                paymongo_response=response_data
+            )
 
             return Response({
                 'checkout_url': checkout_url,

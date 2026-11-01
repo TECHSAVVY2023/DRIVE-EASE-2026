@@ -52,7 +52,7 @@ export const useUsers = () => {
             expiresAt &&
             now < expiresAt
         ) {
-            return UserCache[cacheKey]
+            return UserCache[cacheKey]!
         }
 
         // Reuse an existing request
@@ -103,11 +103,11 @@ export const useUsers = () => {
     }
 
     const assignUserRole = async (
-        userId: number,
+        userReference: string,
         role: UserRole,
     ): Promise<AssignRoleResponse> => {
         const response = await apiFetch<AssignRoleResponse>(
-            `/users/${userId}/role/`,
+            `/users/${userReference}/role/`,
             {
                 method: 'PATCH',
                 body: { role },
@@ -120,11 +120,11 @@ export const useUsers = () => {
     }
 
     const updateUserAdmin = async (
-        userId: number,
+        userReference: string,
         body: AdminEditUserPayload,
     ): Promise<AdminEditUserResponse> => {
         const response = await apiFetch<AdminEditUserResponse>(
-            `/admin/accounts/${userId}/`,
+            `/admin/accounts/${userReference}/`,
             {
                 method: "PATCH",
                 body

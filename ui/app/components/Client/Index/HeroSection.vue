@@ -14,13 +14,14 @@
                 <div
                     v-if="showContent"
                     class="
-                        relative z-10
-                        flex flex-col justify-center items-center text-center
-                        w-full px-12 py-16 pb-[55%]
+                        relative z-10 flex flex-col 
+                        justify-center items-center 
+                        text-center w-full px-12 py-16 
+                        pb-[55%]
 
-                        md:w-1/2
-                        md:items-start md:text-left
-                        md:px-0 md:pb-16 md:pl-20
+                        md:w-1/2 md:items-start 
+                        md:text-left md:px-0 md:pb-16 
+                        md:pl-20
 
                         lg:pl-16
                         xl:pl-36

@@ -15,9 +15,11 @@ export interface ReviewImage {
 
 export interface Review {
   id: number
+  review_reference?: string
   car: string
   user: {
     id: number
+    user_reference?: string
     first_name: string
     last_name: string
     profile_picture?: string | null
@@ -39,15 +41,17 @@ export interface ReviewForm {
 
 export interface AdminReview {
   id: number
+  review_reference: string
 
   car: {
-      car_id: string
+      car_reference: string
       brand: string
       model: string
   }
 
   user: {
       id: number
+      user_reference: string
       first_name: string
       last_name: string
       email: string
@@ -107,9 +111,11 @@ export interface CarReviewsResponse extends ReviewsResponse {
 
 export interface Review1 {
   id: number
+  review_reference: string
   car: string
   user: {
       id: number
+      user_reference: string
       first_name: string
       last_name: string
       profile_picture?: string | null
@@ -179,7 +185,7 @@ export const useApiApp = (): string => {
 export const getApiUrl = (endpoint: string): string => {
   const BASE = useApiBase();
   const clean = endpoint.replace(/^\/+/, "");
-  const [path, query] = clean.split("?", 2);
+  const [path = "", query] = clean.split("?", 2);
   const normalizedPath = path.endsWith("/") ? path : `${path}/`;
 
   return query
@@ -212,7 +218,7 @@ export const API_ENDPOINTS = {
   },
   ADMIN_REVIEWS: {
     LIST: '/admin/reviews/',
-    UPDATE_STATUS: (reviewId: number) => `/admin/reviews/${reviewId}/status/`,
-    DELETE: (reviewId: number) => `/admin/reviews/${reviewId}/delete/`,
+    UPDATE_STATUS: (reviewReference: string) => `/admin/reviews/${reviewReference}/status/`,
+    DELETE: (reviewReference: string) => `/admin/reviews/${reviewReference}/delete/`,
   }
 }

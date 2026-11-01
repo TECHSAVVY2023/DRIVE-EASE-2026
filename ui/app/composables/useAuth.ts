@@ -9,6 +9,7 @@ let initPromise: Promise<void> | null = null
 let authGeneration = 0
 
 const TOKEN_EXPIRY_SKEW_MS = 30_000
+const REFRESH_LOCK_NAME = 'driveease-auth-refresh'
 
 const tokenIsUsable = (token: string): boolean => {
     try {
@@ -40,6 +41,9 @@ export const useAuth = () => {
     }
 
     const setAuth = (access: string) => {
+        // Prevent an older in-flight refresh from replacing or clearing a
+        // newer authenticated session.
+        authGeneration += 1
         token.value = access
     }
 
@@ -51,13 +55,30 @@ export const useAuth = () => {
             const requestGeneration = authGeneration
 
             try {
-                const response = await $fetch<RefreshResponse>(
-                    `${apiBase}/auth/token/refresh/`,
-                    {
-                        method: 'POST',
-                        credentials: 'include',
-                    },
-                )
+                const requestRefresh = async (): Promise<RefreshResponse | null> => {
+                    // The auth state may have changed while this page was
+                    // waiting for another tab or reload to finish refreshing.
+                    if (requestGeneration !== authGeneration) return null
+
+                    return await $fetch<RefreshResponse>(
+                        `${apiBase}/auth/token/refresh/`,
+                        {
+                            method: 'POST',
+                            credentials: 'include',
+                            // Let an already-started rotation finish during a
+                            // reload so its Set-Cookie response is not lost.
+                            keepalive: true,
+                        },
+                    )
+                }
+
+                // The module-level promise deduplicates requests in this page.
+                // Web Locks extends that protection across tabs and reloads.
+                const response = 'locks' in navigator
+                    ? await navigator.locks.request(REFRESH_LOCK_NAME, requestRefresh)
+                    : await requestRefresh()
+
+                if (!response) return null
 
                 // A logout may have happened while the request was in flight.
                 if (requestGeneration !== authGeneration) return null
@@ -66,7 +87,7 @@ export const useAuth = () => {
 
                 return response.access
             } catch {
-                clearAuth()
+                if (requestGeneration === authGeneration) clearAuth()
                 return null
             } finally {
                 refreshPromise = null

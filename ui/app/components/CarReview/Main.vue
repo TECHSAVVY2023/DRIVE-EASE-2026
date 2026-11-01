@@ -126,6 +126,11 @@ const fetchReviews = async (page: number) => {
         previousPage.value = res.previous ?? null
 
         myReview.value = res.my_review
+            ? {
+                ...res.my_review,
+                images: res.my_review.images.map(url => ({ url })),
+            }
+            : null
         totalReviews.value = res.total_reviews
 
         avgRating.value = res.avg_rating

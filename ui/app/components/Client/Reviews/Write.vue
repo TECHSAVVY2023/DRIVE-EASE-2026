@@ -207,7 +207,7 @@ watch(
     (review) => {
         if (!review) return
 
-        const images = review.images || []
+        const images = (review.images || []).map(image => image.url)
 
         originalImages.value = [...images]
         console.log('original images', originalImages.value)
@@ -227,7 +227,7 @@ watch(
                 form.rating = props.myReview.rating
                 form.review = props.myReview.text
 
-                existingImages.value = [...props.myReview.images]
+                existingImages.value = props.myReview.images.map(image => image.url)
             } else {
                 form.rating = 0
                 form.review = ""

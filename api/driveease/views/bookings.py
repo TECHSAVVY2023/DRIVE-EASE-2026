@@ -47,14 +47,7 @@ class CreateBookingView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Generate booking reference if not provided
-        if not serializer.validated_data.get("booking_reference"):
-            import uuid
-            serializer.validated_data["booking_reference"] = (
-                f"BKG-{uuid.uuid4().hex[:10].upper()}"
-            )
-
-        booking = serializer.save()
+        booking = serializer.save(user=request.user)
 
         create_notification.delay(
             user_id=request.user.id,
@@ -70,7 +63,6 @@ class CreateBookingView(APIView):
         return Response(
             {
                 "message": "Booking created successfully.",
-                "booking_id": booking.id,
                 "booking_reference": booking.booking_reference,
             },
             status=status.HTTP_201_CREATED,
@@ -293,12 +285,6 @@ class AdminCreateBookingView(APIView):
         serializer = BookingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        if not serializer.validated_data.get("booking_reference"):
-            import uuid
-            serializer.validated_data["booking_reference"] = (
-                f"BKG-{uuid.uuid4().hex[:10].upper()}"
-            )
-
         booking = serializer.save()
 
         AdminActivityLog.objects.create(
@@ -306,13 +292,12 @@ class AdminCreateBookingView(APIView):
             action="create",
             description=f"Created booking {booking.booking_reference}.",
             target_type="booking",
-            target_id=str(booking.pk),
+            target_id=booking.booking_reference,
         )
 
         return Response(
             {
                 "message": "Booking created successfully.",
-                "booking_id": booking.id,
                 "booking_reference": booking.booking_reference,
             },
             status=status.HTTP_201_CREATED,
@@ -396,13 +381,12 @@ class AdminUpdateBookingView(APIView):
             action="update",
             description=f"Updated booking {booking.booking_reference}.",
             target_type="booking",
-            target_id=str(booking.pk),
+            target_id=booking.booking_reference,
         )
 
         return Response(
             {
                 "message": "Booking updated successfully.",
-                "booking_id": booking.id,
                 "booking_reference": booking.booking_reference,
             },
             status=status.HTTP_200_OK,
@@ -426,7 +410,7 @@ class AdminBookingDeleteView(APIView):
             action="delete",
             description=f"Deleted booking {booking_label}.",
             target_type="booking",
-            target_id=str(booking_id),
+            target_id=booking_label,
         )
 
         return Response(

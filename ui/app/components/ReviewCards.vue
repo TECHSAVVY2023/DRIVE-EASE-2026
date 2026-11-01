@@ -188,7 +188,7 @@ type HelpfulResponse = {
 async function toggleHelpful(review: any) {
     try {
         const res = await apiFetch<HelpfulResponse>(
-            `/reviews/${review.id}/helpful/`,
+            `/reviews/${review.review_reference}/helpful/`,
             {
                 method: "POST"
             }

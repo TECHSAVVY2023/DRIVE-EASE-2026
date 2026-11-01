@@ -96,7 +96,7 @@ class CarReviewListView(ListAPIView):
 
     def get_queryset(self):
         queryset = Reviews.objects.filter(
-            car_id=self.kwargs["car_id"],
+            car__car_reference=self.kwargs["car_reference"],
             status="approved"
         )
 
@@ -135,7 +135,7 @@ class CarReviewListView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         all_reviews = Reviews.objects.filter(
-            car_id=self.kwargs["car_id"],
+            car__car_reference=self.kwargs["car_reference"],
             status="approved"
         )
 
@@ -156,7 +156,7 @@ class CarReviewListView(ListAPIView):
 
         if request.user.is_authenticated:
             my_review = Reviews.objects.filter(
-                car_id=self.kwargs["car_id"],
+                car__car_reference=self.kwargs["car_reference"],
                 user=request.user,
             ).first()
 
@@ -204,12 +204,15 @@ class FeaturedReviewsView(ListAPIView):
     def get_queryset(self):
         return (
             Reviews.objects
-            .filter(images__isnull=False)
+            .filter(
+                status="approved",
+                images__isnull=False,
+            )
             .order_by("-helpful_count", "?")[:3]
         )
 
     def list(self, request, *args, **kwargs):
-        stats_queryset = Reviews.objects.all()
+        stats_queryset = Reviews.objects.filter(status="approved")
         queryset = self.get_queryset()
 
         avg_rating = stats_queryset.aggregate(
@@ -248,8 +251,8 @@ class FeaturedReviewsView(ListAPIView):
 class CreateReviewView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, car_id):
-        car = Cars.objects.get(car_id=car_id)
+    def post(self, request, car_reference):
+        car = Cars.objects.get(car_reference=car_reference)
 
         # Prevent duplicate reviews
         if Reviews.objects.filter(
@@ -276,7 +279,7 @@ class CreateReviewView(APIView):
         return Response(
             {
                 "message": "Review submitted successfully.",
-                "review_id": review.id
+                "review_reference": review.review_reference
             },
             status=status.HTTP_201_CREATED,
         )
@@ -286,12 +289,12 @@ class UpdateReviewView(APIView):
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
-    def patch(self, request, car_id, review_id):
+    def patch(self, request, car_reference, review_reference):
         try:
             review = Reviews.objects.get(
-                id=review_id,
+                review_reference=review_reference,
                 user=request.user,
-                car=car_id
+                car__car_reference=car_reference
             )
         except Reviews.DoesNotExist:
             return Response(
@@ -356,7 +359,7 @@ class UpdateReviewView(APIView):
         return Response(
             {
                 "message": "Review updated successfully.",
-                "review_id": review.id,
+                "review_reference": review.review_reference,
             },
             status=status.HTTP_200_OK,
         )
@@ -366,12 +369,12 @@ class DeleteReviewView(APIView):
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
-    def delete(self, request, car_id, review_id):
+    def delete(self, request, car_reference, review_reference):
         try:
             review = Reviews.objects.get(
-                id=review_id,
+                review_reference=review_reference,
                 user=request.user,
-                car=car_id
+                car__car_reference=car_reference
             )
         except Reviews.DoesNotExist:
             return Response(
@@ -447,9 +450,9 @@ class AdminReviewStatusView(APIView):
     permission_classes = [IsAdminUser]
 
     @transaction.atomic
-    def patch(self, request, review_id):
+    def patch(self, request, review_reference):
         try:
-            review = Reviews.objects.get(id=review_id)
+            review = Reviews.objects.get(review_reference=review_reference)
         except Reviews.DoesNotExist:
             return Response(
                 {"detail": "Review not found."},
@@ -472,17 +475,17 @@ class AdminReviewStatusView(APIView):
             admin=request.user,
             action="status_change",
             description=(
-                f"Changed review {review.pk} status "
+                f"Changed review {review.review_reference} status "
                 f"from {old_status} to {new_status}."
             ),
             target_type="review",
-            target_id=str(review.pk),
+            target_id=review.review_reference,
         )
 
         return Response(
             {
                 "message": "Review status updated successfully.",
-                "review_id": review.id,
+                "review_reference": review.review_reference,
                 "status": review.status,
             },
             status=status.HTTP_200_OK,
@@ -493,9 +496,9 @@ class AdminDeleteReviewView(APIView):
     permission_classes = [IsAdminUser]
 
     @transaction.atomic
-    def delete(self, request, review_id):
+    def delete(self, request, review_reference):
         try:
-            review = Reviews.objects.get(id=review_id)
+            review = Reviews.objects.get(review_reference=review_reference)
         except Reviews.DoesNotExist:
             return Response(
                 {"detail": "Review not found."},
@@ -503,14 +506,15 @@ class AdminDeleteReviewView(APIView):
             )
 
         delete_review_uploads_from_storage(review.images or [])
+        review_reference = review.review_reference
         review.delete()
 
         AdminActivityLog.objects.create(
             admin=request.user,
             action="delete",
-            description=f"Deleted review {review_id}.",
+            description=f"Deleted review {review_reference}.",
             target_type="review",
-            target_id=str(review_id),
+            target_id=review_reference,
         )
 
         return Response(
@@ -521,8 +525,8 @@ class AdminDeleteReviewView(APIView):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def toggle_helpful(request, review_id):
-    review = get_object_or_404(Reviews, pk=review_id)
+def toggle_helpful(request, review_reference):
+    review = get_object_or_404(Reviews, review_reference=review_reference)
 
     with transaction.atomic():
 

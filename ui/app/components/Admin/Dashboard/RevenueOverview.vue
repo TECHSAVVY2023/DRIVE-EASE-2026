@@ -66,6 +66,8 @@ let requestId = 0
 
 const selectedMonthLabel = computed(() => {
     const [year, month] = props.month.split('-').map(Number)
+    if (year === undefined || month === undefined) return props.month
+
     return new Date(year, month - 1, 1).toLocaleDateString('en-US', {
         month: 'long',
         year: 'numeric',

@@ -15,8 +15,8 @@ export function useBookingForm(
     const router = useRouter()
     
     const form = reactive({
-        userid: user.value?.id,
-        carid: car.value?.car_id,
+        user_reference: user.value?.user_reference,
+        car_reference: car.value?.car_reference,
         firstName: '',
         lastName: '',
         email: '',

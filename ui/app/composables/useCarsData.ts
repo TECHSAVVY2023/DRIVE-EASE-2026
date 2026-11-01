@@ -1,7 +1,27 @@
 import car3 from '~/assets/images/sample.png'
 import car4 from '~/assets/images/sample1.jpg'
 
-export const cars: Car[] = [
+interface SampleCar {
+    id: number
+    name: string
+    available: boolean
+    seats: number
+    transmission: string
+    price: number
+    category: string
+    fuel: string
+    reviews: number
+    rating: number
+    image: string
+    images: string[]
+    specifications: Array<{
+        label: string
+        value: string
+    }>
+    ownerNote: string
+}
+
+export const cars: SampleCar[] = [
     {
         id: 1,
         name: 'Toyota Wigo',

@@ -124,7 +124,7 @@
                 <tbody>
                     <tr
                         v-for="(user, i) in props.users"
-                        :key="user.email"
+                        :key="user.user_reference"
                         :class="i !== props.users.length - 1
                             ? 'border-b border-[#1c1c1c]'
                             : ''"
@@ -173,6 +173,9 @@
                                         truncate max-w-[220px]"
                                     >
                                         {{ user.email }}
+                                    </div>
+                                    <div class="mt-0.5 text-[11px] text-[#555]">
+                                        {{ user.user_reference }}
                                     </div>
                                 </div>
                             </div>

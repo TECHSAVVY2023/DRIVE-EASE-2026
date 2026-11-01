@@ -234,8 +234,8 @@ class FleetListView(ListAPIView):
 
 
 class CarDetailView(APIView):
-    def get(self, request, car_id):
-        car = Cars.objects.get(car_id=car_id)
+    def get(self, request, car_reference):
+        car = Cars.objects.get(car_reference=car_reference)
         serializer = CarSerializer(car)
         return Response(serializer.data)
 
@@ -310,7 +310,7 @@ class CarCreateView(APIView):
                 action="create",
                 description=f"Added car {car.brand} {car.model}.",
                 target_type="car",
-                target_id=str(car.car_id),
+                target_id=str(car.car_reference),
             )
 
             return Response(serializer.data, status=201)
@@ -370,8 +370,8 @@ class CarUpdateView(APIView):
     permission_classes = [IsAdminUser]
 
     @transaction.atomic
-    def patch(self, request, car_id):
-        car = get_object_or_404(Cars, car_id=car_id)
+    def patch(self, request, car_reference):
+        car = get_object_or_404(Cars, car_reference=car_reference)
 
         old_meta = car.meta or {}
         old_image_urls = {
@@ -426,7 +426,7 @@ class CarUpdateView(APIView):
             action="update",
             description=f"Updated car {car.brand} {car.model}.",
             target_type="car",
-            target_id=str(car.car_id),
+            target_id=str(car.car_reference),
         )
 
         return Response(
@@ -438,8 +438,8 @@ class CarUpdateView(APIView):
 class CarDeleteView(APIView):
     permission_classes = [IsAdminUser]
 
-    def delete(self, request, car_id):
-        car = get_object_or_404(Cars, car_id=car_id)
+    def delete(self, request, car_reference):
+        car = get_object_or_404(Cars, car_reference=car_reference)
 
         car.delete()
 
@@ -448,7 +448,7 @@ class CarDeleteView(APIView):
             action="delete",
             description=f"Deleted car {car.brand} {car.model}.",
             target_type="car",
-            target_id=str(car.car_id),
+            target_id=str(car.car_reference),
         )
 
         return Response(

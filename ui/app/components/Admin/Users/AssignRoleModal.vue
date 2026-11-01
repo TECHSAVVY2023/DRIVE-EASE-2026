@@ -65,7 +65,7 @@
                                 <div class="relative">
                                     <select
                                         id="role-user"
-                                        v-model.number="selectedUserId"
+                                        v-model="selectedUserReference"
                                         :class="fieldClass"
                                         required
                                     >
@@ -75,8 +75,8 @@
 
                                         <option
                                             v-for="account in users"
-                                            :key="account.id"
-                                            :value="account.id"
+                                            :key="account.user_reference"
+                                            :value="account.user_reference"
                                         >
                                             {{ account.given_name }}
                                             {{ account.family_name }}
@@ -187,20 +187,20 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-    save: [payload: { userId: number; role: UserRole }]
+    save: [payload: { userReference: string; role: UserRole }]
 }>()
 
-const selectedUserId = ref<number | null>(null)
+const selectedUserReference = ref<string | null>(null)
 const selectedRole = ref<UserRole | "">("")
 
 const selectedUser = computed(() =>
     props.users.find(
-        account => account.id === selectedUserId.value
+        account => account.user_reference === selectedUserReference.value
     )
 )
 
 const canSave = computed(() =>
-    selectedUserId.value !== null &&
+    selectedUserReference.value !== null &&
     selectedRole.value !== "" &&
     selectedRole.value !== selectedUser.value?.role
 )
@@ -213,13 +213,13 @@ watch(
     () => [open.value, props.user] as const,
     ([isOpen, user]) => {
         if (isOpen && user) {
-            selectedUserId.value = user.id
+            selectedUserReference.value = user.user_reference
             selectedRole.value = user.role
             return
         }
 
         if (!isOpen) {
-            selectedUserId.value = null
+            selectedUserReference.value = null
             selectedRole.value = ""
         }
     },
@@ -231,10 +231,10 @@ function close() {
 }
 
 function save() {
-    if (!canSave.value || selectedUserId.value === null) return
+    if (!canSave.value || selectedUserReference.value === null) return
 
     emit("save", {
-        userId: selectedUserId.value,
+        userReference: selectedUserReference.value,
         role: selectedRole.value as UserRole,
     })
 }

@@ -258,7 +258,7 @@ import type { AdminEditUserPayload, User, UserRole } from '~/utils/types/account
 const open = defineModel<boolean>({ required: true })
 const props = defineProps<{ user: User | null }>()
 const emit = defineEmits<{
-    save: [payload: { userId: number; body: AdminEditUserPayload }]
+    save: [payload: { userReference: string; body: AdminEditUserPayload }]
 }>()
 const profileRemovalRequested = ref(false)
 const profileRemovalReason = ref('')
@@ -351,7 +351,7 @@ function save() {
         body.id_removal_reason = idRemovalReason.value.trim()
     }
 
-    emit('save', { userId: props.user.id, body })
+    emit('save', { userReference: props.user.user_reference, body })
 }
 
 function viewFile(file: string, index: number, title: string, files: string[]) {

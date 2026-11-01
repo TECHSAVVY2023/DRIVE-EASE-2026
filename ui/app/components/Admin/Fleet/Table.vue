@@ -129,7 +129,7 @@
                 <tbody>
                     <tr
                         v-for="(car, i) in props.cars"
-                        :key="car.car_id"
+                        :key="car.car_reference"
                         :class="
                             i !== props.cars.length - 1
                                 ? 'border-b border-[#1c1c1c]'

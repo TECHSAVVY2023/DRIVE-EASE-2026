@@ -80,7 +80,7 @@
                 
                         <!-- Go back home -->
                         <button 
-                            @click="navigateTo('/')"
+                            @click="goHome"
                             class="w-full flex items-center justify-center gap-2
                             border border-white hover:bg-white hover:text-[#c1121f] text-white text-sm font-medium
                             px-4 py-3 rounded-lg
@@ -133,6 +133,7 @@ const errorMessage = ref<string>("")
 
 /* ================= ROUTE ================= */
 const route = useRoute()
+const goHome = () => navigateTo('/')
 
 onMounted(() => {
     const err = route.query.error as string | undefined

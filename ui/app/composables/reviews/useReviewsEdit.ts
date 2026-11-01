@@ -170,9 +170,13 @@ export function useReviewsEdit() {
                 body.deleted_images = removedImages
             }
 
+            if (!form.review_reference) {
+                throw new Error('Review reference is missing.')
+            }
+
             await updateReview(
                 carId,
-                form.id,
+                form.review_reference,
                 body
             )
 

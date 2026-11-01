@@ -16,7 +16,7 @@ export const useNotification = () => {
         const expiresAt = notificationCacheExpiresAt[cacheKey]
         
         if (!force && cacheKey in NotificationCache && expiresAt && now < expiresAt) {
-        return NotificationCache[cacheKey]
+        return NotificationCache[cacheKey]!
         }
         
         const existingRequest = NotificationRequests.get(cacheKey)

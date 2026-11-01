@@ -161,20 +161,24 @@
                             <p class="text-white text-sm leading-relaxed"> {{ review.text }} </p>
 
                             <div
-                                v-if="review.images && review.images.length"
+                                v-if="getReviewImages(review).length"
                                 class="flex gap-2 flex-wrap"
                             >
-                                <div
-                                    v-for="(img, j) in review.images"
-                                    :key="j"
-                                    class="w-16 h-12 rounded-lg bg-[#111] border border-[#2a2a2a] overflow-hidden flex-shrink-0"
+                                <button
+                                    v-for="(image, j) in getReviewImages(review)"
+                                    :key="`${image}-${j}`"
+                                    type="button"
+                                    class="w-16 h-12 rounded-lg bg-[#111] border border-[#2a2a2a] overflow-hidden flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C1121F]"
+                                    :aria-label="`View review image ${Number(j) + 1}`"
+                                    @click="openImageViewer(review, Number(j))"
                                 >
                                     <img
-                                        :src="img"
+                                        :src="image"
                                         :alt="'Review image ' + (Number(j) + 1)"
                                         class="w-full h-full object-cover"
+                                        loading="lazy"
                                     />
-                                </div>
+                                </button>
                             </div>
 
                             <!-- Helpful -->
@@ -210,6 +214,12 @@
         <!-- Mobile Accent -->
         <div class="red-diagonal-panel absolute bottom-0 left-0 right-0 h-[192px] md:hidden bg-[#C1121F]"></div>
 
+        <ClientReviewsImageViewer
+            v-model="viewerOpen"
+            :images="viewerImages"
+            :initial-index="activeImageIndex"
+        />
+
     </section>
 
 </template>
@@ -225,6 +235,20 @@ const avgRating = ref(0)
 const ratingBreakdown = ref<Record<number, number>>({})
 
 const loading = ref(false)
+const viewerOpen = ref(false)
+const viewerImages = ref<string[]>([])
+const activeImageIndex = ref(0)
+
+const getReviewImages = (review: Review): string[] =>
+    (review.images as Array<string | { url?: string }> || [])
+        .map(image => typeof image === 'string' ? image : image.url)
+        .filter((image): image is string => Boolean(image))
+
+const openImageViewer = (review: Review, index: number) => {
+    viewerImages.value = getReviewImages(review)
+    activeImageIndex.value = index
+    viewerOpen.value = true
+}
 
 const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("en-US", {
@@ -253,7 +277,7 @@ const isVisible = ref(false)
 
 onMounted(() => {
     const observer = new IntersectionObserver(([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
             isVisible.value = true
             observer.disconnect()
         }

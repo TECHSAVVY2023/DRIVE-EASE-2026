@@ -8,7 +8,7 @@ export const useAdminReviewEdit = () => {
         newStatus: 'approved' | 'rejected'
     ) => {
         try {
-            await updateReviewStatus(review.id, newStatus)
+            await updateReviewStatus(review.review_reference, newStatus)
 
             return { success: true }
         } catch (error) {
@@ -20,7 +20,7 @@ export const useAdminReviewEdit = () => {
 
     const handleDeleteReview = async (review: AdminReview) => {
         try {
-            await deleteAdminReview(review.id)
+            await deleteAdminReview(review.review_reference)
 
             return { success: true }
         } catch (error) {

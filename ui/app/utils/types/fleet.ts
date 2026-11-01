@@ -17,7 +17,8 @@ export interface Feature {
 }
 
 export interface Car {
-    car_id: string
+    id:number
+    car_reference:string
     brand: string
     model: string
     year: number

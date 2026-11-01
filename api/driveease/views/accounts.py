@@ -132,15 +132,15 @@ class AssignAccountRoleView(APIView):
     }
 
     @transaction.atomic
-    def patch(self, request, user_id):
+    def patch(self, request, user_reference):
         serializer = RoleAssignmentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        account = get_object_or_404(Accounts, pk=user_id)
+        account = get_object_or_404(Accounts, user_reference=user_reference)
         new_role = serializer.validated_data["role"]
         old_role = AccountsSerializer().get_role(account)
 
-        if account.pk == request.user.pk:
+        if account.user_reference == request.user.user_reference:
             return Response(
                 {"detail": "You cannot change your own role."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -200,7 +200,7 @@ class AssignAccountRoleView(APIView):
                 f"from {old_role} to {new_role}."
             ),
             target_type="user",
-            target_id=str(account.pk),
+            target_id=account.user_reference,
         )
 
         account = (
@@ -221,10 +221,10 @@ class AdminEditAccountView(APIView):
     permission_classes = [IsAdminUser]
 
     @transaction.atomic
-    def patch(self, request, user_id):
+    def patch(self, request, user_reference):
         account = get_object_or_404(
             Accounts.objects.select_for_update(),
-            pk=user_id,
+            user_reference=user_reference,
         )
 
         # A regular admin cannot edit a Super Admin's account.
@@ -286,7 +286,7 @@ class AdminEditAccountView(APIView):
                 f"Updated account details for {account_label}."
             ),
             target_type="user",
-            target_id=str(account.pk),
+            target_id=account.user_reference,
         )
 
         # Record the profile picture removal and queue its notification.
@@ -299,7 +299,7 @@ class AdminEditAccountView(APIView):
                     f"Reason: {profile_reason}"
                 ),
                 target_type="user",
-                target_id=str(account.pk),
+                target_id=account.user_reference,
             )
 
             transaction.on_commit(
@@ -328,7 +328,7 @@ class AdminEditAccountView(APIView):
                     f"{account_label}. Reason: {id_reason}"
                 ),
                 target_type="user",
-                target_id=str(account.pk),
+                target_id=account.user_reference,
             )
 
             transaction.on_commit(
@@ -370,13 +370,13 @@ class AccountStatusUpdateView(APIView):
     permission_classes = [IsAdminUser]
 
     @transaction.atomic
-    def patch(self, request, user_id):
+    def patch(self, request, user_reference):
         serializer = AccountStatusSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         account = get_object_or_404(
             Accounts.objects.select_for_update(),
-            pk=user_id,
+            user_reference=user_reference,
         )
 
         new_is_active = serializer.validated_data["is_active"]
@@ -442,7 +442,7 @@ class AccountStatusUpdateView(APIView):
                 f"account status from {old_status} to {new_status}."
             ),
             target_type="user",
-            target_id=str(account.pk),
+            target_id=account.user_reference,
         )
 
         account = (
@@ -458,4 +458,3 @@ class AccountStatusUpdateView(APIView):
             },
             status=status.HTTP_200_OK,
         )
-

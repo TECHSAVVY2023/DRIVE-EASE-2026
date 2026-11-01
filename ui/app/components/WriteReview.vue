@@ -216,6 +216,7 @@
 
 <script setup lang="ts">
 import type { Review, ReviewForm } from '~/utils/api/api'
+import { uploadFile } from '~/utils/api/upload'
 
 import { ref } from "vue"
 const { $swal } = useNuxtApp()
@@ -247,6 +248,7 @@ const modalRef = ref<HTMLElement | null>(null)
 const hoverRating = ref(0)
 
 const form = reactive<ReviewForm>({
+    car: props.carId,
     rating: 0,
     review: "",
     images: [],
@@ -280,7 +282,7 @@ watch(
                 form.rating = props.myReview.rating
                 form.review = props.myReview.text
 
-                existingImages.value = [...props.myReview.images]
+                existingImages.value = props.myReview.images.map(image => image.url)
             } else {
                 form.rating = 0
                 form.review = ""
@@ -330,10 +332,14 @@ const submitReview = async () => {
     })
 
     try {
+        const imageUrls = await Promise.all(
+            uploadedImages.value.map(file => uploadFile(file))
+        )
+
         await createReview(props.carId, {
             rating: form.rating,
             review: form.review,
-            images: uploadedImages.value,
+            images: imageUrls,
         })
 
         Object.assign(form, {

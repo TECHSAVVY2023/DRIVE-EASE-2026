@@ -70,6 +70,10 @@ from .notifications import (
     MarkNotificationAsReadView,
 )
 
+from .logs import (
+    AdminActivityLogListView,
+)
+
 __all__ = [
     'AccountsListView',
     'AccountsStatsView',
@@ -114,4 +118,5 @@ __all__ = [
     'UserUnreadNotificationCountView',
     'MarkNotificationAsReadView',
     'AccountStatusUpdateView',
+    'AdminActivityLogListView',
 ]

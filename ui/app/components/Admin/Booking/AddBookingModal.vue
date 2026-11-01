@@ -137,7 +137,7 @@
                         >
                             <button
                                 v-for="car in filteredCars"
-                                :key="car.car_id"
+                                :key="car.car_reference"
                                 type="button"
                                 class="block w-full px-3 py-2 text-left text-sm text-white hover:bg-neutral-800"
                                 @mousedown.prevent="selectCar(car)"
@@ -373,7 +373,7 @@ const filteredUsers = computed(() => {
 })
 
 function selectUser(user: User) {
-    form.value.user = user.id
+    form.value.user_reference = user.user_reference
     userSearch.value = `${user.given_name} ${user.family_name}`
     showUserDropdown.value = false
 }
@@ -402,7 +402,7 @@ const filteredCars = computed(() => {
 })
 
 function selectCar(car: Car) {
-    form.value.car = car.car_id
+    form.value.car_reference = car.car_reference
     carSearch.value = `${car.brand} ${car.model}`
     showCarDropdown.value = false
 }
@@ -431,7 +431,7 @@ const returnMinDate = computed(() => {
 })
 
 const selectedCar = computed(() =>
-    props.cars.find(car => car.car_id === form.value.car)
+    props.cars.find(car => car.car_reference === form.value.car_reference)
 )
 
 const form = ref<BookingForm>(blank())
@@ -486,8 +486,8 @@ function blank(): BookingForm {
     return {
         booking_reference: '',
         
-        car: '',
-        user: 0,
+        car_reference: '',
+        user_reference: '',
 
         status: '',
         cancel_reason: '',
@@ -506,8 +506,8 @@ function blank(): BookingForm {
 
 const formIsValid = computed(() => {
     return Boolean(
-        form.value.user &&
-        form.value.car &&
+        form.value.user_reference &&
+        form.value.car_reference &&
         form.value.status &&
         form.value.pickup_date &&
         form.value.return_date &&

@@ -13,13 +13,20 @@
         @open-sidebar="handleOpenSidebar" 
         @close-sidebar="handleCloseSidebar"
     />
-    
-    <HeroSection />
+
+    <ClientIndexHeroSection />
+
     <HeroTrust />
-    <LandingReviews />
-    <Carcarousel />
-    <FrequentlyQA />
-    <SigninBanner v-if="authReady && !isLoggedIn" />
+
+    <ClientIndexLandingReviews />
+    
+    <ClientIndexCarCarousel />
+
+    <ClientIndexFrequentlyAQ />
+
+    
+    <ClientIndexSigninBanner v-if="authReady && !isLoggedIn" />
+    
     <Footer />
 
 </template>

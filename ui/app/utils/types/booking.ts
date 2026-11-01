@@ -1,4 +1,5 @@
 export interface Transaction {
+    id:number
     booking_reference: string
     status: string
 
@@ -27,7 +28,7 @@ export interface Transaction {
     discount: number
 
     car: {
-        car_id: string
+        car_reference: string
         brand: string
         model: string
         image: string
@@ -36,7 +37,7 @@ export interface Transaction {
     }
 
     user: {
-        id: number
+        user_reference: string
         email: string
         first_name: string
         last_name: string
@@ -50,8 +51,8 @@ export interface Transaction {
 
 export interface BookingForm {
     booking_reference: string
-    user: number
-    car: string
+    user_reference: string
+    car_reference: string
 
     status: string
     cancel_reason: string

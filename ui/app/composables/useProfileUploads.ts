@@ -10,6 +10,11 @@ export function useProfileUploads() {
     const deletedIdImages = ref<string[]>([])
 
     const idInput = ref<HTMLInputElement | null>(null)
+    const profileInput = ref<HTMLInputElement | null>(null)
+
+    function triggerProfileUpload() {
+        profileInput.value?.click()
+    }
 
     function triggerIdUpload() {
         idInput.value?.click()
@@ -143,7 +148,9 @@ export function useProfileUploads() {
         profileImage,
         validateFile,
         profilePreview,
+        profileInput,
         idInput,
+        triggerProfileUpload,
         triggerIdUpload,
         handleProfileChange,
         handleIdChange,

@@ -23,7 +23,7 @@ class AssignAccountRoleTests(APITestCase):
         )
         self.url = reverse(
             "account-assign-role",
-            kwargs={"user_id": self.user.pk},
+            kwargs={"user_reference": self.user.user_reference},
         )
 
     def test_admin_can_assign_admin_role(self):
@@ -43,7 +43,7 @@ class AssignAccountRoleTests(APITestCase):
             AdminActivityLog.objects.filter(
                 admin=self.admin,
                 target_type="user",
-                target_id=str(self.user.pk),
+                target_id=self.user.user_reference,
             ).exists()
         )
 
@@ -53,7 +53,7 @@ class AssignAccountRoleTests(APITestCase):
         response = self.client.patch(
             reverse(
                 "account-assign-role",
-                kwargs={"user_id": self.admin.pk},
+                kwargs={"user_reference": self.admin.user_reference},
             ),
             {"role": "User"},
             format="json",
@@ -103,7 +103,7 @@ class AssignAccountRoleTests(APITestCase):
         response = self.client.patch(
             reverse(
                 "account-assign-role",
-                kwargs={"user_id": self.admin.pk},
+                kwargs={"user_reference": self.admin.user_reference},
             ),
             {"role": "User"},
             format="json",
@@ -165,6 +165,19 @@ class RefreshCookieTests(APITestCase):
         self.assertTrue(cookie["httponly"])
         self.assertEqual(cookie["path"], settings.JWT_REFRESH_COOKIE_PATH)
         self.assertNotEqual(cookie.value, str(refresh))
+
+    def test_blacklisted_refresh_token_returns_unauthorized(self):
+        refresh = RefreshToken.for_user(self.user)
+        refresh.blacklist()
+        self.client.cookies[settings.JWT_REFRESH_COOKIE_NAME] = str(refresh)
+
+        response = self.client.post(self.url, {}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.data["detail"],
+            "Refresh token is invalid or expired",
+        )
 
     def test_refresh_token_in_request_body_is_rejected(self):
         refresh = RefreshToken.for_user(self.user)
