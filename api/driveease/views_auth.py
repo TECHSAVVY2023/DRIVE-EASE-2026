@@ -1,4 +1,5 @@
 import os
+import logging
 import requests
 from django.conf import settings
 from django.core import signing
@@ -18,6 +19,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .models import FileUploadModel
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 def set_refresh_cookie(response, refresh_token):
     response.set_cookie(
@@ -145,13 +147,14 @@ class GoogleCallbackView(APIView):
                 )
 
             except signing.BadSignature:
+                logger.warning("Google OAuth state validation failed")
                 return redirect(f"{frontend_url}/client/login?error=oauth_failed")
         else:
+            logger.warning("Google OAuth callback did not include state")
             return redirect(f"{frontend_url}/client/login?error=oauth_failed")
 
         try:
-
-            token_res = requests.post(
+            token_response = requests.post(
                 'https://oauth2.googleapis.com/token',
                 data={
                     'code': code,
@@ -159,19 +162,37 @@ class GoogleCallbackView(APIView):
                     'client_secret': client_secret,
                     'redirect_uri': redirect_uri,
                     'grant_type': 'authorization_code',
-                }
-            ).json()
+                },
+                timeout=15,
+            )
+            token_res = token_response.json()
 
             if 'access_token' not in token_res:
-                print("[ERROR] No access token received")
+                logger.error(
+                    "Google OAuth token exchange failed: status=%s error=%s description=%s redirect_uri=%s",
+                    token_response.status_code,
+                    token_res.get('error'),
+                    token_res.get('error_description'),
+                    redirect_uri,
+                )
                 return redirect(f"{frontend_url}/client/login?error=oauth_failed")
 
-            profile_res = requests.get(
+            profile_response = requests.get(
                 'https://www.googleapis.com/oauth2/v3/userinfo',
                 headers={
                     'Authorization': f"Bearer {token_res['access_token']}"
-                }
-            ).json()
+                },
+                timeout=15,
+            )
+            profile_res = profile_response.json()
+
+            if not profile_response.ok:
+                logger.error(
+                    "Google OAuth profile request failed: status=%s error=%s",
+                    profile_response.status_code,
+                    profile_res.get('error'),
+                )
+                return redirect(f"{frontend_url}/client/login?error=oauth_failed")
 
             if not is_authorized(profile_res):
                 return redirect(f"{frontend_url}/client/login?error=unauthorized")
@@ -196,6 +217,7 @@ class GoogleCallbackView(APIView):
             return set_refresh_cookie(response, refresh)
 
         except Exception:
+            logger.exception("Unexpected error while completing Google OAuth callback")
             return redirect(f"{frontend_url}/client/login?error=oauth_failed")
 
 class AuthMeView(APIView):
