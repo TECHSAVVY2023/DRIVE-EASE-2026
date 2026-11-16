@@ -16,7 +16,7 @@
 
         <span
             v-if="item.badge"
-            class="bg-[#C1121F] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+            class="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#C1121F] px-1 text-[9px] font-bold leading-none text-white"
         >
             {{ item.badge }}
         </span>

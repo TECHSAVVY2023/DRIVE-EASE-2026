@@ -7,6 +7,34 @@ from ..models import Booking, CarAvailabilityAlert, Cars, Notification
 User = get_user_model()
 
 
+def create_notification(
+    *,
+    user_id,
+    notification_type,
+    title,
+    message,
+    booking_id=None,
+    action_url=None,
+):
+    """Create one in-app notification directly in the database."""
+    booking = None
+
+    if booking_id is not None:
+        booking = Booking.objects.get(pk=booking_id)
+        action_url = (
+            f"/client/transaction-details/{booking.booking_reference}"
+        )
+
+    return Notification.objects.create(
+        user_id=user_id,
+        notification_type=notification_type,
+        title=title,
+        message=message,
+        action_url=action_url,
+        booking=booking,
+    )
+
+
 def car_is_currently_rented(car):
     """Match the current-rental rule used by the client car details page."""
     now = timezone.now()

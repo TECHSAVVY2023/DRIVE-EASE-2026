@@ -1,4 +1,24 @@
 <template>
+    <AdminFleetAddCarModal
+        v-model="addCarModalOpen"
+        :vehicle="null"
+        :is-editing="false"
+        @save="handleCreateCar"
+    />
+
+    <AdminBookingAddBookingModal
+        v-model="addBookingModalOpen"
+        :users="bookingUsers"
+        :cars="bookingCars"
+        @save="handleCreateBooking"
+    />
+
+    <AdminUsersAddUserModal
+        v-model="addUserModalOpen"
+        :can-manage-roles="isSuperAdmin"
+        @save="handleCreateUser"
+    />
+
     <div class="flex h-screen bg-[#0D0D0D] font-[poppins] overflow-hidden">
 
         <!-- Sidebar -->
@@ -102,7 +122,11 @@
                         v-if="!attentionResolved || hasAttention"
                         @loaded="handleAttentionLoaded"
                     />
-                    <AdminDashboardQuickActions v-else compact />
+                    <AdminDashboardQuickActions
+                        v-else
+                        compact
+                        @select="handleQuickAction"
+                    />
 
                 </div>
 
@@ -113,6 +137,7 @@
 
                 <AdminDashboardQuickActions
                     v-if="!attentionResolved || hasAttention"
+                    @select="handleQuickAction"
                 />
 
             </main>
@@ -125,14 +150,93 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import type { BookingForm } from '~/utils/types/booking'
 import type { StatCard } from '~/utils/types/dashboard'
+import type { CarForm } from '~/utils/types/fleet'
+import type { AdminCreateUserFormPayload } from '~/utils/types/accounts'
+
+type DashboardQuickAction = 'car' | 'booking' | 'user'
 
 const { isLoggedIn } = useAuth()
 const { user } = useCurrentUser()
+const isSuperAdmin = computed(() => user.value?.role === 'Super Admin')
 
 const sidebarOpen = ref(false)
 const attentionResolved = ref(false)
 const hasAttention = ref(false)
+
+const addCarModalOpen = ref(false)
+const addBookingModalOpen = ref(false)
+const addUserModalOpen = ref(false)
+
+const {
+    users: bookingUsers,
+    fetchUsers: fetchBookingUsers,
+    resetFilters: resetUserFilters,
+} = useUsersList()
+const {
+    fleet: bookingCars,
+    fetchCars: fetchBookingCars,
+    resetFilters: resetFleetFilters,
+} = useFleetList()
+
+const { handleCreateVehicle: createCar } = useCarAdminAdd()
+const { handleCreateBooking: createBooking } = useAdminTransactionAdd()
+const { handleCreateUser: createUser } = useUserAdminEdit()
+
+const handleQuickAction = async (action: DashboardQuickAction) => {
+    if (action === 'car') {
+        addCarModalOpen.value = true
+        return
+    }
+
+    if (action === 'user') {
+        addUserModalOpen.value = true
+        return
+    }
+
+    // The booking form searches the user and car arrays locally, so load the
+    // same collections used by the booking page before displaying the modal.
+    await Promise.all([
+        resetUserFilters(),
+        resetFleetFilters(),
+    ])
+    await Promise.all([
+        fetchBookingUsers(true),
+        fetchBookingCars(),
+    ])
+    addBookingModalOpen.value = true
+}
+
+const handleCreateCar = async (form: CarForm) => {
+    const result = await createCar(form)
+    if (!result.success) return
+
+    addCarModalOpen.value = false
+    window.location.reload()
+}
+
+const handleCreateBooking = async (form: BookingForm) => {
+    const result = await createBooking(form)
+    if (!result.success) return
+
+    addBookingModalOpen.value = false
+    window.location.reload()
+}
+
+const handleCreateUser = async ({
+    body,
+    idFiles,
+}: {
+    body: AdminCreateUserFormPayload
+    idFiles: File[]
+}) => {
+    const result = await createUser(body, idFiles)
+    if (!result.success) return
+
+    addUserModalOpen.value = false
+    await loadStats()
+}
 
 const handleAttentionLoaded = (value: boolean) => {
     hasAttention.value = value

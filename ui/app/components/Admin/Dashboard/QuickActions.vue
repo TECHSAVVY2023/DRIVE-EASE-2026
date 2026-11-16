@@ -11,9 +11,10 @@
         >
             <button
                 v-for="action in quickActions"
-                :key="action.label"
+                :key="action.key"
                 type="button"
                 class="flex items-center gap-3 rounded-lg border border-[#292929] bg-[#222] p-4 text-left transition hover:border-[#C1121F] hover:bg-[#252525]"
+                @click="emit('select', action.key)"
             >
                 <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#C1121F]">
                     <span class="text-sm text-white">+</span>
@@ -29,20 +30,33 @@
 </template>
 
 <script setup lang="ts">
+type DashboardQuickAction = 'car' | 'booking' | 'user'
+
 withDefaults(defineProps<{ compact?: boolean }>(), {
     compact: false,
 })
 
-const quickActions = [
+const emit = defineEmits<{
+    select: [action: DashboardQuickAction]
+}>()
+
+const quickActions: Array<{
+    key: DashboardQuickAction
+    label: string
+    description: string
+}> = [
     {
+        key: 'car',
         label: 'Add car',
         description: 'Add a vehicle to your fleet',
     },
     {
-        label: 'View bookings',
-        description: 'Review and manage bookings',
+        key: 'booking',
+        label: 'Add booking',
+        description: 'Add a booking for your customer',
     },
     {
+        key: 'user',
         label: 'Add user',
         description: 'Create a new customer account',
     },

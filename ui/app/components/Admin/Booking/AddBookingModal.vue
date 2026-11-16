@@ -445,6 +445,12 @@ watch(
     () => [open.value] as const,
     ([isOpen]) => {
         if (!isOpen) return
+
+        form.value = blank()
+        userSearch.value = ''
+        carSearch.value = ''
+        showUserDropdown.value = false
+        showCarDropdown.value = false
     },
     { immediate: true },
 )

@@ -7,7 +7,7 @@ from .models import (
     AboutUs, AboutUsWwrStats, AboutUsTeam, AboutUsJourney, 
 )
 
-from .tasks import create_notification
+from .utils.notifications import create_notification
 
 admin.site.register(Cars)
 
@@ -97,7 +97,7 @@ class BookingAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         """
         Detect booking status changes when an admin saves a booking.
-        If the status changes, create a notification through Celery.
+        If the status changes, create an in-app database notification.
         """
 
         old_status = None
@@ -169,7 +169,7 @@ class BookingAdmin(admin.ModelAdmin):
 
         # Only create a notification for statuses we defined above
         if notification:
-            create_notification.delay(
+            create_notification(
                 user_id=obj.user_id,
                 notification_type="booking_status",
                 title=notification["title"],

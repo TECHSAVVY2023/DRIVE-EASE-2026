@@ -544,8 +544,7 @@ class ClientBookingAvailabilityTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("at least one valid ID", response.data["id_images"])
 
-    @patch("driveease.views.bookings.create_notification.delay")
-    def test_expired_pending_payment_hold_releases_selected_dates(self, notification_delay):
+    def test_expired_pending_payment_hold_releases_selected_dates(self):
         Booking.objects.filter(pk=self.hold.pk).update(
             created_at=timezone.now() - timedelta(minutes=16),
         )
@@ -558,7 +557,6 @@ class ClientBookingAvailabilityTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Booking.objects.filter(car=self.car).count(), 2)
-        notification_delay.assert_not_called()
 
 
 class ClientBookingCancellationTests(APITestCase):
@@ -733,6 +731,49 @@ class AdminBookingLifecycleTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         booking.refresh_from_db()
         self.assertEqual(booking.status, "pending_payment")
+
+    def test_admin_status_update_creates_customer_notification(self):
+        pickup_date = timezone.now() + timedelta(days=1)
+        booking = Booking.objects.create(
+            user=self.customer,
+            car=self.car,
+            pickup_date=pickup_date,
+            return_date=pickup_date + timedelta(days=2),
+            pickup_location="Cagayan de Oro",
+            return_location="Cagayan de Oro",
+            daily_rate=1500,
+            number_of_days=2,
+            subtotal=3000,
+            discount=0,
+            total_price=3000,
+            status="pending_approval",
+        )
+
+        response = self.client.patch(
+            reverse(
+                "admin-booking-update",
+                kwargs={"booking_reference": booking.booking_reference},
+            ),
+            {"status": "confirmed"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        booking.refresh_from_db()
+        self.assertEqual(booking.status, "confirmed")
+
+        notification = Notification.objects.get(
+            user=self.customer,
+            deduplication_key=(
+                f"booking-status:{booking.id}:confirmed"
+            ),
+        )
+        self.assertEqual(notification.title, "Booking Confirmed")
+        self.assertEqual(notification.booking, booking)
+        self.assertEqual(
+            notification.action_url,
+            f"/client/transaction-details/{booking.booking_reference}",
+        )
 
     def test_admin_can_filter_bookings_that_overlap_today(self):
         current_booking = Booking.objects.create(

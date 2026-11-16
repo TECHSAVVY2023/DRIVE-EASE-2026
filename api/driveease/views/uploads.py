@@ -17,7 +17,6 @@ from ..forms import ContactListForm
 from ..filter_options import get_filter_options
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from ..tasks import create_notification
 from rest_framework.permissions import IsAdminUser
 from django.shortcuts import get_object_or_404
 from django.db import transaction

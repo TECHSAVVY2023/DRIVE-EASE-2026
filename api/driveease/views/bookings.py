@@ -15,10 +15,9 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..models import AdminActivityLog, Booking, Cars, Payment
+from ..models import AdminActivityLog, Booking, Cars, Notification, Payment
 from ..pagination import TransactionPagination
 from ..serializers import BookingSerializer, TransactionSerializer
-from ..tasks import create_notification
 from ..utils.notifications import (
     create_admin_notifications,
     create_due_car_availability_notifications,
@@ -669,26 +668,28 @@ class AdminUpdateBookingView(APIView):
             notification = notifications.get(booking.status)
 
             if notification:
-                transaction.on_commit(
-                    lambda uid=booking.user_id,
-                           title=notification[0],
-                           message=notification[1],
-                           booking_id=booking.id:
-                        create_notification.delay(
-                            user_id=uid,
-                            notification_type="booking_status",
-                            title=title,
-                            message=message,
-                            booking_id=booking_id,
-                        )
+                # Keep the notification in the same database transaction as
+                # the status change so both changes succeed or fail together.
+                Notification.objects.get_or_create(
+                    user_id=booking.user_id,
+                    deduplication_key=(
+                        f"booking-status:{booking.id}:{booking.status}"
+                    ),
+                    defaults={
+                        "notification_type": "booking_status",
+                        "title": notification[0],
+                        "message": notification[1],
+                        "action_url": (
+                            "/client/transaction-details/"
+                            f"{booking.booking_reference}"
+                        ),
+                        "booking": booking,
+                    },
                 )
 
             if booking.status in {"returned", "completed", "cancelled", "rejected"}:
-                transaction.on_commit(
-                    lambda car_id=booking.car_id:
-                        create_due_car_availability_notifications(
-                            car=Cars.objects.get(pk=car_id),
-                        )
+                create_due_car_availability_notifications(
+                    car=booking.car,
                 )
 
         AdminActivityLog.objects.create(

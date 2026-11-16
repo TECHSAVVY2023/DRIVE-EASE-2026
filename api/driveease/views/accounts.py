@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 
 from ..models import Accounts, AdminActivityLog, FileUploadModel
 from ..pagination import AccountsPagination
-from ..tasks import create_notification
+from ..utils.notifications import create_notification
 from ..utils.roles import (
     ROLE_FLAGS,
     can_assign_role,
@@ -365,11 +365,11 @@ class AdminEditAccountView(APIView):
 
             transaction.on_commit(
                 lambda uid=account.pk, reason=profile_reason:
-                    create_notification.delay(
-                        uid,
-                        "system",
-                        "Profile Picture Removed",
-                        (
+                    create_notification(
+                        user_id=uid,
+                        notification_type="system",
+                        title="Profile Picture Removed",
+                        message=(
                             "An administrator removed your profile "
                             f"picture. Reason: {reason}"
                         ),
@@ -395,11 +395,11 @@ class AdminEditAccountView(APIView):
             transaction.on_commit(
                 lambda uid=account.pk, reason=id_reason,
                        count=removed_count:
-                    create_notification.delay(
-                        uid,
-                        "system",
-                        "ID Documents Removed",
-                        (
+                    create_notification(
+                        user_id=uid,
+                        notification_type="system",
+                        title="ID Documents Removed",
+                        message=(
                             f"An administrator removed {count} of "
                             "your ID document(s). "
                             f"Reason: {reason} "
