@@ -9,7 +9,7 @@
                 class="px-4 py-2 rounded-lg border text-sm font-medium transition-colors duration-200"
                 :class="
                     selectedRating === 0
-                    ? 'bg-[#C1121F] border-[#C1121F] text-white'
+                    ? 'bg-[#C1121F] border-[#C1121F] text-white hover:bg-[#9B0E18]'
                     : 'bg-white/[0.025] border-white/[0.08] text-[#a0a0a5] hover:bg-white/[0.06] hover:border-[#C1121F]'
                 "
             >
@@ -23,7 +23,7 @@
                 class="flex items-center gap-1 px-4 py-2 rounded-lg border text-sm font-medium transition-colors duration-200"
                 :class="
                     selectedRating === star
-                    ? 'bg-[#C1121F] border-[#C1121F] text-white'
+                    ? 'bg-[#C1121F] border-[#C1121F] text-white hover:bg-[#9B0E18]'
                     : 'bg-white/[0.025] border-white/[0.08] text-[#a0a0a5] hover:bg-white/[0.06] hover:border-[#C1121F]'
                 "
             >

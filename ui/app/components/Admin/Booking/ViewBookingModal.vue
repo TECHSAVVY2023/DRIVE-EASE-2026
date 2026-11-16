@@ -272,7 +272,7 @@
                     </button>
                     
                     <button
-                        class="rounded-lg bg-[#c1121f] px-4 py-2 text-xs font-medium text-white hover:bg-[#b31a27] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                        class="rounded-lg bg-[#c1121f] px-4 py-2 text-xs font-medium text-white hover:bg-[#9B0E18] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-50"
                         @click="emit('edit', booking)"
                     >
                         Edit booking

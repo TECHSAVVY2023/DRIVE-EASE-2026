@@ -144,7 +144,7 @@
                     <button
                         v-if="props.mode === 'create'"
                         @click="emit('submit')"
-                        class="w-full bg-[#C1121F] hover:bg-red-700 text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
+                        class="w-full bg-[#C1121F] hover:bg-[#9B0E18] text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
                     >
                         Submit Review
                     </button>
@@ -152,7 +152,7 @@
                     <button
                         v-if="props.mode === 'edit'"
                         @click="emit('submit')"
-                        class="w-full bg-[#C1121F] hover:bg-red-700 text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
+                        class="w-full bg-[#C1121F] hover:bg-[#9B0E18] text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
                     >
                         Update Review
                     </button>

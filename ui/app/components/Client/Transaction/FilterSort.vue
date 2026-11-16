@@ -9,7 +9,7 @@
                 @click="emit('update:activeTab', tab.value)"
                 class="text-xs px-3 py-1.5 rounded-full border transition-colors duration-200 font-medium"
                 :class="props.activeTab === tab.value
-                    ? 'bg-[#C1121F] border-[#C1121F] text-white'
+                    ? 'bg-[#C1121F] border-[#C1121F] text-white hover:bg-[#9B0E18]'
                     : 'border-[#2a2a2a] text-gray-400 hover:border-white hover:text-white'"
             >
                 {{ tab.label }}

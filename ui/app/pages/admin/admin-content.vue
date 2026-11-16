@@ -104,7 +104,7 @@
                             </button>
                             <button
                                 type="submit"
-                                class="rounded-lg bg-[#C1121F] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#aa101b] disabled:cursor-not-allowed disabled:bg-[#4a1a1e] disabled:text-[#999]"
+                                class="rounded-lg bg-[#C1121F] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#9B0E18] disabled:cursor-not-allowed disabled:bg-[#4a1a1e] disabled:text-[#999]"
                             >
                                 Save changes
                             </button>

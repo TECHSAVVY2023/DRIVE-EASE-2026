@@ -134,7 +134,7 @@
                                             <button
                                                 type="button"
                                                 class="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md border text-white shadow-lg transition-colors"
-                                                :class="isIdFileSelected(file) ? 'border-[#C1121F] bg-[#C1121F]' : 'border-white/20 bg-black/70 hover:border-[#C1121F]'"
+                                                :class="isIdFileSelected(file) ? 'border-[#C1121F] bg-[#C1121F] hover:bg-[#9B0E18]' : 'border-white/20 bg-black/70 hover:border-[#C1121F]'"
                                                 :aria-label="isIdFileSelected(file) ? `Keep document ${index + 1}` : `Select document ${index + 1} for removal`"
                                                 :title="isIdFileSelected(file) ? 'Keep this document' : 'Select for removal'"
                                                 @click="toggleIdFileSelection(file)"
@@ -227,7 +227,7 @@
                             <button
                                 type="submit"
                                 :disabled="!canSave"
-                                class="rounded-lg bg-[#C1121F] px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-[#b31a27] disabled:cursor-not-allowed disabled:opacity-50"
+                                class="rounded-lg bg-[#C1121F] px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-[#9B0E18] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 Save changes
                             </button>

@@ -102,7 +102,7 @@
                     class="flex-1 rounded-lg py-2 text-xs capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
                     :class="
                     form.transmission === option
-                        ? 'bg-[#c1121f] text-white'
+                        ? 'bg-[#c1121f] text-white hover:bg-[#9B0E18]'
                         : 'border border-neutral-700 text-neutral-400 hover:text-white'
                     "
                     @click="form.transmission = option"

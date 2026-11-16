@@ -17,6 +17,7 @@ from .models import (
     CarAvailabilityAlert,
     Cars,
     CarType,
+    HomePageContent,
     Notification,
     Payment,
     Refund,
@@ -25,6 +26,53 @@ from .utils.notifications import (
     create_admin_notifications,
     create_due_car_availability_notifications,
 )
+
+
+class PublicHomePageContentTests(APITestCase):
+    def test_empty_database_creates_default_homepage_content(self):
+        self.assertFalse(HomePageContent.objects.exists())
+
+        response = self.client.get(reverse("public-homepage-content"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(HomePageContent.objects.count(), 1)
+        self.assertEqual(response.data["hero_heading1"], "Drive Smart")
+
+
+class AdminActivityLogListTests(APITestCase):
+    def setUp(self):
+        self.admin = Accounts.objects.create_user(
+            username="logs-admin@example.com",
+            email="logs-admin@example.com",
+            password="test-password",
+            is_staff=True,
+        )
+        self.url = reverse("admin-activity-logs")
+        self.client.force_authenticate(self.admin)
+
+    def test_empty_log_list_returns_paginated_response(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 0)
+        self.assertEqual(response.data["results"], [])
+
+    def test_log_response_includes_reference_expected_by_frontend(self):
+        log = AdminActivityLog.objects.create(
+            admin=self.admin,
+            action="update",
+            description="Updated website content.",
+            target_type="homepage_content",
+            target_id="CONTENT-TEST",
+        )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["results"][0]["log_reference"],
+            log.log_reference,
+        )
 
 
 class CarAvailabilityAlertTests(APITestCase):

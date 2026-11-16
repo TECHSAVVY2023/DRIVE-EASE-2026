@@ -37,7 +37,7 @@
         class="w-8 h-8 rounded-lg text-xs font-semibold transition-colors duration-200"
         :class="
           props.currentPage === p
-            ? 'bg-[#C1121F] text-white'
+            ? 'bg-[#C1121F] text-white hover:bg-[#9B0E18]'
             : 'border border-[#2a2a2a] text-[#7E7E7E] hover:border-white hover:text-white'
         "
       >

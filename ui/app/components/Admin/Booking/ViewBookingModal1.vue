@@ -213,7 +213,7 @@ const value = 'text-sm font-medium text-white'
                 Close
                 </button>
                 <button
-                class="rounded-lg bg-[#C1121F] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-red-700"
+                class="rounded-lg bg-[#C1121F] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#9B0E18]"
                 @click="emit('edit', booking)"
                 >
                 Edit booking

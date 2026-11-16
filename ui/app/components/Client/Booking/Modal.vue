@@ -235,7 +235,7 @@
                             <button
                                 @click="currentStep === steps.length ? confirmBooking() : nextStep(form, existingIdImages, uploadedIdFiles)"
                                 :disabled="isSubmitting"
-                                class="w-full bg-[#C1121F] hover:bg-red-700 disabled:opacity-50 text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
+                                class="w-full bg-[#C1121F] hover:bg-[#9B0E18] disabled:opacity-50 text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
                             >
                                 {{
                                     isSubmitting

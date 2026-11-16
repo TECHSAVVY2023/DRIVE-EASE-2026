@@ -35,7 +35,7 @@
                     <button
                         v-if="images.length > 1"
                         type="button"
-                        class="absolute left-0 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-[#C1121F] sm:left-3"
+                        class="absolute left-0 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-[#9B0E18] sm:left-3"
                         aria-label="Previous image"
                         @click="showPrevious"
                     >
@@ -53,7 +53,7 @@
                     <button
                         v-if="images.length > 1"
                         type="button"
-                        class="absolute right-0 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-[#C1121F] sm:right-3"
+                        class="absolute right-0 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-[#9B0E18] sm:right-3"
                         aria-label="Next image"
                         @click="showNext"
                     >

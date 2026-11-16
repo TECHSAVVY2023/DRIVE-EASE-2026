@@ -26,24 +26,48 @@
                     </button> -->
                 </div>
 
-                <AdminCommonStatsCards :cards="statCards" />
+                <div
+                    v-if="loading && logs.length === 0"
+                    class="rounded-xl border border-[#232323] bg-[#161616] px-6 py-16 text-center text-sm text-[#8a8a8a]"
+                >
+                    Loading activity logs...
+                </div>
 
-                <AdminLogsTable 
-                    :logs="logs"
-                    :search="search"
-                    :current-page="currentPage"
-                    :count="count"
-                    :page-size="pageSize"
-                    :total-pages="totalPages"
-                    :next-page="nextPage"
-                    :previous-page="previousPage"
-                    :selected-action="selectedAction"
-                    :selected-sort="selectedSort"
-                    @update:search="search = $event"
-                    @update:page="currentPage = $event"
-                    @update:selected-action="selectedAction = $event"
-                    @update:selected-sort="selectedSort = $event"
-                />
+                <div
+                    v-else-if="error"
+                    class="rounded-xl border border-[#C1121F]/30 bg-[#C1121F]/10 px-6 py-10 text-center"
+                >
+                    <p class="text-sm font-semibold text-white">Activity logs could not be loaded.</p>
+                    <p class="mt-2 text-xs text-[#a0a0a0]">{{ error }}</p>
+                    <button
+                        type="button"
+                        class="mt-5 rounded-lg bg-[#C1121F] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#9B0E18]"
+                        @click="fetchLogs(true)"
+                    >
+                        Try again
+                    </button>
+                </div>
+
+                <template v-else>
+                    <AdminCommonStatsCards :cards="statCards" />
+
+                    <AdminLogsTable 
+                        :logs="logs"
+                        :search="search"
+                        :current-page="currentPage"
+                        :count="count"
+                        :page-size="pageSize"
+                        :total-pages="totalPages"
+                        :next-page="nextPage"
+                        :previous-page="previousPage"
+                        :selected-action="selectedAction"
+                        :selected-sort="selectedSort"
+                        @update:search="search = $event"
+                        @update:page="currentPage = $event"
+                        @update:selected-action="selectedAction = $event"
+                        @update:selected-sort="selectedSort = $event"
+                    />
+                </template>
 
             </main>
         </div>
@@ -51,6 +75,8 @@
 </template>
 
 <script setup lang="ts">
+import { useLogsList } from '~/composables/logs/useLogsList'
+
 type LogAction = 'create' | 'update' | 'delete' | 'login'
 type ActivityLog = { id: number; actor: string; role: string; action: LogAction; description: string; ipAddress: string; createdAt: string }
 
@@ -58,8 +84,8 @@ const { isLoggedIn } = useAuth()
 const { user } = useCurrentUser()
 const sidebarOpen = ref(false)
 
-const { logs, count, nextPage, previousPage, currentPage, pageSize, totalPages,
-    search, selectedAction, selectedSort } = useLogsList()
+const { loading, error, logs, count, nextPage, previousPage, currentPage,
+    pageSize, totalPages, search, selectedAction, selectedSort, fetchLogs } = useLogsList()
 
 const actionLabel: Record<LogAction, string> = { create: 'Created', update: 'Updated', delete: 'Deleted', login: 'Login' }
 const actionStyle: Record<LogAction, string> = {

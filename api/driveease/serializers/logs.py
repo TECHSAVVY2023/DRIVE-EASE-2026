@@ -15,7 +15,8 @@ class AdminActivityLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdminActivityLog
         fields = [
-            "id", "admin", "admin_name", "admin_profile_picture", "admin_reference",
+            "id", "log_reference", "admin", "admin_name",
+            "admin_profile_picture", "admin_reference",
             "action", "description", "target_type", "target_id", "created_at",
         ]
         read_only_fields = fields

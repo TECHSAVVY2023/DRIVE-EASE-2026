@@ -66,8 +66,6 @@ class HomePageContentObjectMixin:
                 "faq_heading": "Got Questions?",
                 "faq_highlight": "We've Got Answers",
                 "faq_description": "Frequently asked questions about DriveEase.",
-                "faq_button_label": "Ask more questions",
-                "faq_button_link": "/client/contact",
             },
         )
         return content

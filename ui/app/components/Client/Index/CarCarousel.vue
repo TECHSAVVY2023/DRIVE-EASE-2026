@@ -17,7 +17,7 @@
             type="button"
             aria-label="Previous featured car"
             :disabled="cars.length <= 1"
-            class="absolute left-0 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0b0b0d]/90 text-white shadow-lg transition-colors duration-200 hover:border-[#C1121F] hover:bg-[#C1121F] disabled:cursor-not-allowed disabled:opacity-40"
+            class="absolute left-0 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0b0b0d]/90 text-white shadow-lg transition-colors duration-200 hover:border-[#9B0E18] hover:bg-[#9B0E18] disabled:cursor-not-allowed disabled:opacity-40"
             @click="prev"
         >
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,7 +82,7 @@
             type="button"
             aria-label="Next featured car"
             :disabled="cars.length <= 1"
-            class="absolute right-0 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0b0b0d]/90 text-white shadow-lg transition-colors duration-200 hover:border-[#C1121F] hover:bg-[#C1121F] disabled:cursor-not-allowed disabled:opacity-40"
+            class="absolute right-0 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0b0b0d]/90 text-white shadow-lg transition-colors duration-200 hover:border-[#9B0E18] hover:bg-[#9B0E18] disabled:cursor-not-allowed disabled:opacity-40"
             @click="next"
         >
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -99,7 +99,7 @@
             :aria-label="`Show ${car.car_name}`"
             :aria-current="index === current ? 'true' : undefined"
             class="h-2 w-2 rounded-full transition-colors duration-200"
-            :class="index === current ? 'bg-[#C1121F]' : 'bg-[#3C3C3C]'"
+            :class="index === current ? 'bg-[#C1121F] hover:bg-[#9B0E18]' : 'bg-[#3C3C3C]'"
             @click="goTo(index)"
         />
     </div>

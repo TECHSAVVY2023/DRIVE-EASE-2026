@@ -151,7 +151,7 @@
                             <button type="button" class="rounded-lg border border-[#2a2a2a] px-4 py-2 text-xs text-[#CCCCCC] transition-colors hover:border-white hover:text-white" @click="close">
                                 Cancel
                             </button>
-                            <button type="submit" :disabled="!canSave" class="rounded-lg bg-[#C1121F] px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-[#b31a27] disabled:cursor-not-allowed disabled:opacity-50">
+                            <button type="submit" :disabled="!canSave" class="rounded-lg bg-[#C1121F] px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-[#9B0E18] disabled:cursor-not-allowed disabled:opacity-50">
                                 Add user
                             </button>
                         </footer>

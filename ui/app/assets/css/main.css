@@ -131,6 +131,10 @@ html.admin-page {
     z-index: 20000 !important;
 }
 
+.swal2-confirm:hover {
+    background-color: #9B0E18 !important;
+}
+
 @layer base {
     input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         filter: invert(1);
@@ -160,7 +164,7 @@ html.admin-page {
 }
 
 .dp--action-select:hover {
-    background-color: #a00f1a !important;
+    background-color: #9B0E18 !important;
 }
 
 .dp--action-cancel:hover {
@@ -177,6 +181,10 @@ html.admin-page {
 
 .dp--pm-am-button {
     background-color: #C1121F !important;
+}
+
+.dp--pm-am-button:hover {
+    background-color: #9B0E18 !important;
 }
 
 .dp--input {

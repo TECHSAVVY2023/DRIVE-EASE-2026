@@ -77,7 +77,7 @@
 
                 <button
                     class="
-                        rounded-lg bg-[#C1121F] hover:bg-[#b31a27] px-4 py-2 
+                        rounded-lg bg-[#C1121F] hover:bg-[#9B0E18] px-4 py-2 
                         text-xs font-medium text-white transition-colors 
                         duration-200 cursor-pointer
                     "

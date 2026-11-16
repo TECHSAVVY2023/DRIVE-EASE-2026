@@ -118,7 +118,7 @@
             <button
                 v-if="visibleCount < notifications.length"
                 @click="visibleCount += 3"
-                class="flex items-center gap-2 bg-[#C1121F] hover:bg-red-700 text-white text-sm font-semibold px-8 py-3 rounded-lg transition-colors duration-200"
+                class="flex items-center gap-2 bg-[#C1121F] hover:bg-[#9B0E18] text-white text-sm font-semibold px-8 py-3 rounded-lg transition-colors duration-200"
             >
                 View more
 

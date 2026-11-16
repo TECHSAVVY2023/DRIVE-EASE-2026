@@ -105,7 +105,7 @@
                     <!-- Footer -->
                     <div class="flex flex-col gap-2 my-4 mx-6">
                         <button
-                            class="w-full bg-[#C1121F] hover:bg-red-700 text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
+                            class="w-full bg-[#C1121F] hover:bg-[#9B0E18] text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
                             @click="save"
                         >
                             Update Review

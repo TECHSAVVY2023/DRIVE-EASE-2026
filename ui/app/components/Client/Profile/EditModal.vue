@@ -74,7 +74,7 @@
                                 <p class="text-white/40 text-xs mt-0.5">This action is permanent and cannot be undone</p>
                             </div>
                             
-                            <button class="border border-[#C1121F] text-[#C1121F] hover:bg-[#C1121F] hover:text-white text-xs px-3 py-1.5 rounded transition-colors ml-4 flex-shrink-0">
+                            <button class="border border-[#C1121F] text-[#C1121F] hover:bg-[#9B0E18] hover:text-white text-xs px-3 py-1.5 rounded transition-colors ml-4 flex-shrink-0">
                                 Delete account
                             </button>
 
@@ -94,7 +94,7 @@
                         </button>
                         <button 
                             @click="saveChanges"
-                            class="bg-[#C1121F] hover:bg-[#a00f1a] text-white text-xs px-5 py-2 rounded transition-colors font-medium"
+                            class="bg-[#C1121F] hover:bg-[#9B0E18] text-white text-xs px-5 py-2 rounded transition-colors font-medium"
                         >
                             Save changes
                         </button>
