@@ -1,6 +1,12 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Cars, Accounts, AdminActivityLog, FileUploadModel, ContactListModel, Reviews, ReviewHelpful, Booking, Payment, Feature, Notification, CarType
+from .models import (
+    Cars, Accounts, AdminActivityLog, FileUploadModel, ContactListModel,
+    Reviews, ReviewHelpful, Booking, Payment, Refund, Feature, HomePageTrustItem,
+    Notification, CarType, HomePageContent, HomePageFAQ, HomePageFeaturedCar,
+    AboutUs, AboutUsWwrStats, AboutUsTeam, AboutUsJourney, 
+)
+
 from .tasks import create_notification
 
 admin.site.register(Cars)
@@ -21,6 +27,14 @@ admin.site.register(Feature)
 admin.site.register(ReviewHelpful)
 admin.site.register(CarType)
 admin.site.register(ContactListModel)
+admin.site.register(HomePageContent)
+admin.site.register(HomePageFAQ)
+admin.site.register(HomePageFeaturedCar)
+admin.site.register(HomePageTrustItem)
+admin.site.register(AboutUs)
+admin.site.register(AboutUsWwrStats)
+admin.site.register(AboutUsTeam)
+admin.site.register(AboutUsJourney)
 
 @admin.register(Accounts)
 class AccountsAdmin(UserAdmin):
@@ -166,9 +180,10 @@ class BookingAdmin(admin.ModelAdmin):
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = (
-        "payment_intent_id",
-        "checkout_session_id",
         "booking",
+        "payment_intent_id",
+        "paymongo_payment_id",
+        "checkout_session_id",
         "amount",
         "currency",
         "status",
@@ -176,8 +191,33 @@ class PaymentAdmin(admin.ModelAdmin):
         "created_at",
     )
     list_filter = ("status", "created_at")
-    search_fields = ("payment_intent_id", "checkout_session_id", "booking__booking_reference")
-    readonly_fields = ("payment_intent_id", "checkout_session_id", "created_at", "updated_at", "paymongo_response")
+    search_fields = ("payment_intent_id", "paymongo_payment_id", "checkout_session_id", "booking__booking_reference")
+    readonly_fields = ("payment_intent_id", "paymongo_payment_id", "checkout_session_id", "created_at", "updated_at", "paymongo_response")
+
+
+@admin.register(Refund)
+class RefundAdmin(admin.ModelAdmin):
+    list_display = (
+        "payment",
+        "paymongo_refund_id",
+        "amount",
+        "status",
+        "reviewed_by",
+        "requested_at",
+        "processed_at",
+    )
+    list_filter = ("status", "requested_at")
+    search_fields = (
+        "paymongo_refund_id",
+        "payment__booking__booking_reference",
+    )
+    readonly_fields = (
+        "paymongo_refund_id",
+        "paymongo_response",
+        "requested_at",
+        "processed_at",
+        "updated_at",
+    )
 
 @admin.register(FileUploadModel)
 class FileUploadModelAdmin(admin.ModelAdmin):

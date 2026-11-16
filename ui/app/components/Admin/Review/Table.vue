@@ -138,34 +138,11 @@
                         <td class="px-5 py-3.5 text-sm">
                             <div class="flex items-center gap-3">
 
-                                <!-- Profile Picture -->
-                                <img
-                                    v-if="review.user.profile_picture"
+                                <UserAvatar
                                     :src="review.user.profile_picture"
                                     :alt="`${review.user.first_name} ${review.user.last_name}`"
-                                    class="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                                    class="h-7 w-7"
                                 />
-
-                                <!-- Fallback Icon -->
-                                <div
-                                    v-else
-                                    class="
-                                        w-7 h-7 rounded-full bg-[#C1121F]
-                                        flex items-center justify-center flex-shrink-0
-                                    "
-                                >
-                                    <svg
-                                        class="w-4 h-4 text-white"
-                                        fill="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4
-                                            7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6
-                                            1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
-                                        />
-                                    </svg>
-                                </div>
 
                                 <!-- User Details -->
                                 <div class="min-w-0">
@@ -220,6 +197,33 @@
                                 <p class="text-[#c8c8c8] line-clamp-2 break-words">
                                     {{ review.text }}
                                 </p>
+
+                                <!-- Review Images -->
+                                <div
+                                    v-if="reviewImageUrls(review).length"
+                                    class="flex items-center gap-1.5 pt-0.5"
+                                >
+                                    <button
+                                        v-for="(image, imageIndex) in reviewImageUrls(review).slice(0, 3)"
+                                        :key="`${review.review_reference}-${image}-${imageIndex}`"
+                                        type="button"
+                                        class="group relative h-11 w-11 shrink-0 overflow-hidden rounded-md border border-[#303030] bg-[#0f0f0f] transition hover:border-[#C1121F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C1121F]"
+                                        :aria-label="`View image ${imageIndex + 1} from this review`"
+                                        @click="openImageViewer(review, imageIndex)"
+                                    >
+                                        <img
+                                            :src="image"
+                                            alt=""
+                                            class="h-full w-full object-cover transition duration-200 group-hover:scale-105"
+                                        />
+                                        <span
+                                            v-if="imageIndex === 2 && reviewImageUrls(review).length > 3"
+                                            class="absolute inset-0 flex items-center justify-center bg-black/70 text-[10px] font-bold text-white"
+                                        >
+                                            +{{ reviewImageUrls(review).length - 3 }}
+                                        </span>
+                                    </button>
+                                </div>
 
                             </div>
                         </td>
@@ -471,11 +475,17 @@
             </div>
         </div>
 
+        <ClientReviewsImageViewer
+            v-model="imageViewerOpen"
+            :images="viewerImages"
+            :initial-index="viewerInitialIndex"
+        />
+
     </div>
 </template>
 
 <script setup lang="ts">
-import type { AdminReview } from '~/utils/api/api'
+import type { AdminReview, ReviewImage } from '~/utils/api/api'
 
 const props = defineProps<{
     reviews: AdminReview[]
@@ -510,6 +520,21 @@ const handleStatusChange = (event: Event) => {
 
 const handleRatingChange = (event: Event) => {
     emit('update:selected-rating', (event.target as HTMLSelectElement).value)
+}
+
+const imageViewerOpen = ref(false)
+const viewerImages = ref<string[]>([])
+const viewerInitialIndex = ref(0)
+
+const reviewImageUrls = (review: AdminReview): string[] =>
+    ((review.images || []) as Array<ReviewImage | string>)
+        .map(image => typeof image === 'string' ? image : image.url)
+        .filter((image): image is string => Boolean(image))
+
+const openImageViewer = (review: AdminReview, imageIndex: number) => {
+    viewerImages.value = reviewImageUrls(review)
+    viewerInitialIndex.value = imageIndex
+    imageViewerOpen.value = true
 }
 
 </script>

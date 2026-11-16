@@ -1,6 +1,9 @@
 """Bookings API views."""
 
+from datetime import datetime, time, timedelta
+
 from django.db import transaction
+from django.db.models import Count
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -12,52 +15,117 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..models import AdminActivityLog, Booking
+from ..models import AdminActivityLog, Booking, Cars, Payment
 from ..pagination import TransactionPagination
 from ..serializers import BookingSerializer, TransactionSerializer
 from ..tasks import create_notification
+from ..utils.notifications import (
+    create_admin_notifications,
+    create_due_car_availability_notifications,
+)
+from ..utils.booking_availability import booking_blocks_availability
+from ..utils.refunds import create_pending_refund
+
+
+PAID_BOOKING_STATUSES = {
+    "pending_approval",
+    "confirmed",
+    "picked_up",
+    "returned",
+    "completed",
+}
+
+ADMIN_CREATE_BOOKING_STATUSES = {
+    "pending_payment",
+    "pending_approval",
+}
+
+CUSTOMER_CANCELLABLE_STATUSES = {
+    "pending_payment",
+    "payment_failed",
+    "pending_approval",
+    "confirmed",
+}
+
+# A status can stay unchanged while an admin edits other booking details.
+# All other changes must follow the actual rental lifecycle.
+BOOKING_STATUS_TRANSITIONS = {
+    "pending_payment": {"pending_payment", "pending_approval", "cancelled"},
+    "payment_failed": {"payment_failed", "pending_payment", "cancelled"},
+    "pending_approval": {"pending_approval", "confirmed", "rejected", "cancelled"},
+    "confirmed": {"confirmed", "picked_up", "cancelled"},
+    "picked_up": {"picked_up", "returned"},
+    "returned": {"returned", "completed"},
+    "completed": {"completed"},
+    "rejected": {"rejected"},
+    "cancelled": {"cancelled"},
+}
 
 class CreateBookingView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @transaction.atomic
     def post(self, request):
         serializer = BookingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        car = serializer.validated_data["car"]
+        id_images = request.user.id_images or {}
+        submitted_ids = (
+            id_images.get("images")
+            if isinstance(id_images, dict)
+            else None
+        )
+        if not isinstance(submitted_ids, list) or not submitted_ids:
+            message = (
+                "Please upload at least one valid ID image before creating "
+                "a booking."
+            )
+            return Response(
+                {
+                    "message": message,
+                    "id_images": message,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        submitted_car = serializer.validated_data["car"]
+        # Serialize availability checks for this car so two simultaneous
+        # requests cannot both pass the overlap check.
+        car = Cars.objects.select_for_update().get(pk=submitted_car.pk)
         pickup_date = serializer.validated_data["pickup_date"]
         return_date = serializer.validated_data["return_date"]
 
         overlap = Booking.objects.filter(
             car=car,
-            status__in=[
-                "pending_approval",
-                "confirmed",
-                "picked_up",
-            ],
             pickup_date__lt=return_date,
             return_date__gt=pickup_date,
-        ).exists()
+        ).filter(booking_blocks_availability()).exists()
 
         if overlap:
             return Response(
                 {
-                    "message": "This car is unavailable during the selected period."
+                    "message": (
+                        "This car is unavailable or temporarily held during "
+                        "the selected period. Please choose different dates."
+                    )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         booking = serializer.save(user=request.user)
 
-        create_notification.delay(
-            user_id=request.user.id,
-            notification_type="booking",
-            title="Booking Created",
-            message=(
-                f"Your booking {booking.booking_reference} "
-                "has been submitted successfully."
-            ),
-            booking_id=booking.id,
+        transaction.on_commit(
+            lambda: create_admin_notifications(
+                notification_type="booking",
+                title="New booking created",
+                message=(
+                    f"Booking {booking.booking_reference} was created and "
+                    "is waiting for payment."
+                ),
+                action_url="/admin/admin-booking",
+                booking=booking,
+                deduplication_key=f"booking-created:{booking.id}",
+            )
         )
 
         return Response(
@@ -166,6 +234,113 @@ class TransactionDetailView(APIView):
         return Response(serializer.data)
 
 
+class ClientCancelBookingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request, booking_reference):
+        booking = get_object_or_404(
+            Booking.objects.select_for_update().select_related("car"),
+            user=request.user,
+            booking_reference=booking_reference,
+        )
+
+        reason = str(request.data.get("reason", "")).strip()
+
+        if not reason:
+            return Response(
+                {"reason": "Please provide a reason for the cancellation."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if len(reason) > 500:
+            return Response(
+                {"reason": "Cancellation reason cannot exceed 500 characters."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if booking.status not in CUSTOMER_CANCELLABLE_STATUSES:
+            return Response(
+                {
+                    "message": (
+                        "This booking can no longer be cancelled online. "
+                        "Please contact Drive Ease for assistance."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if booking.status == "confirmed" and booking.pickup_date <= timezone.now():
+            return Response(
+                {
+                    "message": (
+                        "A confirmed booking cannot be cancelled online after "
+                        "its pickup time. Please contact Drive Ease."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        booking.status = "cancelled"
+        booking.cancel_reason = reason
+        booking.save(update_fields=[
+            "status",
+            "cancel_reason",
+            "updated_at",
+        ])
+
+        payment = Payment.objects.filter(booking=booking).first()
+        refund = None
+        refund_created = False
+        if payment:
+            refund, refund_created = create_pending_refund(
+                payment=payment,
+                requested_by=request.user,
+                customer_reason=reason,
+            )
+
+        transaction.on_commit(
+            lambda booking_id=booking.id:
+                create_admin_notifications(
+                    notification_type="booking_status",
+                    title="Booking cancelled by customer",
+                    message=(
+                        f"Booking {booking.booking_reference} was cancelled "
+                        f"by the customer. Reason: {reason}"
+                    ),
+                    action_url="/admin/admin-booking",
+                    booking=Booking.objects.get(pk=booking_id),
+                    deduplication_key=f"customer-cancelled:{booking_id}",
+                )
+        )
+        if refund_created:
+            transaction.on_commit(
+                lambda refund_id=refund.id:
+                create_admin_notifications(
+                    notification_type="payment",
+                    title="Refund requires review",
+                    message=(
+                        f"Booking {booking.booking_reference} was paid through "
+                        "PayMongo and has been cancelled. Review its full refund."
+                    ),
+                    action_url="/admin/admin-booking",
+                    booking=booking,
+                    deduplication_key=f"refund-review:{refund_id}",
+                )
+            )
+        transaction.on_commit(
+            lambda car_id=booking.car_id:
+                create_due_car_availability_notifications(
+                    car=Cars.objects.get(pk=car_id),
+                )
+        )
+
+        return Response(
+            TransactionSerializer(booking).data,
+            status=status.HTTP_200_OK,
+        )
+
+
 class AdminBookingListView(ListAPIView):
     serializer_class = TransactionSerializer
     pagination_class = TransactionPagination
@@ -211,20 +386,48 @@ class AdminBookingListView(ListAPIView):
                     status__in=statuses
                 )
 
-        # Filter by payment status
-        payment_status = self.request.query_params.get("payment_status")
+        # Filter by rental dates. A booking is included when any part of its
+        # pickup-to-return interval overlaps the selected calendar period.
+        rental_period = self.request.query_params.get("rental_period")
+        now = timezone.now()
+        today = timezone.localdate()
 
-        if payment_status and payment_status != "all":
-            payment_statuses = [
-                item.strip()
-                for item in payment_status.split(",")
-                if item.strip()
-            ]
+        def start_of_day(value):
+            return timezone.make_aware(
+                datetime.combine(value, time.min),
+                timezone.get_current_timezone(),
+            )
 
-            if payment_statuses:
-                queryset = queryset.filter(
-                    payments__status__in=payment_statuses
+        if rental_period == "today":
+            period_start = start_of_day(today)
+            period_end = start_of_day(today + timedelta(days=1))
+            queryset = queryset.filter(
+                pickup_date__lt=period_end,
+                return_date__gt=period_start,
+            )
+        elif rental_period == "next_7_days":
+            period_start = start_of_day(today)
+            period_end = start_of_day(today + timedelta(days=7))
+            queryset = queryset.filter(
+                pickup_date__lt=period_end,
+                return_date__gt=period_start,
+            )
+        elif rental_period == "this_month":
+            month_start = today.replace(day=1)
+            if month_start.month == 12:
+                next_month = month_start.replace(
+                    year=month_start.year + 1,
+                    month=1,
                 )
+            else:
+                next_month = month_start.replace(month=month_start.month + 1)
+
+            queryset = queryset.filter(
+                pickup_date__lt=start_of_day(next_month),
+                return_date__gt=start_of_day(month_start),
+            )
+        elif rental_period == "past":
+            queryset = queryset.filter(return_date__lte=now)
 
         # Sort
         sort = self.request.query_params.get("sort")
@@ -244,14 +447,17 @@ class AdminBookingListView(ListAPIView):
         return queryset
 
 
+
 class AdminBookingStatsView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
         bookings = Booking.objects.all()
 
+        total = bookings.count()
+
         stats = {
-            "total": bookings.count(),
+            "total": total,
 
             "pending_approval": bookings.filter(
                 status="pending_approval"
@@ -274,18 +480,73 @@ class AdminBookingStatsView(APIView):
             ).count(),
         }
 
-        return Response(stats)
+        # Count bookings grouped by status
+        status_counts = {
+            item["status"]: item["count"]
+            for item in bookings.values("status").annotate(
+                count=Count("id")
+            )
+        }
 
+        # Include every available status, even if its count is zero
+        distribution = []
+
+        for status_value, status_label in Booking.BOOKING_STATUS:
+            count = status_counts.get(status_value, 0)
+
+            percentage = (
+                round((count / total) * 100, 1)
+                if total > 0 else 0
+            )
+
+            distribution.append({
+                "status": status_value,
+                "label": status_label,
+                "count": count,
+                "percentage": percentage,
+            })
+
+        stats["status_distribution"] = distribution
+
+        return Response(stats)
 
 class AdminCreateBookingView(APIView):
     permission_classes = [IsAdminUser]
 
     @transaction.atomic
     def post(self, request):
+        initial_status = request.data.get("status", "pending_payment")
+
+        if initial_status not in ADMIN_CREATE_BOOKING_STATUSES:
+            return Response(
+                {
+                    "status": (
+                        "A new booking must start as Pending Payment or "
+                        "Pending Approval. Use Edit Booking for later stages."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = BookingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         booking = serializer.save()
+
+        is_paid = booking.status in PAID_BOOKING_STATUSES
+
+        Payment.objects.create(
+            booking=booking,
+            amount=booking.total_price,
+            currency="PHP",
+            status="paid" if is_paid else "pending",
+            payment_method=(
+                request.data.get("payment_method", "manual")
+                if is_paid
+                else None
+            ),
+            paid_at=timezone.now() if is_paid else None,
+        )
 
         AdminActivityLog.objects.create(
             admin=request.user,
@@ -321,6 +582,23 @@ class AdminUpdateBookingView(APIView):
 
         old_status = booking.status
 
+        requested_status = request.data.get("status", old_status)
+        allowed_statuses = BOOKING_STATUS_TRANSITIONS.get(
+            old_status,
+            {old_status},
+        )
+
+        if requested_status not in allowed_statuses:
+            return Response(
+                {
+                    "status": (
+                        f"A booking cannot move directly from {old_status} "
+                        f"to {requested_status}."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = BookingSerializer(
             booking,
             data=request.data,
@@ -329,6 +607,35 @@ class AdminUpdateBookingView(APIView):
         serializer.is_valid(raise_exception=True)
 
         booking = serializer.save()
+
+        if booking.status in PAID_BOOKING_STATUSES:
+            payment, _ = Payment.objects.get_or_create(
+                booking=booking,
+                defaults={
+                    "amount": booking.total_price,
+                    "currency": "PHP",
+                    "status": "pending",
+                },
+            )
+
+            payment.amount = booking.total_price
+            payment.status = "paid"
+            payment.payment_method = (
+                request.data.get("payment_method")
+                or payment.payment_method
+                or "manual"
+            )
+
+            if payment.paid_at is None:
+                payment.paid_at = timezone.now()
+
+            payment.save(update_fields=[
+                "amount",
+                "status",
+                "payment_method",
+                "paid_at",
+                "updated_at",
+            ])
 
         # Notify the user when the booking status changes
         if old_status != booking.status:
@@ -376,6 +683,14 @@ class AdminUpdateBookingView(APIView):
                         )
                 )
 
+            if booking.status in {"returned", "completed", "cancelled", "rejected"}:
+                transaction.on_commit(
+                    lambda car_id=booking.car_id:
+                        create_due_car_availability_notifications(
+                            car=Cars.objects.get(pk=car_id),
+                        )
+                )
+
         AdminActivityLog.objects.create(
             admin=request.user,
             action="update",
@@ -400,7 +715,7 @@ class AdminBookingDeleteView(APIView):
     def delete(self, request, booking_reference):
         booking = get_object_or_404(Booking, booking_reference=booking_reference)
 
-        booking_id = booking.pk
+        car_id = booking.car_id
         booking_label = booking.booking_reference
 
         booking.delete()
@@ -411,6 +726,12 @@ class AdminBookingDeleteView(APIView):
             description=f"Deleted booking {booking_label}.",
             target_type="booking",
             target_id=booking_label,
+        )
+
+        transaction.on_commit(
+            lambda: create_due_car_availability_notifications(
+                car=Cars.objects.get(pk=car_id),
+            )
         )
 
         return Response(

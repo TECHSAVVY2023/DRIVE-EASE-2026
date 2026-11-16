@@ -5,7 +5,7 @@
         </label>
 
         <p class="text-[#6E6E6E] text-[10px]">
-            Valid ID that are accepted: national ID, driver license ID, passport.
+            Upload at least 2 valid IDs and no more than 5 files. Accepted IDs include a national ID, driver's license, and passport.
         </p>
 
         <!-- Existing IDs -->
@@ -105,8 +105,7 @@
         <!-- Drop Zone -->
         <div
             v-if="
-                props.uploadedIdFiles.length < 5 &&
-                props.existingIdImages.length < 5
+                props.uploadedIdFiles.length + props.existingIdImages.length < 5
             "
             class="border-2 border-dashed border-[#C1121F]/40 hover:border-[#C1121F] rounded-xl h-24 flex flex-col items-center justify-center cursor-pointer transition-colors duration-200"
             @click="triggerIdUpload"
@@ -129,7 +128,8 @@
             </svg>
 
             <p class="text-[#9E9E9E] text-xs text-center px-4">
-                Click or drag and drop to upload ID'
+                Click or drag and drop ID documents
+                ({{ props.uploadedIdFiles.length + props.existingIdImages.length }}/5)
             </p>
         </div>
 

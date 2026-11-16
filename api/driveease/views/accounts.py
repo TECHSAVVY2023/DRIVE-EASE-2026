@@ -14,8 +14,15 @@ from rest_framework.views import APIView
 from ..models import Accounts, AdminActivityLog, FileUploadModel
 from ..pagination import AccountsPagination
 from ..tasks import create_notification
+from ..utils.roles import (
+    ROLE_FLAGS,
+    can_assign_role,
+    can_manage_account,
+    get_account_role,
+)
 from ..serializers import (
     AccountsSerializer,
+    AdminCreateAccountSerializer,
     RoleAssignmentSerializer,
     AdminEditAccountSerializer,
     AccountStatusSerializer,
@@ -92,7 +99,7 @@ class AccountsListView(ListAPIView):
                 is_superuser=False
             )
 
-        elif role == 'User':
+        elif role == 'Customer':
             queryset = queryset.filter(
                 is_staff=False,
                 is_superuser=False
@@ -113,23 +120,44 @@ class AccountsStatsView(APIView):
         return Response(stats)
 
 
-class AssignAccountRoleView(APIView):
+class AdminCreateAccountView(APIView):
     permission_classes = [IsAdminUser]
 
-    ROLE_FLAGS = {
-        "User": {
-            "is_staff": False,
-            "is_superuser": False,
-        },
-        "Admin": {
-            "is_staff": True,
-            "is_superuser": False,
-        },
-        "Super Admin": {
-            "is_staff": True,
-            "is_superuser": True,
-        },
-    }
+    @transaction.atomic
+    def post(self, request):
+        serializer = AdminCreateAccountSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        role = serializer.validated_data["role"]
+        if not can_assign_role(request.user, role):
+            return Response(
+                {"detail": "Only a Super Admin can create staff accounts."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        account = serializer.save()
+        AdminActivityLog.objects.create(
+            admin=request.user,
+            action="create",
+            description=f"Created {role} account for {account.email}.",
+            target_type="user",
+            target_id=account.user_reference,
+        )
+
+        account = Accounts.objects.annotate(rentals=Count("bookings")).get(
+            pk=account.pk
+        )
+        return Response(
+            {
+                "message": "User account created successfully.",
+                "user": AccountsSerializer(account).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class AssignAccountRoleView(APIView):
+    permission_classes = [IsAdminUser]
 
     @transaction.atomic
     def patch(self, request, user_reference):
@@ -138,7 +166,7 @@ class AssignAccountRoleView(APIView):
 
         account = get_object_or_404(Accounts, user_reference=user_reference)
         new_role = serializer.validated_data["role"]
-        old_role = AccountsSerializer().get_role(account)
+        old_role = get_account_role(account)
 
         if account.user_reference == request.user.user_reference:
             return Response(
@@ -146,17 +174,9 @@ class AssignAccountRoleView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if (
-            new_role == "Super Admin"
-            and not request.user.is_superuser
-        ):
+        if not request.user.is_superuser:
             return Response(
-                {
-                    "detail": (
-                        "Only a Super Admin can assign the "
-                        "Super Admin role."
-                    )
-                },
+                {"detail": "Only a Super Admin can change account roles."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -187,7 +207,7 @@ class AssignAccountRoleView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        flags = self.ROLE_FLAGS[new_role]
+        flags = ROLE_FLAGS[new_role]
         account.is_staff = flags["is_staff"]
         account.is_superuser = flags["is_superuser"]
         account.save(update_fields=["is_staff", "is_superuser"])
@@ -226,6 +246,35 @@ class AdminEditAccountView(APIView):
             Accounts.objects.select_for_update(),
             user_reference=user_reference,
         )
+
+        if not can_manage_account(request.user, account):
+            return Response(
+                {"detail": "Only a Super Admin can edit staff accounts."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        requested_role = request.data.get("role")
+        old_role = get_account_role(account)
+        if requested_role:
+            if not request.user.is_superuser:
+                return Response(
+                    {"detail": "Only a Super Admin can change account roles."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if account.pk == request.user.pk and requested_role != old_role:
+                return Response(
+                    {"detail": "You cannot change your own role."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if (
+                account.is_superuser
+                and requested_role != "Super Admin"
+                and Accounts.objects.filter(is_superuser=True).count() <= 1
+            ):
+                return Response(
+                    {"detail": "The last Super Admin cannot be demoted."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         # A regular admin cannot edit a Super Admin's account.
         if (
@@ -268,6 +317,7 @@ class AdminEditAccountView(APIView):
 
         # Save account changes and requested removals.
         serializer.save()
+        new_role = get_account_role(account)
 
         # Remove only files managed through FileUploadModel. This leaves
         # external profile URLs (for example, Google avatars) untouched.
@@ -288,6 +338,17 @@ class AdminEditAccountView(APIView):
             target_type="user",
             target_id=account.user_reference,
         )
+        if old_role != new_role:
+            AdminActivityLog.objects.create(
+                admin=request.user,
+                action="update",
+                description=(
+                    f"Changed {account_label}'s role from "
+                    f"{old_role} to {new_role}."
+                ),
+                target_type="user",
+                target_id=account.user_reference,
+            )
 
         # Record the profile picture removal and queue its notification.
         if remove_profile:
@@ -366,6 +427,66 @@ class AdminEditAccountView(APIView):
             status=status.HTTP_200_OK,
         )
 
+    @transaction.atomic
+    def delete(self, request, user_reference):
+        account = get_object_or_404(
+            Accounts.objects.select_for_update(),
+            user_reference=user_reference,
+        )
+
+        if account.pk == request.user.pk:
+            return Response(
+                {"detail": "You cannot delete your own account."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not can_manage_account(request.user, account):
+            return Response(
+                {"detail": "Only a Super Admin can delete staff accounts."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if account.is_superuser and not request.user.is_superuser:
+            return Response(
+                {"detail": "Only a Super Admin can delete another Super Admin."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if (
+            account.is_superuser
+            and Accounts.objects.filter(is_superuser=True).count() <= 1
+        ):
+            return Response(
+                {"detail": "The last Super Admin cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        account_label = account.email or account.username
+        account_reference = account.user_reference
+        id_images = account.id_images or {}
+        uploaded_urls = [
+            account.profile_picture,
+            *(id_images.get("images", []) if isinstance(id_images, dict) else []),
+        ]
+
+        AdminActivityLog.objects.create(
+            admin=request.user,
+            action="delete",
+            description=(
+                f"Deleted account {account_label} and its related records."
+            ),
+            target_type="user",
+            target_id=account_reference,
+        )
+        account.delete()
+
+        transaction.on_commit(
+            lambda urls=tuple(uploaded_urls):
+                delete_account_uploads_from_storage(urls),
+            robust=True,
+        )
+        return Response(
+            {"message": "User account deleted successfully."},
+            status=status.HTTP_200_OK,
+        )
+
 class AccountStatusUpdateView(APIView):
     permission_classes = [IsAdminUser]
 
@@ -378,6 +499,12 @@ class AccountStatusUpdateView(APIView):
             Accounts.objects.select_for_update(),
             user_reference=user_reference,
         )
+
+        if not can_manage_account(request.user, account):
+            return Response(
+                {"detail": "Only a Super Admin can change a staff account's status."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         new_is_active = serializer.validated_data["is_active"]
         old_status = "Active" if account.is_active else "Suspended"

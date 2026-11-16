@@ -280,7 +280,7 @@
                 <div class="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
 
                     <button
-                        v-for="option in STATUSES"
+                        v-for="option in availableStatuses"
                         :key="option.value"
                         class="rounded-lg py-2 text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
                         :class="
@@ -294,6 +294,11 @@
                     </button>
 
                 </div>
+
+                <p class="mb-3 text-[11px] leading-5 text-neutral-500">
+                    Only the valid next stages are available. A stage timestamp
+                    is recorded when you save that transition.
+                </p>
 
                 <div v-if="form.status === 'cancelled'" class="mb-3">
                     <p :class="section">Cancel reason</p>
@@ -462,6 +467,27 @@ const STATUSES = [
     { value: 'completed', label: 'Completed', active: 'bg-[#c1121f] text-white' },
     { value: 'cancelled', label: 'Cancelled', active: 'bg-[#c1121f] text-white' },
 ] as const
+
+type BookingStatus = typeof STATUSES[number]['value']
+
+const STATUS_TRANSITIONS: Record<string, readonly BookingStatus[]> = {
+    pending_payment: ['pending_payment', 'pending_approval', 'cancelled'],
+    payment_failed: ['payment_failed', 'pending_payment', 'cancelled'],
+    pending_approval: ['pending_approval', 'confirmed', 'rejected', 'cancelled'],
+    confirmed: ['confirmed', 'picked_up', 'cancelled'],
+    picked_up: ['picked_up', 'returned'],
+    returned: ['returned', 'completed'],
+    completed: ['completed'],
+    rejected: ['rejected'],
+    cancelled: ['cancelled'],
+}
+
+const availableStatuses = computed(() => {
+    const allowed = STATUS_TRANSITIONS[props.booking?.status ?? form.value.status]
+        ?? [form.value.status as BookingStatus]
+
+    return STATUSES.filter(option => allowed.includes(option.value))
+})
 
 const form = ref<BookingForm>(blank())
 

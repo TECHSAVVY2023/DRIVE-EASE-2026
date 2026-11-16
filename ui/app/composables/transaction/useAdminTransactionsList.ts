@@ -24,9 +24,10 @@ export function useAdminTransactionsList() {
 
     const search = ref("")
     const selectedStatus = ref("")
-    const selectedPayment = ref("")
+    const selectedRentalPeriod = ref("")
 
-    const pageSize = 9
+    // Keep this aligned with Django's TransactionPagination.page_size.
+    const pageSize = 5
 
     const totalPages = computed(() =>
         Math.max(1, Math.ceil(count.value / pageSize))
@@ -37,28 +38,15 @@ export function useAdminTransactionsList() {
         error.value = null
 
         try {
-            const isOverdueFilter = selectedStatus.value === 'overdue'
-
             const res = await fetchAdminBookingsList({
                 page: currentPage.value,
                 search: search.value,
-                status: isOverdueFilter ? '' : selectedStatus.value,
-                payment_status: selectedPayment.value,
+                status: selectedStatus.value,
+                rental_period: selectedRentalPeriod.value,
             })
 
-            let results = res.results
-
-            if (isOverdueFilter) {
-                results = results.filter(booking =>
-                    ['confirmed', 'picked_up'].includes(booking.status) &&
-                    new Date(booking.return_date) < new Date()
-                )
-            }
-
-            bookings.value = results
-            count.value = isOverdueFilter
-                ? results.length
-                : res.count
+            bookings.value = res.results
+            count.value = res.count
 
             nextPage.value = res.next ?? null
             previousPage.value = res.previous ?? null
@@ -88,7 +76,7 @@ export function useAdminTransactionsList() {
             currentPage,
             search,
             selectedStatus,
-            selectedPayment
+            selectedRentalPeriod
         ],
         () => {
             fetchBookings()
@@ -105,7 +93,7 @@ export function useAdminTransactionsList() {
         [
             search,
             selectedStatus,
-            selectedPayment
+            selectedRentalPeriod
         ],
         () => {
             if (currentPage.value !== 1) {
@@ -129,7 +117,7 @@ export function useAdminTransactionsList() {
 
         search,
         selectedStatus,
-        selectedPayment,
+        selectedRentalPeriod,
 
         fetchBookings,
         fetchStats,

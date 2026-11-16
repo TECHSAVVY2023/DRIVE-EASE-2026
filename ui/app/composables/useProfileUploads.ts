@@ -8,6 +8,7 @@ export function useProfileUploads() {
     const originalIdImages = ref<string[]>([])
     const existingIdImages = ref<string[]>([])
     const deletedIdImages = ref<string[]>([])
+    const MAX_ID_FILES = 5
 
     const idInput = ref<HTMLInputElement | null>(null)
     const profileInput = ref<HTMLInputElement | null>(null)
@@ -37,7 +38,14 @@ export function useProfileUploads() {
 
         if (!input.files) return
 
-        uploadedIdFiles.value.push(...Array.from(input.files))
+        const availableSlots = Math.max(
+            MAX_ID_FILES - existingIdImages.value.length - uploadedIdFiles.value.length,
+            0,
+        )
+        uploadedIdFiles.value.push(
+            ...Array.from(input.files).slice(0, availableSlots)
+        )
+        input.value = ''
 
         console.log('Uploaded ID files:', uploadedIdFiles.value)
         console.log('Uploaded ID files length:', uploadedIdFiles.value.length)
@@ -49,7 +57,11 @@ export function useProfileUploads() {
         const files = e.dataTransfer?.files
         if (!files) return
 
-        uploadedIdFiles.value.push(...Array.from(files))
+        const availableSlots = Math.max(
+            MAX_ID_FILES - existingIdImages.value.length - uploadedIdFiles.value.length,
+            0,
+        )
+        uploadedIdFiles.value.push(...Array.from(files).slice(0, availableSlots))
     }
 
     function removeIdFile(index: number) {

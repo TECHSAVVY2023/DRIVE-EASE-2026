@@ -17,6 +17,7 @@ from .utils.auth import is_authorized
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenRefreshView
 from .models import FileUploadModel
+from .utils.roles import get_account_role
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -100,7 +101,9 @@ class GoogleLoginView(APIView):
             "response_type": "code",
             "scope": "openid email profile",
             "access_type": "offline",
-            "prompt": "consent",
+            # Always show Google's account chooser so each browser context
+            # can deliberately sign in with a different Google account.
+            "prompt": "select_account consent",
             "state": state
         })
         return redirect(url)
@@ -197,15 +200,38 @@ class GoogleCallbackView(APIView):
             if not is_authorized(profile_res):
                 return redirect(f"{frontend_url}/client/login?error=unauthorized")
 
+            google_email = profile_res["email"].strip().lower()
             auth_user, created = User.objects.get_or_create(
-                username=profile_res["email"],
+                username=google_email,
                 defaults={
-                    "email": profile_res["email"],
+                    "email": google_email,
                     "first_name": profile_res.get("given_name", ""),
                     "last_name": profile_res.get("family_name", ""),
                     "profile_picture": profile_res.get("picture", ""),
                 }
             )
+
+            if not created:
+                updated_fields = []
+                google_profile_fields = {
+                    "first_name": profile_res.get("given_name", ""),
+                    "last_name": profile_res.get("family_name", ""),
+                    "profile_picture": profile_res.get("picture", ""),
+                }
+                for field, google_value in google_profile_fields.items():
+                    if not getattr(auth_user, field) and google_value:
+                        setattr(auth_user, field, google_value)
+                        updated_fields.append(field)
+
+                if updated_fields:
+                    auth_user.save(update_fields=updated_fields)
+
+            # Never issue a new session for an account suspended by an admin.
+            if not auth_user.is_active:
+                response = redirect(
+                    f"{frontend_url}/client/login?error=suspended"
+                )
+                return delete_refresh_cookie(response)
 
             refresh = RefreshToken.for_user(auth_user)
 
@@ -228,6 +254,7 @@ class AuthMeView(APIView):
 
         return Response({
             "id": user.id,
+            "user_reference": user.user_reference,
             "username": user.username,
             "given_name": user.first_name,
             "family_name": user.last_name,
@@ -239,6 +266,10 @@ class AuthMeView(APIView):
             "id_images": user.id_images,
 
             "date_created": user.date_joined.isoformat(),
+            "date_joined": user.date_joined.isoformat(),
+            "status": "Active" if user.is_active else "Suspended",
+            "role": get_account_role(user),
+            "rentals": user.bookings.count(),
         })
     
     def patch(self, request):
@@ -269,10 +300,23 @@ class AuthMeView(APIView):
 
         user.profile_picture = new_profile_picture
 
-        user.id_images = data.get(
-            "id_images",
-            user.id_images,
+        submitted_id_images = data.get("id_images", user.id_images)
+        submitted_images = (
+            submitted_id_images.get("images")
+            if isinstance(submitted_id_images, dict)
+            else None
         )
+        if not isinstance(submitted_images, list):
+            return Response(
+                {"id_images": "ID documents must be provided as a list."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if len(submitted_images) > 5:
+            return Response(
+                {"id_images": "A maximum of five ID documents is allowed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user.id_images = {"images": submitted_images}
 
         deleted_images = list(data.get("deleted_images", []))
 
@@ -302,6 +346,29 @@ class CookieTokenRefreshView(TokenRefreshView):
 
         if not refresh_token:
             return Response({"detail": "No refresh token"}, status=401)
+
+        # TokenRefreshSerializer does not reject inactive users by itself.
+        # Check the account before rotating the cookie so a suspended account
+        # cannot keep creating valid access tokens from an existing session.
+        try:
+            token = RefreshToken(refresh_token)
+            user_id_claim = settings.SIMPLE_JWT.get(
+                "USER_ID_CLAIM",
+                "user_id",
+            )
+            user = User.objects.filter(pk=token.get(user_id_claim)).first()
+        except TokenError:
+            user = None
+
+        if user is not None and not user.is_active:
+            response = Response(
+                {
+                    "detail": "Your account has been suspended.",
+                    "code": "account_suspended",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+            return delete_refresh_cookie(response)
 
         serializer = self.get_serializer(data={"refresh": refresh_token})
         try:

@@ -166,6 +166,18 @@ export interface NotificationResponse {
   results: Notification[]
 }
 
+export type AdminNotificationType =
+  | 'booking'
+  | 'booking_status'
+  | 'payment'
+  | 'review'
+  | 'reminder'
+  | 'system'
+
+export interface AdminNotification extends Notification {
+  notification_type: AdminNotificationType
+}
+
 /**
  * Get the base API URL from runtime config
  */
@@ -210,6 +222,7 @@ export const API_ENDPOINTS = {
     CREATE: '/admin/bookings/create/',
     UPDATE: (id: string) => `/admin/bookings/update/${id}/`,
     DELETE: (id: string) => `/admin/bookings/delete/${id}/`,
+    REFUND: (id: string) => `/admin/bookings/${id}/refund/`,
   },
   REVIEWS: {
     LIST: '/reviews/',
@@ -220,5 +233,30 @@ export const API_ENDPOINTS = {
     LIST: '/admin/reviews/',
     UPDATE_STATUS: (reviewReference: string) => `/admin/reviews/${reviewReference}/status/`,
     DELETE: (reviewReference: string) => `/admin/reviews/${reviewReference}/delete/`,
-  }
+  },
+  ADMIN_NOTIFICATIONS: {
+    LIST: '/admin/notifications/',
+    UNREAD_COUNT: '/admin/notifications/unread-count/',
+    READ_ALL: '/admin/notifications/read-all/',
+    READ: (id: number) => `/admin/notifications/${id}/read/`,
+    DELETE: (id: number) => `/admin/notifications/${id}/`,
+  },
+  HOME_CONTENT: {
+    PUBLIC_HOME: '/content/home/',
+    ADMIN_HOME: '/admin/content/home/',
+    ADMIN_HOME_EDIT: '/admin/content/home/edit/',
+    ADMIN_HOME_TRUST_ITEMS: '/admin/content/home/trust-items/',
+    ADMIN_HOME_TRUST_ITEM_DETAIL: (id: string) => `/admin/content/home/trust-items/${id}/`,
+    ADMIN_HOME_FEATURED_CARS: '/admin/content/home/featured-cars/',
+    ADMIN_HOME_FEATURED_CAR_DETAIL: (id: string) => `/admin/content/home/featured-cars/${id}/`,
+  },
+  ABOUT_US_CONTENT: {
+    PUBLIC_ABOUT_US: '/content/about/',
+    ADMIN_ABOUT_US_EDIT: '/admin/content/about/edit/',
+    ADMIN_TEAM_USERS: '/admin/content/about/team-users/',
+  },
+  CONTACT_CONTENT: {
+    PUBLIC_CONTACT: '/content/contact/',
+    ADMIN_CONTACT_EDIT: '/admin/content/contact/edit/',
+  },
 }

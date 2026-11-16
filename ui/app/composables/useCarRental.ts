@@ -14,6 +14,7 @@ export function useCurrentRental(car: Car) {
     return car.unavailable_periods
         .filter(period =>
             unavailableStatuses.includes(period.status) &&
+            new Date(period.pickup_date) <= now &&
             new Date(period.return_date) > now
         )
         .sort(

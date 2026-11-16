@@ -226,7 +226,7 @@ const saveChanges = async () => {
             await $swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'You can upload a maximum of 5 files.',
+                text: 'You can upload no more than 5 valid ID documents.',
                 confirmButtonColor: '#C1121F',
                 background: '#1a1a1a',
                 color: '#ffffff'

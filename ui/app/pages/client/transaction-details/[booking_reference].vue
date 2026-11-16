@@ -31,8 +31,8 @@
 
             <ClientBookingRefSideBar 
                 :booking="booking"
-                @download-receipt="handleDownloadReceipt"
-                @cancel="handleCancel"
+                :cancelling="cancelling"
+                @cancel-booking="handleCancel"
             />
 
         </div>
@@ -46,6 +46,7 @@ import type { Transaction } from '~/utils/types/booking';
 
 const { isLoggedIn, authReady } = useAuth()
 const { user } = useCurrentUser()
+const { $swal } = useNuxtApp()
 
 const { 
     menuOpen,
@@ -59,22 +60,80 @@ const route = useRoute()
 
 const bookingReference = String(route.params.booking_reference)
 
-console.log('booking reference:', bookingReference)
-
-const { fetchTransactionDetail } = useTransactions()
+const { fetchTransactionDetail, cancelTransaction } = useTransactions()
 
 const booking = ref<Transaction | null>(null)
+const cancelling = ref(false)
 
 onMounted(async () => {
     booking.value = await fetchTransactionDetail(bookingReference)
 })
 
-const handleDownloadReceipt = () => {
-    console.log('Download receipt')
-}
+const handleCancel = async () => {
+    if (!booking.value || cancelling.value) return
 
-const handleCancel = () => {
-    console.log('Cancel booking')
+    const confirmation = await $swal.fire({
+        icon: 'warning',
+        title: 'Cancel this booking?',
+        text: 'Your reserved dates will be released. This action cannot be undone.',
+        input: 'textarea',
+        inputLabel: 'Reason for cancellation',
+        inputPlaceholder: 'Briefly tell us why you are cancelling...',
+        inputAttributes: {
+            maxlength: '500',
+        },
+        inputValidator: value => {
+            if (!value?.trim()) return 'Please provide a cancellation reason.'
+            return undefined
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Cancel booking',
+        cancelButtonText: 'Keep booking',
+        confirmButtonColor: '#C1121F',
+        cancelButtonColor: '#333333',
+        background: '#1a1a1a',
+        color: '#ffffff',
+        reverseButtons: true,
+    })
+
+    if (!confirmation.isConfirmed) return
+
+    cancelling.value = true
+
+    try {
+        booking.value = await cancelTransaction(
+            bookingReference,
+            String(confirmation.value).trim(),
+        )
+
+        await $swal.fire({
+            icon: 'success',
+            title: 'Booking cancelled',
+            text: booking.value.refund?.status === 'pending_review'
+                ? 'Your dates were released and your full refund is waiting for admin review.'
+                : 'Your reserved dates have been released.',
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+        })
+    } catch (error: unknown) {
+        const requestError = error as {
+            data?: { message?: string; reason?: string }
+        }
+
+        await $swal.fire({
+            icon: 'error',
+            title: 'Unable to cancel booking',
+            text: requestError.data?.message
+                ?? requestError.data?.reason
+                ?? 'Please try again or contact Drive Ease.',
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+        })
+    } finally {
+        cancelling.value = false
+    }
 }
 
 </script>

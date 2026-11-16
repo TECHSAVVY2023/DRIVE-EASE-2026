@@ -78,19 +78,11 @@
             </span>
 
             <!-- Avatar -->
-            <div
-                class="w-7 h-7 rounded-full bg-[#c1121f] flex items-center justify-center flex-shrink-0"
-            >
-                <img
-                    v-if="props.user?.profile_picture"
-                    :src="props.user?.profile_picture"
-                    alt="Profile"
-                    class="w-7 h-7 rounded-full object-cover"
-                />
-                <svg v-else class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-                </svg>
-            </div>
+            <UserAvatar
+                :src="props.user?.profile_picture"
+                :alt="`${props.user?.given_name || 'User'} profile picture`"
+                class="h-7 w-7"
+            />
 
             <span class="hidden sm:block truncate">
                 {{ props.user?.given_name }}
@@ -123,17 +115,11 @@
         >
 
             <div class="flex items-center gap-3 border-b border-white/[0.08] bg-white/[0.025] px-4 py-4">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#c1121f]">
-                    <img
-                        v-if="props.user?.profile_picture"
-                        :src="props.user.profile_picture"
-                        alt="Profile"
-                        class="h-full w-full object-cover"
-                    />
-                    <svg v-else class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-                    </svg>
-                </div>
+                <UserAvatar
+                    :src="props.user?.profile_picture"
+                    :alt="`${props.user?.given_name || 'User'} profile picture`"
+                    class="h-10 w-10"
+                />
                 <div class="min-w-0">
                     <p class="truncate text-sm font-semibold text-white">{{ props.user?.given_name || 'My account' }}</p>
                     <p class="mt-0.5 text-[11px] text-[#85858b]">Manage your Drive Ease account</p>
@@ -358,12 +344,10 @@ const handleLogout = (): void => {
     logout()
 }
 
-const { fetchUnreadCount } = useNotification()
-
-const unreadCount = ref(0)
+const { fetchUnreadCount, unreadCount } = useNotification()
 
 const loadUnreadCount = async () => {
-    unreadCount.value = await fetchUnreadCount()
+    await fetchUnreadCount()
 }
 
 watch(

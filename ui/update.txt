@@ -1,6 +1,0 @@
-- fixed the display of feature and fuel option
-- fixed the filter function of feature and fuel
-- added notifications about booking and have made it function
-- added notification details
-
-- used data from database for the notification details

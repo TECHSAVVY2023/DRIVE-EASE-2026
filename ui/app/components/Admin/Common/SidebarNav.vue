@@ -103,6 +103,10 @@ import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 
 const route = useRoute()
+const {
+    unreadCount: unreadNotificationCount,
+    fetchUnreadCount,
+} = useAdminNotifications()
 
 defineProps<{
     sidebarOpen: boolean
@@ -185,12 +189,12 @@ const dashboardItem = {
     link: '/admin/admin-dashboard'
 }
 
-const menu = [
+const menu = computed(() => [
     {
         key: 'notifications',
         label: 'Notifications',
         icon: 'bell',
-        badge: 67,
+        badge: unreadNotificationCount.value || undefined,
         section: 'main',
         link: '/admin/admin-notification'
     },
@@ -234,7 +238,7 @@ const menu = [
         label: 'Analytics',
         icon: 'chart',
         section: 'report',
-        link: '/admin/analytics'    
+        link: '/admin/admin-analytics'    
     },
     {
         key: 'logs',
@@ -243,10 +247,18 @@ const menu = [
         section: 'report',
         link: '/admin/admin-logs'
     }
-]
+])
 
 const activeItem = computed(() => {
-    const match = menu.find(item => item.link === route.path)
+    const match = menu.value.find(item => item.link === route.path)
     return match?.key || 'dashboard'
+})
+
+onMounted(async () => {
+    try {
+        await fetchUnreadCount()
+    } catch (error) {
+        console.error('Failed to load admin notification count:', error)
+    }
 })
 </script>

@@ -77,20 +77,11 @@
 
             <div class="flex items-center gap-3">
 
-                <div class="w-10 h-10 rounded-full bg-[#C1121F] flex-shrink-0 overflow-hidden flex items-center justify-center">
-                    
-                    <img
-                        v-if="review.user.profile_picture"
-                        :src="review.user.profile_picture"
-                        :alt="review.user.first_name + ' ' + review.user.last_name"
-                        class="w-full h-full object-cover"
-                    />
-
-                    <svg v-else class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-                    </svg>
-
-                </div>
+                <UserAvatar
+                    :src="review.user.profile_picture"
+                    :alt="review.user.first_name + ' ' + review.user.last_name"
+                    class="h-10 w-10"
+                />
 
                 <div>
                     <p class="text-white text-sm font-semibold"> {{ review.user.first_name }} {{ review.user.last_name }} </p>

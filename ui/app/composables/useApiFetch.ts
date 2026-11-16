@@ -1,7 +1,14 @@
 import { useApiBase } from '~/utils/api/api'
 
 export const useApiFetch = () => {
-    const { token, authReady, init, refreshAccessToken, invalidateAuth } = useAuth()
+    const {
+        token,
+        authReady,
+        authFailureReason,
+        init,
+        refreshAccessToken,
+        invalidateAuth,
+    } = useAuth()
     const apiBase = useApiBase()
 
     const apiFetch = async <T>(
@@ -40,6 +47,14 @@ export const useApiFetch = () => {
 
             if (!newToken) {
                 invalidateAuth()
+
+                if (authFailureReason.value === 'suspended') {
+                    await navigateTo({
+                        path: '/client/login',
+                        query: { error: 'suspended' },
+                    })
+                }
+
                 throw error
             }
 

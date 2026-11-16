@@ -41,16 +41,17 @@
                             uppercase text-white
                         "
                     >
-                        Got Questions?<br />
-                        <span class="text-[#C1121F]">We've Got Answers</span>
+                        {{ content.faq_heading }}<br />
+                        <span class="text-[#C1121F]">{{ content.faq_highlight }}</span>
                     </h2>
 
                     <p class="text-[#9E9E9E] text-sm leading-relaxed">
-                        Every question that is frequently asked by customers about Driveease
+                        {{ content.faq_description }}
                     </p>
                     
                     <button 
-                        @click="$router.push('client/contact')"
+                        type="button"
+                        @click="router.push('/client/contact')"
                         class="
                             mt-4 mb-8
                             bg-[#C1121F] hover:bg-[#9B0E18] 
@@ -74,7 +75,7 @@
 
                     <div
                         v-for="(faq, index) in faqs"
-                        :key="index"
+                        :key="faq.id"
                         class="flex flex-col gap-3 p-5 rounded-md bg-[#1a1a1a]"
                     >
                         <!-- Card -->
@@ -142,9 +143,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import type { HomepageContent } from '~/utils/types/content'
 
-const { faqs } = useLandingPage()
+const props = defineProps<{
+    content: HomepageContent
+}>()
+
+const router = useRouter()
+const faqs = computed(() => props.content.faqs)
 
 const openIndex = ref<number | null>(null)
 
@@ -152,19 +158,22 @@ function toggle(index: number): void {
     openIndex.value = openIndex.value === index ? null : index
 }
 
-const sectionRef = ref(null)
+const sectionRef = ref<HTMLElement | null>(null)
 const isVisible = ref(false)
+let observer: IntersectionObserver | null = null
 
 onMounted(() => {
-    const observer = new IntersectionObserver(([entry]) => {
+    observer = new IntersectionObserver(([entry]) => {
         if (entry?.isIntersecting) {
             isVisible.value = true
-            observer.disconnect()
+            observer?.disconnect()
         }
     }, { threshold: 0.2 })
 
     if (sectionRef.value) observer.observe(sectionRef.value)
 })
+
+onBeforeUnmount(() => observer?.disconnect())
 </script>
 
 <style scoped>

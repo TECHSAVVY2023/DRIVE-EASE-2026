@@ -120,18 +120,17 @@
 
                                 <div class="flex items-center gap-3">
 
-                                    <div class="w-10 h-10 rounded-full bg-[#C1121F] flex-shrink-0 overflow-hidden flex items-center justify-center">
-                                        <img
-                                            v-if="review.user.profile_picture"
-                                            :src="review.user.profile_picture"
-                                            :alt="review.user.first_name + ' ' + review.user.last_name"
-                                            class="w-full h-full object-cover"
-                                        />
-
-                                        <span v-else class="text-white text-sm font-bold">
+                                    <UserAvatar
+                                        :src="review.user.profile_picture"
+                                        :alt="review.user.first_name + ' ' + review.user.last_name"
+                                        class="h-10 w-10"
+                                    >
+                                        <template #fallback>
+                                            <span class="text-sm font-bold text-white">
                                             {{ review.user.first_name.charAt(0) }}
-                                        </span>
-                                    </div>
+                                            </span>
+                                        </template>
+                                    </UserAvatar>
 
                                     <div>
                                         <p class="text-white text-sm font-semibold"> {{ review.user.first_name }} {{ review.user.last_name }} </p>

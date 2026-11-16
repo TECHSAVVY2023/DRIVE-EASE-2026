@@ -47,7 +47,7 @@
                         <option value="">Role</option>
                         <option value="Super Admin">Super Admin</option>
                         <option value="Admin">Admin</option>
-                        <option value="User">User</option>
+                        <option value="Customer">Customer</option>
                     </select>
 
                     <svg
@@ -132,37 +132,11 @@
                         <!-- User -->
                         <td class="px-5 py-3.5 text-sm text-[#e4e4e4]">
                             <div class="flex items-center gap-2.5">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-[#C1121F]
-                                        flex items-center justify-center flex-shrink-0 overflow-hidden"
-                                >
-                                    <img
-                                        v-if="user.profile_picture && !failedAvatars.has(user.id)"
-                                        :key="`${user.id}-${avatarRetryCounts[user.id] ?? 0}`"
+                                <UserAvatar
                                         :src="user.profile_picture"
-                                        alt=""
-                                        referrerpolicy="no-referrer"
-                                        class="w-full h-full object-cover"
-                                        @error="handleAvatarError(user.id)"
-                                    />
-                                    <div
-                                        v-else
-                                        class="w-4 h-4 text-white"
-                                    >
-                                        <svg
-                                            class="w-full h-full"
-                                            fill="currentColor"
-                                            viewBox="0 0 24 24"
-                                            aria-hidden="true"
-                                        >
-                                            <path
-                                                d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4
-                                                7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6
-                                                1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
-                                            />
-                                        </svg>
-                                    </div>
-                                </div>
+                                        :alt="`${user.given_name} ${user.family_name}`"
+                                        class="h-8 w-8"
+                                />
 
                                 <div class="min-w-0">
                                     <div class="font-semibold text-white truncate">
@@ -227,6 +201,7 @@
                         <td class="px-5 py-3.5 text-sm">
                             <div class="flex items-center gap-3 text-[#8a8a8a]">
                                 <button
+                                    v-if="canManageAccount(user)"
                                     type="button"
                                     class="
                                         hover:border-[#c1121f] cursor-pointer
@@ -251,6 +226,7 @@
                                 </button>
 
                                 <button
+                                    v-if="canManageAccount(user)"
                                     type="button"
                                     class="
                                         hover:border-[#c1121f] cursor-pointer
@@ -287,6 +263,18 @@
 
                                     {{ user.status === 'Active' ? 'Suspend' : 'Activate' }}
                                 </button>
+
+                                <button
+                                    v-if="canManageAccount(user)"
+                                    type="button"
+                                    class="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-[#292929] bg-[#151515] px-2.5 text-[11px] font-semibold text-[#9b9b9b] transition-all hover:border-red-500 hover:text-red-400"
+                                    @click="emit('delete', user)"
+                                >
+                                    <svg viewBox="0 0 24 24" fill="none" class="h-3.5 w-3.5" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14M10 10v6m4-6v6" />
+                                    </svg>
+                                    Delete
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -317,7 +305,7 @@
             <div class="flex gap-1.5">
                 <!-- Previous -->
                 <button
-                    type="button"
+                                    type="button"
                     :disabled="!props.previousPage"
                     @click="emit('update:page', props.currentPage - 1)"
                     class="w-7 h-7 flex items-center justify-center rounded-md border border-[#2a2a2a]"
@@ -380,6 +368,7 @@ const props = defineProps<{
     previousPage: string | null
     selectedRole: string
     selectedStatus: string
+    canManageStaff: boolean
 }>()
 
 const emit = defineEmits<{
@@ -389,31 +378,8 @@ const emit = defineEmits<{
     'update:selectedStatus': [value: string]
     edit: [user: User]
     secondaryAction: [user: User]
+    delete: [user: User]
 }>()
-
-const avatarRetryCounts = reactive<Record<number, number>>({})
-const failedAvatars = reactive(new Set<number>())
-const avatarRetryTimers = new Set<ReturnType<typeof setTimeout>>()
-
-const handleAvatarError = (userId: number) => {
-    const retryCount = avatarRetryCounts[userId] ?? 0
-
-    if (retryCount < 1) {
-        const timer = setTimeout(() => {
-            avatarRetryCounts[userId] = retryCount + 1
-            avatarRetryTimers.delete(timer)
-        }, 750)
-
-        avatarRetryTimers.add(timer)
-        return
-    }
-
-    failedAvatars.add(userId)
-}
-
-onBeforeUnmount(() => {
-    avatarRetryTimers.forEach(clearTimeout)
-})
 
 const handleSearch = (event: Event) => {
     const target = event.target as HTMLInputElement
@@ -423,6 +389,9 @@ const handleSearch = (event: Event) => {
 const handleEdit = (user: User) => {
     emit('edit', user)
 }
+
+const canManageAccount = (user: User) =>
+    props.canManageStaff || user.role === 'Customer'
 
 const handleSecondaryAction = (user: User) => {
     emit('secondaryAction', user)

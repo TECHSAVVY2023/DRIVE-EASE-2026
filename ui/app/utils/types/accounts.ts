@@ -1,4 +1,4 @@
-export type UserRole = 'User' | 'Admin' | 'Super Admin'
+export type UserRole = 'Customer' | 'Admin' | 'Super Admin'
 
 export interface User {
     id: number
@@ -52,6 +52,29 @@ export interface AdminEditUserResponse {
     user: User
 }
 
+export interface DeleteUserResponse {
+    message: string
+}
+
+export interface AdminCreateUserPayload {
+    given_name: string
+    family_name: string
+    email: string
+    contact_number: string
+    address: string
+    id_images: {
+        images: string[]
+    }
+    role: UserRole
+}
+
+export type AdminCreateUserFormPayload = Omit<AdminCreateUserPayload, 'id_images'>
+
+export interface AdminCreateUserResponse {
+    message: string
+    user: User
+}
+
 export interface AdminEditUserPayload {
     given_name: string
     family_name: string
@@ -62,6 +85,7 @@ export interface AdminEditUserPayload {
     profile_removal_reason?: string
     remove_id_images?: string[]
     id_removal_reason?: string
+    role?: UserRole
 }
 
 export interface AssignRoleResponse {

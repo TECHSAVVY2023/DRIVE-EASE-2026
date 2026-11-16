@@ -1,9 +1,24 @@
+export interface RefundDetails {
+    id: number
+    paymongo_refund_id: string | null
+    amount: number
+    reason: string
+    customer_reason: string
+    admin_note: string
+    status: 'pending_review' | 'processing' | 'succeeded' | 'failed' | 'rejected'
+    failure_message: string
+    requested_at: string
+    processed_at: string | null
+    updated_at: string
+}
+
 export interface Transaction {
     id:number
     booking_reference: string
     status: string
 
     payment_method: string
+    payment_status: 'pending' | 'paid' | 'failed' | 'refunded' | null
 
     created_at: string
     total_price: number
@@ -15,6 +30,9 @@ export interface Transaction {
     completed_at: string | null
     cancelled_at: string | null
     cancel_reason: string | null
+    refund: RefundDetails | null
+    can_refund: boolean
+    refund_unavailable_reason: string | null
 
     pickup_date: string
     return_date: string
@@ -43,6 +61,7 @@ export interface Transaction {
         last_name: string
         contact_number: string
         address: string
+        profile_picture: string | null
         id_images: {
             images: string[]
         }
@@ -54,6 +73,8 @@ export interface BookingForm {
     user_reference: string
     car_reference: string
 
+    payment_status?: 'pending' | 'paid' | 'failed' | 'refunded' | null
+    payment_method?: string
     status: string
     cancel_reason: string
 

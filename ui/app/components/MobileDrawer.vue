@@ -62,17 +62,11 @@
                     class="mb-6 flex w-full items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4 text-left transition hover:border-[#C1121F]/60 hover:bg-white/[0.055]"
                     @click="navigateToAccount"
                 >
-                    <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#242427] ring-1 ring-white/10">
-                        <img
-                            v-if="user?.profile_picture"
-                            :src="user.profile_picture"
-                            alt="Profile"
-                            class="h-full w-full object-cover"
-                        />
-                        <svg v-else class="h-6 w-6 text-white/75" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-                        </svg>
-                    </div>
+                    <UserAvatar
+                        :src="user?.profile_picture"
+                        :alt="`${user?.given_name || 'User'} profile picture`"
+                        class="h-12 w-12 ring-1 ring-white/10"
+                    />
 
                     <div class="min-w-0 flex-1">
                         <p class="truncate text-sm font-semibold text-white">
@@ -186,9 +180,8 @@ const emit = defineEmits<{
 
 const { logout, isLoggedIn } = useAuth()
 const { user, authLoading } = useCurrentUser()
-const { fetchUnreadCount } = useNotification()
+const { fetchUnreadCount, unreadCount } = useNotification()
 const route = useRoute()
-const unreadCount = ref(0)
 
 const navLinks = [
     { label: 'Home', to: '/', icon: 'M3 11.5 12 4l9 7.5M5.5 10v9.5h13V10M9.5 19.5v-6h5v6' },
@@ -232,7 +225,11 @@ const handleEscape = (event: KeyboardEvent): void => {
 watch(
     isLoggedIn,
     async (loggedIn) => {
-        unreadCount.value = loggedIn ? await fetchUnreadCount() : 0
+        if (loggedIn) {
+            await fetchUnreadCount()
+        } else {
+            unreadCount.value = 0
+        }
     },
     { immediate: true }
 )

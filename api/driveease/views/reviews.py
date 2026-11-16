@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from ..models import AdminActivityLog, Cars, FileUploadModel, ReviewHelpful, Reviews
 from ..pagination import AdminReviewPagination, ReviewPagination
 from ..serializers import AdminReviewSerializer, ReviewSerializer
+from ..utils.notifications import create_admin_notifications
 
 
 def delete_review_uploads_from_storage(urls):
@@ -274,6 +275,19 @@ class CreateReviewView(APIView):
             rating=rating,
             text=text,
             images=images,
+        )
+
+        transaction.on_commit(
+            lambda: create_admin_notifications(
+                notification_type="review",
+                title="New review requires approval",
+                message=(
+                    f"A {review.rating}-star review for "
+                    f"{car.brand} {car.model} is waiting for review."
+                ),
+                action_url="/admin/admin-review",
+                deduplication_key=f"review-submitted:{review.id}",
+            )
         )
 
         return Response(

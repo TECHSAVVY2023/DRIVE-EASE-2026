@@ -3,6 +3,7 @@
 from .accounts import (
     AccountsListView,
     AccountsStatsView,
+    AdminCreateAccountView,
     AssignAccountRoleView,
     AdminEditAccountView,
     AccountStatusUpdateView,
@@ -10,12 +11,17 @@ from .accounts import (
 
 from .dashboard import (
     AdminDashboardRevenueView,
+    AdminDashboardStatsView,
+    AdminDashboardFleetStatusView,
+    AdminDashboardRecentBookingsView,
+    AdminDashboardAttentionView,
 )
 
 from .fleet import (
     CarListView,
     FleetListView,
     CarDetailView,
+    SimilarCarListView,
     FleetStatsView,
     CarCreateView,
     CarTypeListView,
@@ -52,6 +58,7 @@ from .bookings import (
     CreateBookingView,
     TransactionListView,
     TransactionDetailView,
+    ClientCancelBookingView,
     AdminBookingListView,
     AdminBookingStatsView,
     AdminCreateBookingView,
@@ -60,6 +67,7 @@ from .bookings import (
 )
 
 from .payments import (
+    AdminIssueRefundView,
     CreatePayMongoPaymentView,
     PayMongoWebhookView,
 )
@@ -68,21 +76,55 @@ from .notifications import (
     UserNotificationListView,
     UserUnreadNotificationCountView,
     MarkNotificationAsReadView,
+    UserMarkAllNotificationsAsReadView,
+    UserDeleteAllNotificationsView,
+    CarAvailabilityAlertView,
+    AdminNotificationListView,
+    AdminUnreadNotificationCountView,
+    AdminMarkNotificationAsReadView,
+    AdminMarkAllNotificationsAsReadView,
+    AdminDeleteNotificationView,
+)
+
+from .analytics import (
+    AdminAnalyticsStatsView,
+    AdminAnalyticsRevenueView,
+    AdminAnalyticsStatusDistributionView,
+    AdminAnalyticsTopVehiclesView,
+    AdminAnalyticsCustomerInsightsView,
 )
 
 from .logs import (
     AdminActivityLogListView,
 )
 
+from .content import (
+    PublicHomePageContentView,
+    HomePageContentUpdateView,
+    FeaturedCarListCreateView,
+    FeaturedCarDetailView,
+    TrustItemListCreateView,
+    TrustItemDetailView,
+    FAQListCreateView,
+    FAQDetailView,
+    PublicAboutUsContentView,
+    AboutUsContentUpdateView,
+    AboutTeamUserOptionsView,
+    PublicContactPageContentView,
+    ContactPageContentUpdateView,
+)
+
 __all__ = [
     'AccountsListView',
     'AccountsStatsView',
+    'AdminCreateAccountView',
     'AssignAccountRoleView',
     'AdminEditAccountView',
     'AdminDashboardRevenueView',
     'CarListView',
     'FleetListView',
     'CarDetailView',
+    'SimilarCarListView',
     'FleetStatsView',
     'CarCreateView',
     'CarTypeListView',
@@ -107,16 +149,48 @@ __all__ = [
     'CreateBookingView',
     'TransactionListView',
     'TransactionDetailView',
+    'ClientCancelBookingView',
     'AdminBookingListView',
     'AdminBookingStatsView',
     'AdminCreateBookingView',
     'AdminUpdateBookingView',
     'AdminBookingDeleteView',
     'CreatePayMongoPaymentView',
+    'AdminIssueRefundView',
     'PayMongoWebhookView',
     'UserNotificationListView',
     'UserUnreadNotificationCountView',
     'MarkNotificationAsReadView',
+    'UserMarkAllNotificationsAsReadView',
+    'UserDeleteAllNotificationsView',
+    'CarAvailabilityAlertView',
+    'AdminNotificationListView',
+    'AdminUnreadNotificationCountView',
+    'AdminMarkNotificationAsReadView',
+    'AdminMarkAllNotificationsAsReadView',
+    'AdminDeleteNotificationView',
     'AccountStatusUpdateView',
     'AdminActivityLogListView',
+    'AdminDashboardStatsView',
+    'AdminDashboardFleetStatusView',
+    'AdminDashboardRecentBookingsView',
+    'AdminDashboardAttentionView',
+    'AdminAnalyticsStatsView',
+    'AdminAnalyticsRevenueView',
+    'AdminAnalyticsStatusDistributionView',
+    'AdminAnalyticsTopVehiclesView',
+    'AdminAnalyticsCustomerInsightsView',
+    'PublicHomePageContentView',
+    'HomePageContentUpdateView',
+    'FeaturedCarListCreateView',
+    'FeaturedCarDetailView',
+    'TrustItemListCreateView',
+    'TrustItemDetailView',
+    'FAQListCreateView',
+    'FAQDetailView',
+    'PublicAboutUsContentView',
+    'AboutUsContentUpdateView',
+    'AboutTeamUserOptionsView',
+    'PublicContactPageContentView',
+    'ContactPageContentUpdateView',
 ]

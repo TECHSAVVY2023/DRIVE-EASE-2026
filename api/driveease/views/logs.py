@@ -7,7 +7,6 @@ from ..models import AdminActivityLog
 from ..pagination import AdminActivityLogPagination
 from ..serializers import AdminActivityLogSerializer
 
-
 class AdminActivityLogListView(ListAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = AdminActivityLogSerializer

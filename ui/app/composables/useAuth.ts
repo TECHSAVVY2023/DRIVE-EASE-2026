@@ -30,6 +30,7 @@ const tokenIsUsable = (token: string): boolean => {
 export const useAuth = () => {
     const token = useState<string | null>('token', () => null)
     const authReady = useState<boolean>('authReady', () => false)
+    const authFailureReason = useState<string | null>('authFailureReason', () => null)
     const isLoggedIn = computed(() => Boolean(token.value))
     const apiBase = useApiBase()
 
@@ -86,7 +87,18 @@ export const useAuth = () => {
                 token.value = response.access
 
                 return response.access
-            } catch {
+            } catch (error: unknown) {
+                const fetchError = error as {
+                    data?: { code?: string }
+                    response?: { _data?: { code?: string } }
+                }
+                const code = fetchError.data?.code
+                    ?? fetchError.response?._data?.code
+
+                if (code === 'account_suspended') {
+                    authFailureReason.value = 'suspended'
+                }
+
                 if (requestGeneration === authGeneration) clearAuth()
                 return null
             } finally {
@@ -121,6 +133,7 @@ export const useAuth = () => {
     const login = () => {
         if (!import.meta.client) return
 
+        authFailureReason.value = null
         const origin = window.location.origin
         window.location.assign(
             `${apiBase}/auth/google/?origin=${encodeURIComponent(origin)}`,
@@ -151,6 +164,7 @@ export const useAuth = () => {
 
     return {
         token,
+        authFailureReason,
         isLoggedIn,
         authReady,
         init,

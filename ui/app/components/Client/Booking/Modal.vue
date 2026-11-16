@@ -24,8 +24,14 @@
                     >
                         <!-- Header -->
                         <div class="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 flex-shrink-0">
-                            <h2 class="text-white font-extrabold text-lg sm:text-xl">Book this car</h2>
-                            <p class="text-[#929292] text-xs mt-1">Complete all steps to confirm your reservation</p>
+                            <h2 class="text-white font-extrabold text-lg sm:text-xl">
+                                {{ reservationMode ? 'Reserve this car in advance' : 'Book this car' }}
+                            </h2>
+                            <p class="text-[#929292] text-xs mt-1">
+                                {{ reservationMode
+                                    ? 'Choose dates after the car becomes available'
+                                    : 'Complete all steps to confirm your reservation' }}
+                            </p>
                         </div>
 
                         <ClientBookingSteps 
@@ -57,10 +63,16 @@
 
                                 <div class="pr-3 flex-shrink-0">
                                     <span
-                                        class="flex items-center gap-1 text-[10px] font-semibold text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-full"
+                                        class="flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-semibold"
+                                        :class="reservationMode
+                                            ? 'border-amber-500/20 bg-amber-500/10 text-amber-400'
+                                            : 'border-green-500/20 bg-green-500/10 text-green-400'"
                                     >
-                                        <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                                        AVAILABLE
+                                        <span
+                                            class="h-1.5 w-1.5 rounded-full"
+                                            :class="reservationMode ? 'bg-amber-400' : 'bg-green-400'"
+                                        />
+                                        {{ reservationMode ? 'ADVANCE RESERVATION' : 'AVAILABLE' }}
                                     </span>
                                 </div>
                             </div>
@@ -83,9 +95,17 @@
                                 :car="car"
                             />
 
-                            <!-- Step 3: Review & Confirm (placeholder) -->
+                            <!-- Step 3: Review & Confirm -->
                             <template v-else-if="currentStep === 3">
-                                <div class="bg-[#1a1a1a] border border-[#222] rounded-xl p-3 sm:p-4 flex flex-col gap-3 text-sm">
+                                <div class="flex flex-col gap-3 rounded-xl border border-[#292929] bg-[#171717] p-4 text-sm">
+                                    <div class="border-b border-[#292929] pb-3">
+                                        <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#C1121F]">
+                                            Review booking
+                                        </p>
+                                        <p class="mt-1 text-xs text-gray-500">
+                                            Please confirm that the information below is correct.
+                                        </p>
+                                    </div>
                                     <div class="flex justify-between gap-3">
                                         <span class="text-gray-400 text-xs flex-shrink-0">Name</span>
                                         <span class="text-white text-xs font-semibold text-right min-w-0 break-words">{{ form.firstName }} {{ form.lastName }}</span>
@@ -101,8 +121,8 @@
                                         <span class="text-white text-xs font-semibold text-right min-w-0 break-words">{{ form.contact }}</span>
                                     </div>
 
-                                    <div class="border-t border-[#222] pt-2 flex flex-col gap-2">
-                                        <span class="text-gray-400 text-xs">Uploaded Valid IDs</span>
+                                    <div class="flex flex-col gap-2 border-t border-[#292929] pt-3">
+                                        <span class="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#C1121F]">Valid IDs</span>
 
                                         <template v-if="existingIdImages.length">
                                             <div
@@ -162,7 +182,11 @@
                                         </template>
                                     </div>
 
-                                    <div class="border-t border-[#222] pt-2 flex justify-between gap-3">
+                                    <div class="flex justify-between gap-3 border-t border-[#292929] pt-3">
+                                        <span class="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#C1121F]">Rental schedule</span>
+                                    </div>
+
+                                    <div class="flex justify-between gap-3">
                                         <span class="text-gray-400 text-xs flex-shrink-0">Pickup date</span>
                                         <span class="text-white text-xs font-semibold text-right min-w-0 break-words">{{ formatDateTime(form.pickupDate) }}</span>
                                     </div>
@@ -182,7 +206,11 @@
                                         <span class="text-white text-xs font-semibold text-right min-w-0 break-words">{{ form.returnLocation }}</span>
                                     </div>
 
-                                    <div class="border-t border-[#222] pt-2 flex justify-between gap-3">
+                                    <div class="flex justify-between gap-3 border-t border-[#292929] pt-3">
+                                        <span class="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#C1121F]">Price summary</span>
+                                    </div>
+
+                                    <div class="flex justify-between gap-3">
                                         <span class="text-gray-400 text-xs flex-shrink-0">Rental Duration</span>
                                         <span class="text-white text-xs font-semibold text-right">{{ rentalDays }} day(s)</span>
                                     </div>
@@ -192,9 +220,9 @@
                                         <span class="text-white text-xs font-semibold text-right">₱{{ car?.price_per_day.toLocaleString() }}</span>
                                     </div>
 
-                                    <div class="flex justify-between gap-3 border-t border-[#222] pt-5">
-                                        <span class="text-white text-base sm:text-[18px] font-semibold">Total Price</span>
-                                        <span class="text-white text-base sm:text-[18px] font-bold">
+                                    <div class="flex items-center justify-between gap-3 rounded-lg bg-[#C1121F]/10 px-3 py-3">
+                                        <span class="text-sm font-semibold text-white">Total Price</span>
+                                        <span class="text-base font-bold text-[#C1121F] sm:text-[18px]">
                                             ₱{{ totalPrice.toLocaleString() }}
                                         </span>
                                     </div>
@@ -247,6 +275,7 @@ const props = defineProps<{
     modelValue: boolean
     car: Car | null
     user: User | null
+    reservationMode?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -345,7 +374,7 @@ async function confirmBooking(): Promise<void> {
             }
         })
 
-        const paymentRes = await apiFetch<{ checkout_url: string; payment_intent_id: string }>('/payments/create-paymongo-payment/', {
+        const paymentRes = await apiFetch<{ checkout_url: string; payment_intent_id: string | null }>('/payments/create-paymongo-payment/', {
             method: 'POST',
             body: {
                 amount: Math.round(totalPrice.value * 100),
@@ -358,6 +387,26 @@ async function confirmBooking(): Promise<void> {
         if (paymentRes.checkout_url) window.location.href = paymentRes.checkout_url
     } catch (error) {
         console.error(error)
+        const fetchError = error as {
+            data?: { message?: string; error?: string }
+            response?: { _data?: { message?: string; error?: string } }
+        }
+        const message = (
+            fetchError.data?.message
+            || fetchError.data?.error
+            || fetchError.response?._data?.message
+            || fetchError.response?._data?.error
+            || 'Your booking could not be completed. Please try again.'
+        )
+
+        await $swal.fire({
+            icon: 'error',
+            title: 'Booking unavailable',
+            text: message,
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+        })
     } finally {
         isSubmitting.value = false
     }
@@ -379,7 +428,11 @@ watch(
                 email: '',
                 contact: '',
                 address: '',
-                id_images: []
+                id_images: [],
+                pickupDate: '',
+                returnDate: '',
+                pickupLocation: '',
+                returnLocation: '',
             })
 
             return

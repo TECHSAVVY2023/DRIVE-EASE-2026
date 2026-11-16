@@ -54,134 +54,46 @@
                         </span>
                     </div>
 
-                    <form class="p-5 sm:p-6" @submit.prevent>
+                    <form class="p-5 sm:p-6" @submit.prevent="handleContentSubmit">
                         <!-- Home -->
                         <div v-if="selectedPage === 'home'" class="space-y-7">
-                            <ContentSection
-                                title="Hero section"
-                                description="The first content visitors see on the homepage"
-                            >
-                                <div class="grid gap-4 sm:grid-cols-2">
-                                    <div class="sm:col-span-2">
-                                        <label for="home-heading" :class="labelClass">Main heading</label>
-                                        <input id="home-heading" v-model="content.home.heading" :class="fieldClass" />
-                                    </div>
 
-                                    <div class="sm:col-span-2">
-                                        <label for="home-description" :class="labelClass">Description</label>
-                                        <textarea id="home-description" v-model="content.home.description" rows="4" :class="textareaClass" />
-                                    </div>
+                            <AdminContentHeroSection
+                                v-if="home"
+                                :form="form"
+                                @update:newImageFile="newImageFile = $event"
+                            />
 
-                                    <div>
-                                        <label for="home-button" :class="labelClass">Button label</label>
-                                        <input id="home-button" v-model="content.home.buttonLabel" :class="fieldClass" />
-                                    </div>
+                            <AdminContentWhyTrustus
+                                v-if="home"
+                                :form="form"
+                            />
 
-                                    <div>
-                                        <label for="home-link" :class="labelClass">Button link</label>
-                                        <input id="home-link" v-model="content.home.buttonLink" :class="fieldClass" />
-                                    </div>
-                                </div>
-                            </ContentSection>
+                            <AdminContentFeaturedCars
+                                v-if="home"
+                                :form="form"
+                                v-model:featured-image-files="featuredImageFiles"
+                            />
 
-                            <ContentSection
-                                title="Featured fleet"
-                                description="Text displayed above the featured vehicles"
-                            >
-                                <div class="grid gap-4 sm:grid-cols-2">
-                                    <div>
-                                        <label for="fleet-heading" :class="labelClass">Section heading</label>
-                                        <input id="fleet-heading" v-model="content.home.fleetHeading" :class="fieldClass" />
-                                    </div>
-                                    <div>
-                                        <label for="fleet-description" :class="labelClass">Short description</label>
-                                        <input id="fleet-description" v-model="content.home.fleetDescription" :class="fieldClass" />
-                                    </div>
-                                </div>
-                            </ContentSection>
+                            <AdminContentFaqSection
+                                v-if="home"
+                                :form="form"
+                            />
                         </div>
 
                         <!-- About -->
-                        <div v-else-if="selectedPage === 'about'" class="space-y-7">
-                            <ContentSection
-                                title="Page introduction"
-                                description="Main heading and introduction for the About page"
-                            >
-                                <div class="space-y-4">
-                                    <div>
-                                        <label for="about-heading" :class="labelClass">Page heading</label>
-                                        <input id="about-heading" v-model="content.about.heading" :class="fieldClass" />
-                                    </div>
-                                    <div>
-                                        <label for="about-introduction" :class="labelClass">Introduction</label>
-                                        <textarea id="about-introduction" v-model="content.about.introduction" rows="4" :class="textareaClass" />
-                                    </div>
-                                </div>
-                            </ContentSection>
-
-                            <ContentSection
-                                title="Our story"
-                                description="Background information about DriveEase"
-                            >
-                                <div class="space-y-4">
-                                    <div>
-                                        <label for="story-heading" :class="labelClass">Section heading</label>
-                                        <input id="story-heading" v-model="content.about.storyHeading" :class="fieldClass" />
-                                    </div>
-                                    <div>
-                                        <label for="story-content" :class="labelClass">Story</label>
-                                        <textarea id="story-content" v-model="content.about.story" rows="6" :class="textareaClass" />
-                                    </div>
-                                </div>
-                            </ContentSection>
-                        </div>
+                        <AdminContentAboutPage
+                            v-else-if="selectedPage === 'about'"
+                            :form="form1"
+                            :users="aboutTeamUsers"
+                            @update:newImageFile="newAboutImageFile = $event"
+                        />
 
                         <!-- Contact -->
-                        <div v-else class="space-y-7">
-                            <ContentSection
-                                title="Contact introduction"
-                                description="Heading and message shown above the contact form"
-                            >
-                                <div class="space-y-4">
-                                    <div>
-                                        <label for="contact-heading" :class="labelClass">Page heading</label>
-                                        <input id="contact-heading" v-model="content.contact.heading" :class="fieldClass" />
-                                    </div>
-                                    <div>
-                                        <label for="contact-description" :class="labelClass">Description</label>
-                                        <textarea id="contact-description" v-model="content.contact.description" rows="4" :class="textareaClass" />
-                                    </div>
-                                </div>
-                            </ContentSection>
-
-                            <ContentSection
-                                title="Contact details"
-                                description="Public business information shown to customers"
-                            >
-                                <div class="grid gap-4 sm:grid-cols-2">
-                                    <div>
-                                        <label for="contact-email" :class="labelClass">Email address</label>
-                                        <input id="contact-email" v-model="content.contact.email" type="email" :class="fieldClass" />
-                                    </div>
-                                    <div>
-                                        <label for="contact-phone" :class="labelClass">Phone number</label>
-                                        <input id="contact-phone" v-model="content.contact.phone" :class="fieldClass" />
-                                    </div>
-                                    <div class="sm:col-span-2">
-                                        <label for="contact-address" :class="labelClass">Business address</label>
-                                        <input id="contact-address" v-model="content.contact.address" :class="fieldClass" />
-                                    </div>
-                                    <div>
-                                        <label for="weekday-hours" :class="labelClass">Weekday hours</label>
-                                        <input id="weekday-hours" v-model="content.contact.weekdayHours" :class="fieldClass" />
-                                    </div>
-                                    <div>
-                                        <label for="weekend-hours" :class="labelClass">Weekend hours</label>
-                                        <input id="weekend-hours" v-model="content.contact.weekendHours" :class="fieldClass" />
-                                    </div>
-                                </div>
-                            </ContentSection>
-                        </div>
+                        <AdminContentContactPage
+                            v-else
+                            :form="contactForm"
+                        />
 
                         <div class="mt-7 flex justify-end gap-2.5 border-t border-[#252525] pt-5">
                             <button
@@ -192,7 +104,7 @@
                             </button>
                             <button
                                 type="submit"
-                                class="rounded-lg bg-[#C1121F] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#aa101b]"
+                                class="rounded-lg bg-[#C1121F] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#aa101b] disabled:cursor-not-allowed disabled:bg-[#4a1a1e] disabled:text-[#999]"
                             >
                                 Save changes
                             </button>
@@ -205,6 +117,12 @@
 </template>
 
 <script setup lang="ts">
+import type {
+    HomepageContent,
+    AboutUsPageContent,
+    ContactPageContent,
+    AboutTeamUserOption,
+} from '~/utils/types/content'
 type ContentPage = 'home' | 'about' | 'contact'
 
 const { isLoggedIn } = useAuth()
@@ -235,38 +153,137 @@ const activePage = computed(() =>
     pages.find(page => page.id === selectedPage.value) ?? pages[0]!
 )
 
-// Temporary local values. These can be replaced with API data later.
-const content = reactive({
-    home: {
-        heading: 'Your journey starts with the right car',
-        description: 'Reliable vehicles for city drives, business trips, and weekend escapes.',
-        buttonLabel: 'Explore our fleet',
-        buttonLink: '/client/fleet',
-        fleetHeading: 'Find the perfect car',
-        fleetDescription: 'Browse our most popular rental vehicles.',
-    },
-    about: {
-        heading: 'About DriveEase',
-        introduction: 'We make car rentals simple, reliable, and accessible for every journey.',
-        storyHeading: 'Our story',
-        story: 'DriveEase was created to give customers a faster and more convenient way to find dependable rental vehicles.',
-    },
-    contact: {
-        heading: 'Get in touch',
-        description: 'Have a question about a vehicle or booking? Our team is ready to help.',
-        email: 'support@driveease.com',
-        phone: '+63 900 000 0000',
-        address: 'Cagayan de Oro City, Philippines',
-        weekdayHours: 'Monday–Friday, 8:00 AM–6:00 PM',
-        weekendHours: 'Saturday–Sunday, 9:00 AM–4:00 PM',
-    },
-})
-
 const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+})
+
+const form = ref<HomepageContent>({ id: 0, hero_heading1: '', hero_heading2: '', hero_tagline: '',
+    hero_image: '', fleet_heading: '', fleet_description: '', fleet_button_label: '',
+    fleet_button_link: '', trust_heading: '', trust_items: [], faq_heading: '', faq_highlight: '',
+    faq_description: '', faq_button_label: '', faq_button_link: '', featured_cars: [],
+    faqs: [], created_at: '', updated_at: '', cars: []
+})
+
+const form1 = ref<AboutUsPageContent>({ id: 0, content_reference: '', wwr_heading: '', wwr_description: '', wwr_image: null,
+    mission_heading: '', mission_description: '', vission_heading: '', vission_description: '',
+    wwr_stats: [], team: [], journey: [], updated_at: ''
+})
+
+const contactForm = ref<ContactPageContent>({
+    id: 0, content_reference: '', form_heading: '', form_description: '', 
+    phone: '', email: '', address: '', facebook_url: '', 
+    instagram_url: '', x_url: '', tiktok_url: '',
+    opening_hours: [], updated_at: '',
+})
+
+const aboutTeamUsers = ref<AboutTeamUserOption[]>([])
+
+const newImageFile = ref<File | null>(null)
+const originalImageUrl = ref<string | null>(null)
+const newAboutImageFile = ref<File | null>(null)
+const originalAboutImageUrl = ref<string | null>(null)
+const originalFeaturedImages = ref<Array<{
+    id: number
+    image: string | null
+}>>([])
+const featuredImageFiles = ref<(File | null)[]>([])
+
+const { home, loadHomepageContent } = useHomepageContentLoader()
+const { about, loadAboutUsPageContent } = useAboutUsPageContentLoad()
+const { fetchAboutTeamUsers } = useAboutUsPageContent()
+const { contact, loadContactPageContent } = useContactPageContentLoad()
+
+const {
+    handleUpdateHomepageContent: updateHomepageContent
+} = useHomepageContentEdit()
+const {
+    handleUpdateAboutUsPageContent: updateAboutUsPageContent
+} = useAboutUsPageContentEdit()
+const {
+    handleUpdateContactPageContent: updateContactPageContent
+} = useContactPageContentEdit()
+
+watch(
+    home,
+    (homeValue) => {
+        if (!homeValue) return
+        form.value = structuredClone(toRaw(homeValue))
+        originalImageUrl.value = homeValue.hero_image
+        // Preserve originals by record id so removing/reordering stays safe.
+        originalFeaturedImages.value = homeValue.featured_cars.map(car => ({
+            id: car.id,
+            image: car.featured_image,
+        }))
+        featuredImageFiles.value = homeValue.featured_cars.map(() => null)
+    },
+    { immediate: true }
+)
+
+watch(about, (value) => {
+    if (!value) return
+    form1.value = structuredClone(toRaw(value))
+    originalAboutImageUrl.value = value.wwr_image
+    newAboutImageFile.value = null
+}, { immediate: true })
+
+watch(contact, (value) => {
+    if (value) contactForm.value = structuredClone(toRaw(value))
+}, { immediate: true })
+
+async function handleSaveHomepageContent(form: HomepageContent) {
+    const result = await updateHomepageContent(
+        form,
+        newImageFile.value,
+        featuredImageFiles.value,
+        originalImageUrl.value,
+        originalFeaturedImages.value
+    )
+
+    if (!result.success) return
+
+    newImageFile.value = null
+    window.location.reload()
+}
+
+async function handleContentSubmit(): Promise<void> {
+    switch (selectedPage.value) {
+        case 'home':
+            await handleSaveHomepageContent(form.value)
+            break
+
+        case 'about':
+            if ((await updateAboutUsPageContent(
+                form1.value,
+                newAboutImageFile.value,
+                originalAboutImageUrl.value,
+            )).success) {
+                newAboutImageFile.value = null
+                await loadAboutUsPageContent(true)
+            }
+            window.location.reload()
+            break
+
+        case 'contact':
+            if ((await updateContactPageContent(contactForm.value)).success) {
+                await loadContactPageContent(true)
+            }
+            window.location.reload()
+            break
+    }
+}
+
+onMounted(() => {
+    loadHomepageContent()
+    loadAboutUsPageContent()
+    loadContactPageContent()
+    fetchAboutTeamUsers().then((users) => {
+        aboutTeamUsers.value = users
+    }).catch((error) => {
+        console.error('Failed to load About team users:', error)
+    })
 })
 
 const fieldClass = `
@@ -275,8 +292,8 @@ const fieldClass = `
     outline-none transition-colors placeholder:text-[#555]
     focus:border-[#C1121F]
 `
-const textareaClass = `${fieldClass} resize-none leading-5`
-const labelClass = 'mb-1.5 block text-[11px] text-neutral-400'
+
+const compactFieldClass = `${fieldClass} px-3 py-2 text-xs`
 
 onMounted(() => document.documentElement.classList.add('admin-page'))
 onBeforeUnmount(() => document.documentElement.classList.remove('admin-page'))

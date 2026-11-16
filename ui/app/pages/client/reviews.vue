@@ -35,7 +35,7 @@
                     :formatted-rating-breakdown="formattedRatingBreakdown"
                 />
 
-                <CarReviewFilterSort
+                <ClientReviewsCarFilterSort
                     :selected-rating="selectedRating"
                     :sort-by="sortBy"
                     @update:selected-rating="selectedRating = $event"

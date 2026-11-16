@@ -12,18 +12,18 @@ const previousPage = ref<string | null>(null)
 const currentPage = ref(1)
 
 export function useNotificationList() {
-    const { fetchNotifications } = useNotification()
+    const {
+        fetchNotifications,
+        fetchUnreadCount,
+        markAllNotificationsAsRead: markAllNotificationsAsReadRequest,
+        deleteAllNotifications: deleteAllNotificationsRequest,
+        unreadCount,
+    } = useNotification()
 
     const pageSize = 9
 
     const totalPages = computed(() =>
         Math.ceil(count.value / pageSize)
-    )
-
-    const unreadCount = computed(() =>
-        notifications.value.filter(
-            notification => !notification.is_read
-        ).length
     )
 
     const fetchNotificationList = async () => {
@@ -40,10 +40,30 @@ export function useNotificationList() {
 
             nextPage.value = res.next ?? null
             previousPage.value = res.previous ?? null
+            await fetchUnreadCount()
 
         } finally {
             loading.value = false
         }
+    }
+
+    const markAllAsRead = async () => {
+        await markAllNotificationsAsReadRequest()
+        const readAt = new Date().toISOString()
+
+        notifications.value.forEach(notification => {
+            notification.is_read = true
+            notification.read_at = readAt
+        })
+    }
+
+    const deleteAll = async () => {
+        await deleteAllNotificationsRequest()
+        notifications.value = []
+        count.value = 0
+        nextPage.value = null
+        previousPage.value = null
+        currentPage.value = 1
     }
 
     watch(
@@ -66,5 +86,7 @@ export function useNotificationList() {
         totalPages,
 
         fetchNotificationList,
+        markAllAsRead,
+        deleteAll,
     }
 }

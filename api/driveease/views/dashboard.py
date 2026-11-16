@@ -118,3 +118,188 @@ class AdminDashboardRevenueView(APIView):
             "percentage_change": round(float(percentage_change), 1),
             "points": points,
         })
+
+class AdminDashboardStatsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    @staticmethod
+    def calculate_change(current, previous):
+        if previous == 0:
+            return None
+
+        return round(float((current - previous) / previous * 100), 1)
+
+    def get(self, request):
+        month_param = request.query_params.get("month")
+        today = timezone.localdate()
+
+        try:
+            current_month = (
+                datetime.strptime(month_param, "%Y-%m").date().replace(day=1)
+                if month_param
+                else today.replace(day=1)
+            )
+        except ValueError:
+            return Response(
+                {"detail": "Month must use the YYYY-MM format."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        previous_month_end = current_month - timedelta(days=1)
+        previous_month = previous_month_end.replace(day=1)
+
+        if current_month.month == 12:
+            next_month = current_month.replace(
+                year=current_month.year + 1,
+                month=1,
+            )
+        else:
+            next_month = current_month.replace(
+                month=current_month.month + 1
+            )
+
+        bookings = Booking.objects.all()
+
+        current_bookings = bookings.filter(
+            created_at__date__gte=current_month,
+            created_at__date__lt=next_month,
+        ).count()
+
+        previous_bookings = bookings.filter(
+            created_at__date__gte=previous_month,
+            created_at__date__lt=current_month,
+        ).count()
+
+        current_revenue = Payment.objects.filter(
+            status="paid",
+            paid_at__date__gte=current_month,
+            paid_at__date__lt=next_month,
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        previous_revenue = Payment.objects.filter(
+            status="paid",
+            paid_at__date__gte=previous_month,
+            paid_at__date__lt=current_month,
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        customers = Accounts.objects.filter(
+            is_staff=False,
+            is_superuser=False,
+        )
+
+        current_customers = customers.filter(
+            date_joined__date__gte=current_month,
+            date_joined__date__lt=next_month,
+        ).count()
+
+        previous_customers = customers.filter(
+            date_joined__date__gte=previous_month,
+            date_joined__date__lt=current_month,
+        ).count()
+
+        return Response({
+            "month": current_month.strftime("%Y-%m"),
+            "total_bookings": current_bookings,
+            "bookings_change": self.calculate_change(
+                current_bookings,
+                previous_bookings,
+            ),
+            "total_revenue": float(current_revenue),
+            "revenue_change": self.calculate_change(
+                current_revenue,
+                previous_revenue,
+            ),
+            "active_rentals": bookings.filter(
+                status__in=["confirmed", "picked_up"],
+            ).count(),
+            "customers": current_customers,
+            "customers_change": self.calculate_change(
+                current_customers,
+                previous_customers,
+            ),
+        })
+
+
+class AdminDashboardFleetStatusView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        cars = Cars.objects.all()
+        total = cars.count()
+        maintenance = cars.filter(status="maintenance").count()
+        rented = cars.filter(
+            status="available",
+            bookings__status__in=["confirmed", "picked_up"],
+        ).distinct().count()
+        available = max(total - maintenance - rented, 0)
+
+        def fleet_item(label, value):
+            return {
+                "label": label,
+                "value": value,
+                "percentage": round(value / total * 100) if total else 0,
+            }
+
+        return Response({
+            "total": total,
+            "items": [
+                fleet_item("Available", available),
+                fleet_item("Rented", rented),
+                fleet_item("Maintenance", maintenance),
+            ],
+        })
+
+
+class AdminDashboardRecentBookingsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        bookings = Booking.objects.select_related("user", "car")[:5]
+
+        return Response({
+            "bookings": [
+                {
+                    "booking_reference": booking.booking_reference,
+                    "customer": (
+                        booking.user.get_full_name()
+                        or booking.user.email
+                        or booking.user.username
+                    ),
+                    "vehicle": f"{booking.car.brand} {booking.car.model}",
+                    "amount": float(booking.total_price),
+                    "status": booking.status,
+                    "status_label": booking.get_status_display(),
+                }
+                for booking in bookings
+            ],
+        })
+
+
+class AdminDashboardAttentionView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        return Response({
+            "items": [
+                {
+                    "label": "Pending approvals",
+                    "description": "Bookings waiting for review",
+                    "count": Booking.objects.filter(
+                        status="pending_approval",
+                    ).count(),
+                    "route": "/admin/admin-booking",
+                },
+                {
+                    "label": "Payment issues",
+                    "description": "Transactions requiring attention",
+                    "count": Payment.objects.filter(status="failed").count(),
+                    "route": "/admin/admin-booking",
+                },
+                {
+                    "label": "Vehicles in maintenance",
+                    "description": "Cars currently unavailable",
+                    "count": Cars.objects.filter(status="maintenance").count(),
+                    "route": "/admin/admin-fleet",
+                },
+            ],
+        })

@@ -133,12 +133,27 @@ const errorMessage = ref<string>("")
 
 /* ================= ROUTE ================= */
 const route = useRoute()
+const router = useRouter()
+const { $swal } = useNuxtApp()
 const goHome = () => navigateTo('/')
 
-onMounted(() => {
+onMounted(async () => {
     const err = route.query.error as string | undefined
 
-    if (err === "unauthorized") {
+    if (err === "suspended") {
+        await $swal.fire({
+            icon: 'error',
+            title: 'Account suspended',
+            text: 'Your account has been suspended. Please contact an administrator for assistance.',
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+        })
+
+        const query = { ...route.query }
+        delete query.error
+        await router.replace({ query })
+    } else if (err === "unauthorized") {
         errorMessage.value = "Access denied. Your Google account is not authorized."
     } else if (err === "oauth_failed") {
         errorMessage.value = "Google login failed. Please try again."

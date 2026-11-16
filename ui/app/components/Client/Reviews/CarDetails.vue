@@ -167,15 +167,17 @@
 
                         <button
                             @click="emit('notify-available')"
+                            :disabled="availabilityAlertLoading || availabilityAlertSubscribed"
                             class="
                                 w-full border border-[#9E9090]
                                 hover:bg-[#242424]
                                 text-[#9E9090] text-sm font-semibold
                                 py-3 rounded-lg
-                                transition-all duration-300 cursor-pointer
+                                transition-all duration-300
+                                disabled:cursor-default disabled:opacity-70
                             "
                         >
-                            Notify me when available
+                            {{ availabilityAlertLabel }}
                         </button>
                     </template>
 
@@ -274,6 +276,8 @@ const props = defineProps<{
     car: Car
     avgRating: number
     totalReviews: number
+    availabilityAlertSubscribed?: boolean
+    availabilityAlertLoading?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -291,6 +295,12 @@ interface RentalTerm {
 const activeImage = ref<number>(0)
 const viewerOpen = ref(false)
 
+const availabilityAlertLabel = computed(() => {
+    if (props.availabilityAlertLoading) return 'Setting up alert...'
+    if (props.availabilityAlertSubscribed) return "We'll notify you when available"
+    return 'Notify me when available'
+})
+
 const perks: string[] = [
     'Free cancellation',
     'No hidden fees',
@@ -305,9 +315,6 @@ const rentalTerms: RentalTerm[] = [
 ]
 
 const currentRental = computed(() => useCurrentRental(props.car))
-
-console.log('props:',props.car.unavailable_periods)
-console.log('Current:', currentRental.value)
 
 const rentedUntil = computed(() => {
     if (!currentRental.value) return ''

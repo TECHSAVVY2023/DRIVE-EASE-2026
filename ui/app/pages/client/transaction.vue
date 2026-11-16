@@ -36,14 +36,14 @@
                 </div>
 
                 <!-- Filters + Sort -->
-                <TransactionFilterSort
+                <ClientTransactionFilterSort
                     :tabs="tabs"
                     :sort-options="sortOptions"
                     v-model:activeTab="activeTab"
                     v-model:sortBy="sortBy"
                 />
 
-                <TransactionTable
+                <ClientTransactionTable
                     :transactions="transactions"
                     :current-page="currentPage"
                     :total-pages="totalPages"

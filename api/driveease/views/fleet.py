@@ -1,7 +1,19 @@
 """Fleet API views."""
 
 from django.db import transaction
-from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models import (
+    Case,
+    Count,
+    DecimalField,
+    Exists,
+    F,
+    IntegerField,
+    OuterRef,
+    Q,
+    Value,
+    When,
+)
+from django.db.models.functions import Abs
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -238,6 +250,42 @@ class CarDetailView(APIView):
         car = Cars.objects.get(car_reference=car_reference)
         serializer = CarSerializer(car)
         return Response(serializer.data)
+
+
+class SimilarCarListView(APIView):
+    def get(self, request, car_reference):
+        car = get_object_or_404(
+            Cars.objects.select_related("car_type"),
+            car_reference=car_reference,
+        )
+
+        # Prefer the same vehicle type, then the closest daily rate. Keep this
+        # consistent with the public fleet, which currently does not filter by
+        # approval_status. Cars under maintenance are still excluded.
+        similar_cars = (
+            Cars.objects
+            .filter(status="available")
+            .exclude(pk=car.pk)
+            .annotate(
+                type_rank=Case(
+                    When(car_type_id=car.car_type_id, then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField(),
+                ),
+                price_difference=Abs(
+                    F("price_per_day") - Value(
+                        car.price_per_day,
+                        output_field=DecimalField(
+                            max_digits=10,
+                            decimal_places=2,
+                        ),
+                    )
+                ),
+            )
+            .order_by("type_rank", "price_difference", "brand", "model")[:3]
+        )
+
+        return Response(CarSerializer(similar_cars, many=True).data)
 
 
 class FleetStatsView(APIView):

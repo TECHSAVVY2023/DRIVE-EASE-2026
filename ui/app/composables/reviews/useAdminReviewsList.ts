@@ -65,9 +65,12 @@ export function useAdminReviewsList() {
         ],
         () => {
             fetchReviews()
-        },
-        { immediate: true }
+        }
     )
+
+    onMounted(() => {
+        fetchReviews()
+    })
 
     // Reset pagination when search or filters change
     watch(

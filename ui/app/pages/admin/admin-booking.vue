@@ -20,7 +20,9 @@
     <AdminBookingViewBookingModal
         v-model="showBookingDetails"
         :booking="selectedBooking"
+        :refunding="refunding"
         @edit="handleViewEditBooking"
+        @refund="handleRefund"
     />
 
     <div class="flex h-screen bg-[#0D0D0D] font-[poppins] overflow-hidden text-white">
@@ -81,12 +83,12 @@
                     :next-page="nextPage"
                     :previous-page="previousPage"
                     :selected-status="selectedStatus"
-                    :selected-payment="selectedPayment"
+                    :selected-rental-period="selectedRentalPeriod"
 
                     @update:search="search = $event"
                     @update:page="currentPage = $event"
                     @update:selected-status="selectedStatus = $event"
-                    @update:selected-payment="selectedPayment = $event"
+                    @update:selected-rental-period="selectedRentalPeriod = $event"
 
                     @view="handleView"
                     @edit="handleEdit"
@@ -111,7 +113,7 @@ const { apiFetch } = useApiFetch()
 const { user } = useCurrentUser()
 
 const { loading, bookings, count, nextPage, previousPage, currentPage,
-        pageSize, totalPages, search, selectedStatus, selectedPayment, fetchStats,
+        pageSize, totalPages, search, selectedStatus, selectedRentalPeriod, fetchStats,
         total_booking, pending_approval, active_rentals, completed, cancelled,  
     } = useAdminTransactionsList()
 
@@ -189,6 +191,7 @@ const showBookingModal2 = ref(false)
 const isEditing = ref(false)
 
 const selectedBooking = ref<Transaction | null>(null)
+const refunding = ref(false)
 
 const handleEdit = (booking: Transaction) => {
     isEditing.value = true
@@ -264,6 +267,64 @@ const handleViewEditBooking = (booking: Transaction) => {
     showBookingDetails.value = false
     isEditing.value = true
     showBookingModal1.value = true
+}
+
+const { issueRefund } = useAdminTransactions()
+
+const handleRefund = async (booking: Transaction) => {
+    if (refunding.value || !booking.can_refund) return
+
+    const confirmation = await $swal.fire({
+        icon: 'warning',
+        title: 'Issue full refund?',
+        text: `PayMongo will refund the full amount for ${booking.booking_reference}.`,
+        input: 'textarea',
+        inputLabel: 'Admin note (optional)',
+        inputPlaceholder: 'Reason or internal note for this refund...',
+        inputAttributes: { maxlength: '255' },
+        showCancelButton: true,
+        confirmButtonText: 'Issue refund',
+        cancelButtonText: 'Not yet',
+        confirmButtonColor: '#C1121F',
+        cancelButtonColor: '#333333',
+        background: '#1a1a1a',
+        color: '#ffffff',
+        reverseButtons: true,
+    })
+
+    if (!confirmation.isConfirmed) return
+
+    refunding.value = true
+    try {
+        selectedBooking.value = await issueRefund(
+            booking.booking_reference,
+            String(confirmation.value ?? '').trim(),
+        )
+
+        const refundStatus = selectedBooking.value.refund?.status
+        await $swal.fire({
+            icon: refundStatus === 'failed' ? 'error' : 'success',
+            title: refundStatus === 'succeeded' ? 'Refund submitted' : 'Refund processing',
+            text: refundStatus === 'succeeded'
+                ? 'PayMongo accepted the full refund.'
+                : 'The refund was sent to PayMongo and is awaiting confirmation.',
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+        })
+    } catch (error: unknown) {
+        const requestError = error as { data?: { message?: string } }
+        await $swal.fire({
+            icon: 'error',
+            title: 'Refund unsuccessful',
+            text: requestError.data?.message ?? 'The refund could not be processed.',
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+        })
+    } finally {
+        refunding.value = false
+    }
 }
 
 onMounted(async () => {

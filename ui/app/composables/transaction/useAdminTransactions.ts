@@ -18,14 +18,14 @@ export const useAdminTransactions = () => {
             page = 1,
             search,
             status,
-            payment_status,
+            rental_period,
             sort,
         }: {
             force?: boolean
             page?: number
             search?: string
             status?: string
-            payment_status?: string
+            rental_period?: string
             sort?: string
         } = {}
     ): Promise<TransactionResponse> => {
@@ -34,7 +34,7 @@ export const useAdminTransactions = () => {
             `admin-bookings-page-${page}` +
             `-search-${search ?? "all"}` +
             `-status-${status ?? "all"}` +
-            `-payment-${payment_status ?? "all"}` +
+            `-rental-period-${rental_period ?? "all"}` +
             `-sort-${sort ?? "newest"}`
 
         const now = Date.now()
@@ -69,8 +69,8 @@ export const useAdminTransactions = () => {
             params.append("status", status)
         }
 
-        if (payment_status) {
-            params.append("payment_status", payment_status)
+        if (rental_period) {
+            params.append("rental_period", rental_period)
         }
 
         if (sort) {
@@ -139,6 +139,26 @@ export const useAdminTransactions = () => {
         }
     }
 
+    const issueRefund = async (
+        bookingReference: string,
+        note = '',
+    ): Promise<Transaction> => {
+        const response = await apiFetch<Transaction>(
+            API_ENDPOINTS.BOOKINGS.REFUND(bookingReference),
+            {
+                method: 'POST',
+                body: { note },
+            },
+        )
+
+        for (const key in AdminBookingCache) {
+            delete AdminBookingCache[key]
+            delete adminBookingCacheExpiresAt[key]
+        }
+
+        return response
+    }
+
     const fetchBookingStats = async (): Promise<BookingStatsResponse> => {
         return await apiFetch<BookingStatsResponse>('/admin/bookings/stats/')
     }
@@ -149,5 +169,6 @@ export const useAdminTransactions = () => {
         createBooking,
         updateBooking,
         deleteBooking,
+        issueRefund,
     }
 }

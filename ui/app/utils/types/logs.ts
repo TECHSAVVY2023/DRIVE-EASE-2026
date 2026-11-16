@@ -5,6 +5,7 @@ export interface AdminActivityLog {
     admin: number | null
     admin_name: string
     admin_reference: string | null
+    admin_profile_picture: string | null
     action: 'create' | 'update' | 'delete' | 'status_change'
     description: string
     target_type: string

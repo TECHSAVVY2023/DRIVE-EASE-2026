@@ -3,6 +3,7 @@
         v-model="showBookingModal"
         :car="car"
         :user="user"
+        :reservation-mode="reservationMode"
     />
 
     <MobileDrawer
@@ -39,8 +40,11 @@
                     :car="car"
                     :avg-rating="avgRating"
                     :total-reviews="totalReviews"
-                    @book="openBooking"
-                    @reserve="showBookingModal = true"
+                    :availability-alert-subscribed="availabilityAlertSubscribed"
+                    :availability-alert-loading="availabilityAlertLoading"
+                    @book="openBooking(false)"
+                    @reserve="openBooking(true)"
+                    @notify-available="handleNotifyWhenAvailable"
                 />
 
                 <ClientReviewsOwnersNote
@@ -142,7 +146,7 @@
                     />
                 </div>
 
-                <SimilarCars />
+                <SimilarCars :car-reference="car.car_reference" />
             
             </div>
 
@@ -177,7 +181,7 @@ const { $swal } = useNuxtApp()
 
 const { user } = useCurrentUser()
 
-const carId = route.params.id as string
+const carId = computed(() => String(route.params.id))
 const reviewState = useWriteReview()
 
 const { formattedRatingBreakdown, displayedReviews, totalReviews,
@@ -190,8 +194,58 @@ function handleExistingImagesUpdate(images: string[]) {
 }
 
 const { car, getCar } = useCarDetail()
+const {
+    subscribed: availabilityAlertSubscribed,
+    loading: availabilityAlertLoading,
+    getAlertStatus,
+    subscribe: subscribeToAvailability,
+    reset: resetAvailabilityAlert,
+} = useCarAvailabilityAlert()
 
-const openBooking = async () => {
+const reservationMode = ref(false)
+
+const handleNotifyWhenAvailable = async () => {
+    if (!user.value) {
+        const result = await $swal.fire({
+            icon: 'warning',
+            title: 'Login Required',
+            text: 'Log in so we know where to send your availability notification.',
+            showCancelButton: true,
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            confirmButtonText: 'Login',
+        })
+
+        if (result.isConfirmed) {
+            await router.push('/client/login')
+        }
+        return
+    }
+
+    try {
+        const message = await subscribeToAvailability(carId.value)
+        await $swal.fire({
+            icon: 'success',
+            title: 'Alert Set',
+            text: message,
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+        })
+    } catch (error: any) {
+        await $swal.fire({
+            icon: 'error',
+            title: 'Could Not Set Alert',
+            text: error?.data?.message ?? 'Please try again.',
+            confirmButtonColor: '#C1121F',
+            background: '#1a1a1a',
+            color: '#ffffff',
+        })
+    }
+}
+
+const openBooking = async (reserveInAdvance = false) => {
     if (!user.value) {
         const result = await $swal.fire({
             icon: 'warning',
@@ -211,6 +265,7 @@ const openBooking = async () => {
         return
     }
 
+    reservationMode.value = reserveInAdvance
     showBookingModal.value = true
 }
 
@@ -223,11 +278,11 @@ const handleEdit = () => {
 async function refreshReviews() {
     reviews.value = []
     nextPage.value = null
-    await fetchReviews(1, carId)
+    await fetchReviews(1, carId.value)
 }
 
 async function handleCreateReview(form: Review) {
-    const result = await handleSubmitReview(form, carId)
+    const result = await handleSubmitReview(form, carId.value)
 
     if (!result.success) return
 
@@ -236,7 +291,7 @@ async function handleCreateReview(form: Review) {
 }
 
 async function handleEditReview(form: Review) {
-    const result = await handleSubmitEditReview(form, carId)
+    const result = await handleSubmitEditReview(form, carId.value)
 
     if (!result.success) return
 
@@ -262,6 +317,9 @@ watch(
 
         if (!loggedIn) {
             myReview.value = null
+            resetAvailabilityAlert()
+        } else if (car.value) {
+            await getAlertStatus(carId.value)
         }
     },
     { immediate: true }
@@ -271,8 +329,12 @@ onMounted(async () => {
     await init()
     if (!authReady.value) return
 
-    await getCar(carId)
-    await fetchReviews(1, carId)
+    await getCar(carId.value)
+    await fetchReviews(1, carId.value)
+
+    if (isLoggedIn.value) {
+        await getAlertStatus(carId.value)
+    }
 
     if (route.query.payment === 'success') {
         $swal.fire({
@@ -311,7 +373,27 @@ watch([selectedRating, sortBy], () => {
     reviews.value = []
     nextPage.value = null
 
-    fetchReviews(1, carId)
+    fetchReviews(1, carId.value)
+})
+
+watch(carId, async (nextCarId, previousCarId) => {
+    if (!authReady.value || nextCarId === previousCarId) return
+
+    reviews.value = []
+    myReview.value = null
+    nextPage.value = null
+    resetAvailabilityAlert()
+
+    await getCar(nextCarId)
+    await fetchReviews(1, nextCarId)
+
+    if (isLoggedIn.value) {
+        await getAlertStatus(nextCarId)
+    }
+
+    if (import.meta.client) {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
 })
 
 watch(showEditReviewModal, (isOpen) => {

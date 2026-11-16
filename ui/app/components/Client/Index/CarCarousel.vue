@@ -1,244 +1,228 @@
 <template>
-    <section 
+    <div class="mb-10 text-center">
+        <h2 class="text-2xl font-extrabold uppercase tracking-wide text-white md:text-3xl">
+            {{ content.fleet_heading }}
+        </h2>
+
+        <p class="mt-2 text-sm text-[#9E9E9E]">
+            {{ content.fleet_description }}
+        </p>
+    </div>
+
+    <div
         ref="sectionRef"
-        class="landing-quiet-section py-16 px-6 overflow-hidden font-[poppins]">
+        class="relative mx-auto flex max-w-4xl items-center justify-center"
+    >
+        <button
+            type="button"
+            aria-label="Previous featured car"
+            :disabled="cars.length <= 1"
+            class="absolute left-0 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0b0b0d]/90 text-white shadow-lg transition-colors duration-200 hover:border-[#C1121F] hover:bg-[#C1121F] disabled:cursor-not-allowed disabled:opacity-40"
+            @click="prev"
+        >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
 
-        <Transition name="fade-only">
-            <div
-                v-if="isVisible"
-                class="max-w-5xl mx-auto"
+        <div class="flex w-full flex-col items-center px-16 text-center">
+            <Transition
+                enter-active-class="transition-all duration-300 ease-in-out"
+                leave-active-class="transition-all duration-300 ease-in-out"
+                :enter-from-class="transitionEnterFrom"
+                :leave-to-class="transitionLeaveTo"
+                mode="out-in"
             >
-
-                <!-- Title -->
-                <div class="text-center mb-10">
-
-                    <h2 class="text-white text-2xl md:text-3xl font-extrabold uppercase tracking-wide">
-                        Find the Right Car for Your Trip
-                    </h2>
-
-                    <p class="text-[#9E9E9E] text-sm mt-2">From budget-friendly to premium — we have it all</p>
-                </div>
-
-                <!-- Carousel -->
-                <div class="relative flex items-center justify-center max-w-4xl mx-auto">
-
-                    <!-- Prev Button -->
-                    <button
-                        @click="prev"
-                        class="
-                        absolute left-0 z-10
-                        w-10 h-10 rounded-full
-                        bg-[#0b0b0d]/90 border border-white/10 hover:bg-[#C1121F]
-                        hover:border-[#C1121F]
-                        text-white flex items-center justify-center
-                        transition-colors duration-200
-                        shadow-lg
-                        "
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-
-                <!-- Car Display -->
-                <div class="flex flex-col items-center text-center px-16 w-full">
-                    <Transition
-                        enter-active-class="transition-all duration-300 ease-in-out"
-                        leave-active-class="transition-all duration-300 ease-in-out"
-                        :enter-from-class="transitionEnterFrom"
-                        :leave-to-class="transitionLeaveTo"
-                        mode="out-in"
-                    >
-
-                    <div :key="current" class="flex flex-col items-center">
-                        <!-- Car Image -->
-                        <img
-                        :src="cars[current].image"
-                        :alt="cars[current].name"
-                        class="w-full max-w-sm md:max-w-md h-[260px] md:h-[320px] object-contain drop-shadow-2xl"
-                        />
-
-                        <!-- Car Info -->
-                        <h3 class="text-white text-xl font-extrabold uppercase tracking-wide mt-6">
-                            {{ cars[current].name }}
-                        </h3>
-
-                        <p class="text-[#9E9E9E] text-sm mt-1">
-                        from <span class="text-white font-semibold">{{ cars[current].price }}</span>/day
-                        </p>
-                    </div>
-                    </Transition>
-                    <!-- CTA -->
-                    <button 
-                        @click="$router.push('/client/fleet')"
-                        class="
-                        mt-6 bg-[#C1121F] hover:bg-[#9B0E18]
-                        text-white text-sm font-semibold
-                        px-8 py-3 rounded
-                        transition-colors duration-200
-                        ">
-                        View all cars
-                    </button>
-                </div>
-
-                <!-- Next Button -->
-                <button
-                    @click="next"
-                    class="
-                    absolute right-0 z-10
-                    w-10 h-10 rounded-full
-                    bg-[#0b0b0d]/90 border border-white/10 hover:bg-[#C1121F]
-                    hover:border-[#C1121F]
-                    text-white flex items-center justify-center
-                    transition-colors duration-200
-                    shadow-lg
-                    "
+                <div
+                    v-if="currentCar"
+                    :key="currentCar.id"
+                    class="flex flex-col items-center"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
+                    <img
+                        v-if="currentCar.featured_image"
+                        :src="currentCar.featured_image"
+                        :alt="currentCar.car_name"
+                        class="h-[260px] w-full max-w-sm object-contain drop-shadow-2xl md:h-[320px] md:max-w-md"
+                    >
+
+                    <div
+                        v-else
+                        class="flex h-[260px] w-full max-w-sm items-center justify-center text-sm text-[#777] md:h-[320px] md:max-w-md"
+                    >
+                        Image unavailable
+                    </div>
+
+                    <h3 class="mt-6 text-xl font-extrabold uppercase tracking-wide text-white">
+                        {{ currentCar.car_name }}
+                    </h3>
+
+                    <p class="mt-1 text-sm text-[#9E9E9E]">
+                        from
+                        <span class="font-semibold text-white">
+                            {{ formatPrice(currentCar.price_per_day) }}
+                        </span>/day
+                    </p>
                 </div>
 
-                <!-- Dots -->
-                <div class="flex justify-center gap-2 mt-8">
-                <button
-                    v-for="(car, index) in cars"
-                    :key="index"
-                    @click="goTo(index)"
-                    class="w-2 h-2 rounded-full transition-colors duration-200"
-                    :class="index === current ? 'bg-[#C1121F]' : 'bg-[#3C3C3C]'"
-                ></button>
-                </div>
+                <p v-else key="empty" class="py-24 text-sm text-[#9E9E9E]">
+                    No featured vehicles are available yet.
+                </p>
+            </Transition>
 
-            </div>
-        </Transition>
+            <button
+                type="button"
+                class="mt-6 rounded bg-[#C1121F] px-8 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#9B0E18]"
+                @click="router.push('/client/fleet')"
+            >
+                View all cars
+            </button>
+        </div>
 
-    </section>
+        <button
+            type="button"
+            aria-label="Next featured car"
+            :disabled="cars.length <= 1"
+            class="absolute right-0 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0b0b0d]/90 text-white shadow-lg transition-colors duration-200 hover:border-[#C1121F] hover:bg-[#C1121F] disabled:cursor-not-allowed disabled:opacity-40"
+            @click="next"
+        >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
+
+    <div v-if="cars.length > 1" class="mt-8 flex justify-center gap-2">
+        <button
+            v-for="(car, index) in cars"
+            :key="car.id"
+            type="button"
+            :aria-label="`Show ${car.car_name}`"
+            :aria-current="index === current ? 'true' : undefined"
+            class="h-2 w-2 rounded-full transition-colors duration-200"
+            :class="index === current ? 'bg-[#C1121F]' : 'bg-[#3C3C3C]'"
+            @click="goTo(index)"
+        />
+    </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+<script setup lang="ts">
+import type { HomePageFeaturedCar, HomepageContent } from '~/utils/types/content'
 
-const { cars } = useLandingPage()
+const props = defineProps<{
+    content: HomepageContent
+}>()
 
-const current = ref(0)
-const transitionName = ref('slide-left')
+const router = useRouter()
+const cars = computed<HomePageFeaturedCar[]>(() => props.content.featured_cars)
+const current = ref<number>(0)
+const currentCar = computed<HomePageFeaturedCar | null>(
+    () => cars.value[current.value] ?? null
+)
+const transitionDirection = ref<'left' | 'right'>('left')
+const sectionRef = ref<HTMLElement | null>(null)
+const isVisible = ref<boolean>(false)
 
-// Computed transition classes
-const transitionEnterFrom = computed(() => 
-    transitionName.value === 'slide-left' 
-        ? 'opacity-0 translate-x-15' 
+const transitionEnterFrom = computed<string>(() =>
+    transitionDirection.value === 'left'
+        ? 'opacity-0 translate-x-15'
         : 'opacity-0 -translate-x-15'
 )
 
-const transitionLeaveTo = computed(() => 
-    transitionName.value === 'slide-left' 
-        ? 'opacity-0 -translate-x-15' 
+const transitionLeaveTo = computed<string>(() =>
+    transitionDirection.value === 'left'
+        ? 'opacity-0 -translate-x-15'
         : 'opacity-0 translate-x-15'
 )
 
-const sectionRef = ref(null)
-const isVisible = ref(false)
+const formatPrice = (price: string): string =>
+    new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+    }).format(Number(price) || 0)
 
-let autoSlideInterval = null
-let interactionTimeout = null
-let observer = null
+let autoSlideInterval: ReturnType<typeof setInterval> | null = null
+let interactionTimeout: ReturnType<typeof setTimeout> | null = null
+let observer: IntersectionObserver | null = null
 
-function next() {
-    transitionName.value = 'slide-left'
-    current.value = (current.value + 1) % cars.length
+function next(): void {
+    if (cars.value.length <= 1) return
 
+    transitionDirection.value = 'left'
+    current.value = (current.value + 1) % cars.value.length
     resetAutoSlideDelay()
 }
 
-function prev() {
-    transitionName.value = 'slide-right'
-    current.value = (current.value - 1 + cars.length) % cars.length
+function prev(): void {
+    if (cars.value.length <= 1) return
 
+    transitionDirection.value = 'right'
+    current.value = (current.value - 1 + cars.value.length) % cars.value.length
     resetAutoSlideDelay()
 }
 
-function goTo(index) {
-    transitionName.value =
-        index > current.value ? 'slide-left' : 'slide-right'
+function goTo(index: number): void {
+    if (index < 0 || index >= cars.value.length || index === current.value) return
 
+    transitionDirection.value = index > current.value ? 'left' : 'right'
     current.value = index
-
     resetAutoSlideDelay()
 }
 
-function startAutoSlide() {
-    if (autoSlideInterval) return
+function startAutoSlide(): void {
+    if (autoSlideInterval || cars.value.length <= 1) return
 
     autoSlideInterval = setInterval(() => {
-        transitionName.value = 'slide-left'
-        current.value = (current.value + 1) % cars.length
+        transitionDirection.value = 'left'
+        current.value = (current.value + 1) % cars.value.length
     }, 3000)
 }
 
-function stopAutoSlide() {
+function stopAutoSlide(): void {
+    if (!autoSlideInterval) return
+
     clearInterval(autoSlideInterval)
     autoSlideInterval = null
 }
 
-function resetAutoSlideDelay() {
+function resetAutoSlideDelay(): void {
     stopAutoSlide()
 
-    clearTimeout(interactionTimeout)
+    if (interactionTimeout) clearTimeout(interactionTimeout)
 
     interactionTimeout = setTimeout(() => {
-        startAutoSlide()
+        if (isVisible.value) startAutoSlide()
     }, 5000)
 }
+
+watch(
+    () => cars.value.length,
+    (length) => {
+        if (length === 0 || current.value >= length) current.value = 0
+
+        stopAutoSlide()
+        if (isVisible.value) startAutoSlide()
+    }
+)
 
 onMounted(() => {
     observer = new IntersectionObserver(
         ([entry]) => {
-            if (entry.isIntersecting) {
-                startAutoSlide()
-                isVisible.value = true
-                observer.disconnect()
-            } else {
-                stopAutoSlide()
-            }
+            isVisible.value = Boolean(entry?.isIntersecting)
+
+            if (isVisible.value) startAutoSlide()
+            else stopAutoSlide()
         },
-        {
-            threshold: 0.5
-        }
+        { threshold: 0.5 }
     )
 
-    if (sectionRef.value) {
-        observer.observe(sectionRef.value)
-    }
+    if (sectionRef.value) observer.observe(sectionRef.value)
 })
 
 onBeforeUnmount(() => {
     stopAutoSlide()
-
-    clearTimeout(interactionTimeout)
-
-    if (observer && sectionRef.value) {
-        observer.unobserve(sectionRef.value)
-    }
+    if (interactionTimeout) clearTimeout(interactionTimeout)
+    observer?.disconnect()
 })
-
-
 </script>
-
-<style scoped>
-
-.fade-only-enter-active {
-    transition: opacity 0.8s ease;
-}
-
-.fade-only-enter-from {
-    opacity: 0;
-}
-
-.fade-only-enter-to {
-    opacity: 1;
-}
-
-</style>
-

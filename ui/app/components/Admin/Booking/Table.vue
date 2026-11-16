@@ -69,11 +69,11 @@
                     </svg>
                 </div>
 
-                <!-- Payment filter -->
+                <!-- Rental dates filter -->
                 <div class="relative flex-1 sm:flex-none">
                     <select
-                        :value="props.selectedPayment"
-                        @change="handlePaymentChange"
+                        :value="props.selectedRentalPeriod"
+                        @change="handleRentalPeriodChange"
                         class="
                             appearance-none w-full sm:w-auto
                             bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg
@@ -83,11 +83,11 @@
                             transition-colors
                         "
                     >
-                        <option value="">Payment</option>
-                        <option value="paid">Paid</option>
-                        <option value="pending">Pending</option>
-                        <option value="failed">Failed</option>
-                        <option value="refunded">Refunded</option>
+                        <option value="">Rental dates</option>
+                        <option value="today">Today</option>
+                        <option value="next_7_days">Next 7 days</option>
+                        <option value="this_month">This month</option>
+                        <option value="past">Past rentals</option>
                     </select>
 
                     <svg
@@ -471,14 +471,14 @@ const props = defineProps<{
     nextPage: string | null
     previousPage: string | null
     selectedStatus: string
-    selectedPayment: string
+    selectedRentalPeriod: string
 }>()
 
 const emit = defineEmits<{
     'update:search': [value: string]
     'update:page': [value: number]
     'update:selectedStatus': [value: string]
-    'update:selectedPayment': [value: string]
+    'update:selectedRentalPeriod': [value: string]
     edit: [booking: Transaction]
     view: [booking: Transaction]
     delete: [booking: Transaction]
@@ -494,9 +494,9 @@ const handleStatusChange = (event: Event) => {
     emit('update:selectedStatus', target.value)
 }
 
-const handlePaymentChange = (event: Event) => {
+const handleRentalPeriodChange = (event: Event) => {
     const target = event.target as HTMLSelectElement
-    emit('update:selectedPayment', target.value)
+    emit('update:selectedRentalPeriod', target.value)
 }
 
 const formatPrice = (price: number) => {

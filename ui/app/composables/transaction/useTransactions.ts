@@ -123,8 +123,32 @@ export const useTransactions = () => {
         return request
     }
 
+    const cancelTransaction = async (
+        bookingReference: string,
+        reason: string,
+    ): Promise<Transaction> => {
+        const booking = await apiFetch<Transaction>(
+            `/bookings/${bookingReference}/cancel/`,
+            {
+                method: 'POST',
+                body: { reason },
+            }
+        )
+
+        delete TransactionDetailCache[`transaction-detail-${bookingReference}`]
+        delete transactionCacheExpiresAt[`transaction-detail-${bookingReference}`]
+
+        Object.keys(TransactionCache).forEach(key => {
+            delete TransactionCache[key]
+            delete transactionCacheExpiresAt[key]
+        })
+
+        return booking
+    }
+
     return {
         fetchTransactionsList,
         fetchTransactionDetail,
+        cancelTransaction,
     }
 }

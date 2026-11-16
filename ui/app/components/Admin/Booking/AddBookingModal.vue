@@ -295,6 +295,11 @@
 
                 </div>
 
+                <p class="mb-3 text-[11px] leading-5 text-neutral-500">
+                    New bookings start before approval. Later rental stages are
+                    recorded from Edit Booking as they happen.
+                </p>
+
                 <div v-if="form.status === 'cancelled'" class="mb-3">
                     <p :class="section">Cancel reason</p>
 
@@ -489,7 +494,7 @@ function blank(): BookingForm {
         car_reference: '',
         user_reference: '',
 
-        status: '',
+        status: 'pending_payment',
         cancel_reason: '',
         total_price: 0,
         daily_rate: 0,
@@ -540,12 +545,6 @@ function save() {
 const STATUSES = [
     { value: 'pending_payment', label: 'Pending Payment', active: 'bg-[#c1121f] text-white' },
     { value: 'pending_approval', label: 'Pending Approval', active: 'bg-[#c1121f] text-white' },
-    { value: 'confirmed', label: 'Confirmed', active: 'bg-[#c1121f] text-white' },
-    { value: 'rejected', label: 'Rejected', active: 'bg-[#c1121f] text-white' },
-    { value: 'picked_up', label: 'Picked Up', active: 'bg-[#c1121f] text-white' },
-    { value: 'returned', label: 'Returned', active: 'bg-[#c1121f] text-white' },
-    { value: 'completed', label: 'Completed', active: 'bg-[#c1121f] text-white' },
-    { value: 'cancelled', label: 'Cancelled', active: 'bg-[#c1121f] text-white' },
 ] as const
 
 const field = `

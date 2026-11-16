@@ -44,10 +44,13 @@
                             <div class="mb-6 rounded-xl border border-[#282828] bg-[#171717] p-4">
                                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                     <div class="flex min-w-0 items-center gap-3">
-                                        <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#C1121F] text-sm font-bold text-white">
-                                            <img v-if="form.profile_picture" :src="form.profile_picture" alt="User profile picture" class="h-full w-full object-cover">
-                                            <span v-else>{{ initials }}</span>
-                                        </div>
+                                        <UserAvatar
+                                            :src="form.profile_picture"
+                                            :alt="`${fullName || 'User'} profile picture`"
+                                            class="h-12 w-12 text-sm font-bold text-white"
+                                        >
+                                            <template #fallback>{{ initials }}</template>
+                                        </UserAvatar>
                                         <div class="min-w-0">
                                             <p class="truncate text-sm font-semibold text-white">{{ fullName || 'Unnamed user' }}</p>
                                             <p class="truncate text-xs text-neutral-500">{{ form.email }}</p>
@@ -167,8 +170,17 @@
                                 <div>
                                     <label for="edit-role" :class="labelClass">Role</label>
                                     <div class="relative">
-                                        <select id="edit-role" v-model="form.role" disabled :class="[fieldClass, 'cursor-not-allowed appearance-none pr-9 opacity-60']">
-                                            <option value="User">User</option>
+                                        <select
+                                            id="edit-role"
+                                            v-model="form.role"
+                                            :disabled="!props.canManageRoles"
+                                            :class="[
+                                                fieldClass,
+                                                'appearance-none pr-9',
+                                                !props.canManageRoles ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
+                                            ]"
+                                        >
+                                            <option value="Customer">Customer</option>
                                             <option value="Admin">Admin</option>
                                             <option value="Super Admin">Super Admin</option>
                                         </select>
@@ -190,7 +202,11 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="mt-2 text-[11px] text-neutral-600">Use Assign role or the user table's status action to change account access.</p>
+                            <p class="mt-2 text-[11px] text-neutral-600">
+                                {{ props.canManageRoles
+                                    ? 'Super Admins can update account roles here.'
+                                    : 'Only a Super Admin can change account roles.' }}
+                            </p>
 
                             <div class="mt-6 grid grid-cols-1 gap-3 text-xs sm:grid-cols-3">
                                 <div v-for="detail in accountDetails" :key="detail.label" class="rounded-lg border border-[#282828] bg-[#171717] px-3.5 py-3">
@@ -256,7 +272,10 @@
 import type { AdminEditUserPayload, User, UserRole } from '~/utils/types/accounts'
 
 const open = defineModel<boolean>({ required: true })
-const props = defineProps<{ user: User | null }>()
+const props = defineProps<{
+    user: User | null
+    canManageRoles: boolean
+}>()
 const emit = defineEmits<{
     save: [payload: { userReference: string; body: AdminEditUserPayload }]
 }>()
@@ -276,7 +295,7 @@ const form = reactive({
     contact_number: '',
     address: '',
     profile_picture: '',
-    role: 'User' as UserRole,
+    role: 'Customer' as UserRole,
     status: 'Active' as User['status'],
 })
 
@@ -340,6 +359,8 @@ function save() {
         contact_number: form.contact_number.trim(),
         address: form.address.trim(),
     }
+
+    if (props.canManageRoles) body.role = form.role
 
     if (profileRemovalRequested.value) {
         body.remove_profile_picture = true

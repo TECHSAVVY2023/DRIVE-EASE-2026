@@ -34,8 +34,13 @@ export function useBookingValidation() {
             return false
         }
 
-        if (totalIds > 6) {
-            await showError('A maximum of 6 ID images is allowed.')
+        if (totalIds < 2) {
+            await showError('Please upload two valid ID images (front and back) before continuing.')
+            return false
+        }
+
+        if (totalIds > 5) {
+            await showError('A maximum of 5 ID images is allowed.')
             return false
         }
 

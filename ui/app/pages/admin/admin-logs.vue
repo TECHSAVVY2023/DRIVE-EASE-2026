@@ -18,12 +18,12 @@
                         <p class="mt-1 text-[13px] text-[#8a8a8a]">Track important administrative actions across the system</p>
                     </div>
 
-                    <button type="button" class="flex items-center justify-center gap-2 rounded-lg border border-[#303030] bg-[#181818] px-4 py-2.5 text-xs font-semibold text-gray-300 transition hover:border-[#C1121F] hover:text-white">
+                    <!-- <button type="button" class="flex items-center justify-center gap-2 rounded-lg border border-[#303030] bg-[#181818] px-4 py-2.5 text-xs font-semibold text-gray-300 transition hover:border-[#C1121F] hover:text-white">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" />
                         </svg>
                         Export logs
-                    </button>
+                    </button> -->
                 </div>
 
                 <AdminCommonStatsCards :cards="statCards" />

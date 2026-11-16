@@ -5,8 +5,17 @@ const NOTIFICATION_CACHE_TTL_MS = 60 * 1000
 const NotificationCache: Record<string, NotificationResponse> = {}
 const NotificationRequests = new Map<string, Promise<NotificationResponse>>()
 
+const clearNotificationCache = () => {
+    Object.keys(NotificationCache).forEach(key => delete NotificationCache[key])
+    Object.keys(notificationCacheExpiresAt).forEach(
+        key => delete notificationCacheExpiresAt[key]
+    )
+    NotificationRequests.clear()
+}
+
 export const useNotification = () => {
     const { apiFetch } = useApiFetch()
+    const unreadCount = useState<number>('user-notification-unread-count', () => 0)
     
     const fetchNotifications = async (
         { force = false, page = 1 }: { force?: boolean; page?: number } = {}
@@ -46,17 +55,48 @@ export const useNotification = () => {
             '/notifications/unread-count/'
         )
 
-        return response.unread_count
+        unreadCount.value = response.unread_count
+        return unreadCount.value
     }
 
     const markNotificationAsRead = async (notificationId: number) => {
-        return await apiFetch(
+        const response = await apiFetch(
             `/notifications/${notificationId}/read/`,
             {
                 method: 'PATCH',
             }
         )
+        unreadCount.value = Math.max(0, unreadCount.value - 1)
+        clearNotificationCache()
+        return response
+    }
+
+    const markAllNotificationsAsRead = async () => {
+        const response = await apiFetch<{ message: string; updated: number }>(
+            '/notifications/read-all/',
+            { method: 'PATCH' }
+        )
+        unreadCount.value = 0
+        clearNotificationCache()
+        return response
+    }
+
+    const deleteAllNotifications = async () => {
+        const response = await apiFetch<{ message: string; deleted: number }>(
+            '/notifications/delete-all/',
+            { method: 'DELETE' }
+        )
+        unreadCount.value = 0
+        clearNotificationCache()
+        return response
     }
     
-    return { fetchNotifications, fetchUnreadCount, markNotificationAsRead }
+    return {
+        fetchNotifications,
+        fetchUnreadCount,
+        markNotificationAsRead,
+        markAllNotificationsAsRead,
+        deleteAllNotifications,
+        unreadCount,
+    }
 }

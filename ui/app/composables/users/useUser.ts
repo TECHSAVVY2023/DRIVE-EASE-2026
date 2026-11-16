@@ -1,6 +1,7 @@
 import {
+    type AdminCreateUserPayload, type AdminCreateUserResponse,
     type AdminEditUserPayload, type AdminEditUserResponse,
-    type AssignRoleResponse, type UserRole, type UsersResponse, type UsersStats,
+    type AssignRoleResponse, type DeleteUserResponse, type UserRole, type UsersResponse, type UsersStats,
     type UpdateUserStatusResponse
 } from "~/utils/types/accounts"
 
@@ -136,10 +137,48 @@ export const useUsers = () => {
         return response
     }
 
+    const createUserAdmin = async (
+        body: AdminCreateUserPayload,
+    ): Promise<AdminCreateUserResponse> => {
+        const response = await apiFetch<AdminCreateUserResponse>(
+            '/admin/accounts/',
+            { method: 'POST', body },
+        )
+
+        clearUserCache()
+        return response
+    }
+
+    const updateUserStatus = async (
+        userReference: string,
+        isActive: boolean,
+    ): Promise<UpdateUserStatusResponse> => {
+        const response = await apiFetch<UpdateUserStatusResponse>(
+            `/admin/accounts/${userReference}/status/`,
+            { method: 'PATCH', body: { is_active: isActive } },
+        )
+        clearUserCache()
+        return response
+    }
+
+    const deleteUserAdmin = async (
+        userReference: string,
+    ): Promise<DeleteUserResponse> => {
+        const response = await apiFetch<DeleteUserResponse>(
+            `/admin/accounts/${userReference}/`,
+            { method: 'DELETE' },
+        )
+        clearUserCache()
+        return response
+    }
+
     return {
         fetchUsersStats,
         fetchUsersList,
         assignUserRole,
         updateUserAdmin,
+        createUserAdmin,
+        updateUserStatus,
+        deleteUserAdmin,
     }
 }
