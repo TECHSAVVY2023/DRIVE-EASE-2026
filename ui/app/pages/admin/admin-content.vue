@@ -161,9 +161,8 @@ const currentDate = new Date().toLocaleDateString('en-US', {
 })
 
 const form = ref<HomepageContent>({ id: 0, hero_heading1: '', hero_heading2: '', hero_tagline: '',
-    hero_image: '', fleet_heading: '', fleet_description: '', fleet_button_label: '',
-    fleet_button_link: '', trust_heading: '', trust_items: [], faq_heading: '', faq_highlight: '',
-    faq_description: '', faq_button_label: '', faq_button_link: '', featured_cars: [],
+    hero_image: '', fleet_heading: '', fleet_description: '', trust_heading: '',
+    trust_items: [], faq_heading: '', faq_highlight: '', faq_description: '', featured_cars: [],
     faqs: [], created_at: '', updated_at: '', cars: []
 })
 

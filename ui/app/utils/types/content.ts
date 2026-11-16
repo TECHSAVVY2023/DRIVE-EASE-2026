@@ -44,15 +44,11 @@ export interface HomepageContent {
     hero_image: string;
     fleet_heading: string;
     fleet_description: string;
-    fleet_button_label: string;
-    fleet_button_link: string;
     trust_heading: string;
     trust_items: HomeTrustUs[];
     faq_heading: string;
     faq_highlight: string;
     faq_description: string;
-    faq_button_label: string;
-    faq_button_link: string;
     featured_cars: HomePageFeaturedCar[];
     faqs: HomePageFAQ[];
     cars: MiniCar[];
