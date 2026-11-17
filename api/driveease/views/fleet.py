@@ -150,7 +150,7 @@ class FleetListView(ListAPIView):
                 "confirmed",
                 "picked_up",
             ],
-            return_date__gt=timezone.now(),
+            pickup_date__lte=timezone.now(),
         )
 
         queryset = queryset.annotate(

@@ -167,7 +167,7 @@
                                     v-for="(image, j) in getReviewImages(review)"
                                     :key="`${image}-${j}`"
                                     type="button"
-                                    class="w-16 h-12 rounded-lg bg-[#111] border border-[#2a2a2a] overflow-hidden flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C1121F]"
+                                    class="w-16 h-12 rounded-lg bg-[#111] border border-[#2a2a2a] overflow-hidden flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C1121F] cursor-pointer"
                                     :aria-label="`View review image ${Number(j) + 1}`"
                                     @click="openImageViewer(review, Number(j))"
                                 >

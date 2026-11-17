@@ -153,6 +153,22 @@ class CarAvailabilityAlertTests(APITestCase):
             f"/client/car-details/{self.car.car_reference}",
         )
 
+    def test_overdue_active_rental_does_not_send_availability_alert(self):
+        alert = CarAvailabilityAlert.objects.create(
+            user=self.user,
+            car=self.car,
+        )
+        self.booking.return_date = timezone.now() - timedelta(hours=1)
+        self.booking.save(update_fields=["return_date"])
+
+        created = create_due_car_availability_notifications(user=self.user)
+
+        self.assertEqual(created, 0)
+        self.assertTrue(
+            CarAvailabilityAlert.objects.filter(pk=alert.pk).exists()
+        )
+        self.assertFalse(Notification.objects.filter(user=self.user).exists())
+
 
 class AssignAccountRoleTests(APITestCase):
     def setUp(self):
@@ -557,6 +573,34 @@ class ClientBookingAvailabilityTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Booking.objects.filter(car=self.car).count(), 2)
+
+    def test_overdue_active_booking_blocks_future_dates(self):
+        Booking.objects.filter(pk=self.hold.pk).update(
+            created_at=timezone.now() - timedelta(minutes=16),
+        )
+        Booking.objects.create(
+            user=self.first_customer,
+            car=self.car,
+            pickup_date=timezone.now() - timedelta(days=3),
+            return_date=timezone.now() - timedelta(days=1),
+            pickup_location="Cagayan de Oro",
+            return_location="Cagayan de Oro",
+            daily_rate=1800,
+            number_of_days=2,
+            subtotal=3600,
+            discount=0,
+            total_price=3600,
+            status="picked_up",
+        )
+
+        response = self.client.post(
+            reverse("create-booking"),
+            self.booking_payload(),
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("unavailable", response.data["message"])
 
 
 class ClientBookingCancellationTests(APITestCase):

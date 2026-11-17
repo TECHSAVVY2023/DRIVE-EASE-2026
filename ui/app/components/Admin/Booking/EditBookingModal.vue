@@ -350,6 +350,7 @@ import type { Car } from '~/utils/types/fleet'
 import { computed } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import type { FlowConfig } from '@vuepic/vue-datepicker'
+import { periodBlocksDate } from '~/composables/useCarRental'
 
 const open = defineModel<boolean>({ required: true })
 
@@ -445,15 +446,9 @@ const selectedCar = computed(() =>
 )
 
 const disabledDates = (date: Date) => {
-    return selectedCar.value?.unavailable_periods?.some(period => {
-        const start = new Date(period.pickup_date)
-        const end = new Date(period.return_date)
-
-        start.setHours(0, 0, 0, 0)
-        end.setHours(23, 59, 59, 999)
-
-        return date >= start && date <= end
-    }) ?? false
+    return selectedCar.value?.unavailable_periods?.some(
+        period => periodBlocksDate(period, date)
+    ) ?? false
 }
 
 const STATUSES = [

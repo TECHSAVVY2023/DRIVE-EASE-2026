@@ -2,6 +2,7 @@ export interface UnavailablePeriod {
     pickup_date: string
     return_date: string
     status: string
+    is_overdue: boolean
 }
 
 export interface CarType {

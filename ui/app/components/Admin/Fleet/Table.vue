@@ -536,11 +536,8 @@ const getRentalStatus = (car: Car) => {
 
     const currentRental = car.unavailable_periods?.some((period) => {
         const pickupDate = new Date(period.pickup_date)
-        const returnDate = new Date(period.return_date)
-
         return (
             now >= pickupDate &&
-            now <= returnDate &&
             ['pending_approval', 'confirmed', 'picked_up'].includes(
                 period.status
             )

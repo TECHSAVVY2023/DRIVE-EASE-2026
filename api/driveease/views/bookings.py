@@ -22,7 +22,7 @@ from ..utils.notifications import (
     create_admin_notifications,
     create_due_car_availability_notifications,
 )
-from ..utils.booking_availability import booking_blocks_availability
+from ..utils.booking_availability import booking_conflicts_with_period
 from ..utils.refunds import create_pending_refund
 
 
@@ -94,11 +94,9 @@ class CreateBookingView(APIView):
         pickup_date = serializer.validated_data["pickup_date"]
         return_date = serializer.validated_data["return_date"]
 
-        overlap = Booking.objects.filter(
-            car=car,
-            pickup_date__lt=return_date,
-            return_date__gt=pickup_date,
-        ).filter(booking_blocks_availability()).exists()
+        overlap = Booking.objects.filter(car=car).filter(
+            booking_conflicts_with_period(pickup_date, return_date)
+        ).exists()
 
         if overlap:
             return Response(
@@ -529,6 +527,24 @@ class AdminCreateBookingView(APIView):
 
         serializer = BookingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        submitted_car = serializer.validated_data["car"]
+        car = Cars.objects.select_for_update().get(pk=submitted_car.pk)
+        pickup_date = serializer.validated_data["pickup_date"]
+        return_date = serializer.validated_data["return_date"]
+
+        if Booking.objects.filter(car=car).filter(
+            booking_conflicts_with_period(pickup_date, return_date)
+        ).exists():
+            return Response(
+                {
+                    "message": (
+                        "This car is unavailable during the selected period. "
+                        "Resolve any active or overdue rental first."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         booking = serializer.save()
 

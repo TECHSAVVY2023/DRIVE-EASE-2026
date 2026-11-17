@@ -64,10 +64,10 @@
                 <div class="flex items-start justify-between gap-3">
                     <h1 class="text-white font-extrabold text-2xl leading-tight">{{ car.brand }} {{ car.model }}</h1>
                     <span class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0"
-                        :class="car.status === 'available' ? 'bg-[#123a1f] text-green-400' : 'bg-[#C1121F]/20 text-[#FF6161]'"
+                        :class="!isCarUnavailable ? 'bg-[#123a1f] text-green-400' : 'bg-[#C1121F]/20 text-[#FF6161]'"
                     >
-                        <span class="w-1.5 h-1.5 rounded-full" :class="car.status === 'available' ? 'bg-green-400' : 'bg-[#FF6161]'"></span>
-                        {{ car.status === 'available' ? 'AVAILABLE' : 'UNAVAILABLE' }}
+                        <span class="w-1.5 h-1.5 rounded-full" :class="!isCarUnavailable ? 'bg-green-400' : 'bg-[#FF6161]'"></span>
+                        {{ !isCarUnavailable ? 'AVAILABLE' : 'UNAVAILABLE' }}
                     </span>
                 </div>
     
@@ -100,10 +100,10 @@
 
                     <div class="flex flex-col items-center leading-tight">
                         <span class="text-[#FFAE00] text-sm font-medium">
-                            Currently Rented
+                            {{ currentRental.is_overdue ? 'Rental Overdue' : 'Currently Rented' }}
                         </span>
                         <span class="text-[#FFAE00] text-xs opacity-80">
-                            Until {{ rentedUntil }}
+                            {{ currentRental.is_overdue ? 'Expected back' : 'Until' }} {{ rentedUntil }}
                         </span>
                     </div>
                 </div>
@@ -315,6 +315,9 @@ const rentalTerms: RentalTerm[] = [
 ]
 
 const currentRental = computed(() => useCurrentRental(props.car))
+const isCarUnavailable = computed(() =>
+    props.car.status !== 'available' || Boolean(currentRental.value)
+)
 
 const rentedUntil = computed(() => {
     if (!currentRental.value) return ''

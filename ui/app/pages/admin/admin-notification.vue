@@ -15,7 +15,7 @@
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <h1 class="text-[22px] font-extrabold">Notifications</h1>
-                        <p class="mt-1 text-[13px] text-[#8a8a8a]">Stay updated on bookings, payments, reviews, and system activity</p>
+                        <p class="mt-1 text-[13px] text-[#8a8a8a]">Stay updated on bookings, payments, reviews, and reminders</p>
                     </div>
                     <button v-if="unreadCount" type="button" class="text-xs font-semibold text-[#C1121F] transition hover:text-red-400" @click="markAllAsRead">Mark all as read</button>
                 </div>
@@ -93,7 +93,7 @@ const selectedFilter = ref<'all' | 'unread' | AdminNotificationType>('all')
 const notifications = ref<AdminNotification[]>([])
 const filters: { label: string; value: typeof selectedFilter.value }[] = [
     { label: 'All', value: 'all' }, { label: 'Unread', value: 'unread' }, { label: 'Bookings', value: 'booking' },
-    { label: 'Payments', value: 'payment' }, { label: 'Reviews', value: 'review' }, { label: 'System', value: 'system' },
+    { label: 'Payments', value: 'payment' }, { label: 'Reviews', value: 'review' }, { label: 'Reminders', value: 'reminder' },
 ]
 
 const notificationIconClass = 'bg-[#C1121F] text-white'
@@ -113,8 +113,8 @@ const filteredNotifications = computed(() => {
     return notifications.value.filter(item => {
         if (selectedFilter.value === 'unread' && item.is_read) return false
         if (selectedFilter.value === 'booking' && !['booking', 'booking_status'].includes(item.notification_type)) return false
-        if (selectedFilter.value === 'system' && !['system', 'reminder'].includes(item.notification_type)) return false
-        if (!['all', 'unread', 'booking', 'system'].includes(selectedFilter.value) && item.notification_type !== selectedFilter.value) return false
+        if (selectedFilter.value === 'reminder' && !['system', 'reminder'].includes(item.notification_type)) return false
+        if (!['all', 'unread', 'booking', 'reminder'].includes(selectedFilter.value) && item.notification_type !== selectedFilter.value) return false
         return !query || `${item.title} ${item.message}`.toLowerCase().includes(query)
     })
 })

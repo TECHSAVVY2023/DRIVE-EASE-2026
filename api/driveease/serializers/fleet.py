@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils import timezone
 
 from ..models import Cars, CarType, Feature
 from ..utils.booking_availability import booking_blocks_availability
@@ -48,11 +49,21 @@ class CarSerializer(serializers.ModelSerializer):
 
     def get_unavailable_periods(self, obj):
         bookings = obj.bookings.filter(booking_blocks_availability())
+        now = timezone.now()
         return [
             {
                 "pickup_date": booking.pickup_date,
                 "return_date": booking.return_date,
                 "status": booking.status,
+                "is_overdue": (
+                    booking.status in {
+                        "pending_approval",
+                        "confirmed",
+                        "picked_up",
+                    }
+                    and booking.pickup_date <= now
+                    and booking.return_date <= now
+                ),
             }
             for booking in bookings
         ]

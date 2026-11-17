@@ -41,7 +41,6 @@ def car_is_currently_rented(car):
     return car.bookings.filter(
         status__in=["pending_approval", "confirmed", "picked_up"],
         pickup_date__lte=now,
-        return_date__gt=now,
     ).exists()
 
 
