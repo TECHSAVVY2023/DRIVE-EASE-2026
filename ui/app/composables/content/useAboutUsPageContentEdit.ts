@@ -10,7 +10,7 @@ export const useAboutUsPageContentEdit = () => {
         newImageFile: File | null,
         originalImageUrl: string | null,
     ): Promise<HomepageContentResult> => {
-        const required = [
+        const requiredText = [
             form.wwr_heading,
             form.wwr_description,
             form.mission_heading,
@@ -18,10 +18,18 @@ export const useAboutUsPageContentEdit = () => {
             form.vission_heading,
             form.vission_description,
             ...form.wwr_stats.flatMap(item => [item.stat, item.value]),
-            ...form.team.flatMap(item => [item.user, item.position, item.description]),
             ...form.journey.flatMap(item => [item.year, item.title, item.description]),
         ]
-        if (required.some(value => !String(value ?? '').trim())) {
+        const hasIncompleteTeamMember = form.team.some(item =>
+            !item.user ||
+            !item.position.trim() ||
+            !item.description.trim()
+        )
+
+        if (
+            requiredText.some(value => !String(value ?? '').trim()) ||
+            hasIncompleteTeamMember
+        ) {
             await $swal.fire({
                 icon: 'warning', title: 'Incomplete Form',
                 text: 'Please complete all required About page fields.',

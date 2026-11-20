@@ -83,7 +83,7 @@
 
                         <!-- About -->
                         <AdminContentAboutPage
-                            v-else-if="selectedPage === 'about'"
+                            v-else-if="selectedPage === 'about' && about"
                             :form="form1"
                             :users="aboutTeamUsers"
                             @update:newImageFile="newAboutImageFile = $event"
@@ -91,9 +91,13 @@
 
                         <!-- Contact -->
                         <AdminContentContactPage
-                            v-else
+                            v-else-if="selectedPage === 'contact' && contact"
                             :form="contactForm"
                         />
+
+                        <div v-else class="rounded-lg border border-dashed border-[#303030] px-4 py-12 text-center text-xs text-[#777]">
+                            Loading {{ activePage.label.toLowerCase() }} content...
+                        </div>
 
                         <div class="mt-7 flex justify-end gap-2.5 border-t border-[#252525] pt-5">
                             <button
@@ -104,6 +108,7 @@
                             </button>
                             <button
                                 type="submit"
+                                :disabled="!canSaveContent"
                                 class="rounded-lg bg-[#C1121F] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#9B0E18] disabled:cursor-not-allowed disabled:bg-[#4a1a1e] disabled:text-[#999]"
                             >
                                 Save changes
@@ -152,6 +157,11 @@ const pages = [
 const activePage = computed(() =>
     pages.find(page => page.id === selectedPage.value) ?? pages[0]!
 )
+const canSaveContent = computed(() => {
+    if (selectedPage.value === 'home') return Boolean(home.value)
+    if (selectedPage.value === 'about') return Boolean(about.value)
+    return Boolean(contact.value)
+})
 
 const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -254,6 +264,8 @@ async function handleContentSubmit(): Promise<void> {
             break
 
         case 'about':
+            if (!about.value) return
+
             if ((await updateAboutUsPageContent(
                 form1.value,
                 newAboutImageFile.value,
@@ -261,15 +273,17 @@ async function handleContentSubmit(): Promise<void> {
             )).success) {
                 newAboutImageFile.value = null
                 await loadAboutUsPageContent(true)
+                window.location.reload()
             }
-            window.location.reload()
             break
 
         case 'contact':
+            if (!contact.value) return
+
             if ((await updateContactPageContent(contactForm.value)).success) {
                 await loadContactPageContent(true)
+                window.location.reload()
             }
-            window.location.reload()
             break
     }
 }

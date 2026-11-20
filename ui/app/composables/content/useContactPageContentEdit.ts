@@ -7,11 +7,11 @@ export const useContactPageContentEdit = () => {
     const handleUpdateContactPageContent = async (
         form: ContactPageContent
     ): Promise<HomepageContentResult> => {
-        const required = [
+        const requiredText = [
             form.form_heading, form.form_description, form.phone, 
             form.email, form.address, ...form.opening_hours.flatMap(item => [item.day, item.time]),
         ]
-        if (required.some(value => !String(value ?? '').trim())) {
+        if (requiredText.some(value => !String(value ?? '').trim())) {
             await $swal.fire({ icon: 'warning', title: 'Incomplete Form', text: 'Please complete all required Contact page fields.', confirmButtonColor: '#C1121F', background: '#1a1a1a', color: '#ffffff' })
             return { success: false, message: 'Incomplete Contact page fields.' }
         }
