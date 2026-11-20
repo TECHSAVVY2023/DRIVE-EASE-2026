@@ -91,6 +91,13 @@ class CreateBookingView(APIView):
         # Serialize availability checks for this car so two simultaneous
         # requests cannot both pass the overlap check.
         car = Cars.objects.select_for_update().get(pk=submitted_car.pk)
+
+        if car.status == "maintenance":
+            return Response(
+                {"message": "This car is currently under maintenance and cannot be booked."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         pickup_date = serializer.validated_data["pickup_date"]
         return_date = serializer.validated_data["return_date"]
 
@@ -530,6 +537,13 @@ class AdminCreateBookingView(APIView):
 
         submitted_car = serializer.validated_data["car"]
         car = Cars.objects.select_for_update().get(pk=submitted_car.pk)
+
+        if car.status == "maintenance":
+            return Response(
+                {"message": "This car is currently under maintenance and cannot be booked."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         pickup_date = serializer.validated_data["pickup_date"]
         return_date = serializer.validated_data["return_date"]
 

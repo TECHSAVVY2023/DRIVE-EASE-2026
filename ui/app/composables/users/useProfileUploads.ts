@@ -7,7 +7,6 @@ export function useProfileUploads() {
     const uploadedIdFiles = ref<File[]>([])
     const originalIdImages = ref<string[]>([])
     const existingIdImages = ref<string[]>([])
-    const deletedIdImages = ref<string[]>([])
     const MAX_ID_FILES = 5
 
     const idInput = ref<HTMLInputElement | null>(null)
@@ -46,11 +45,6 @@ export function useProfileUploads() {
             ...Array.from(input.files).slice(0, availableSlots)
         )
         input.value = ''
-
-        console.log('Uploaded ID files:', uploadedIdFiles.value)
-        console.log('Uploaded ID files length:', uploadedIdFiles.value.length)
-
-        console.log(uploadedIdFiles.value)
     }
 
     function handleIdDrop(e: DragEvent) {
@@ -108,9 +102,6 @@ export function useProfileUploads() {
     }
 
     const removeExistingId = (index: number, url: string) => {
-        console.log("index:",index)
-        console.log("url:",url)
-        deletedIdImages.value.push(url)
         existingIdImages.value.splice(index, 1)
     }
 

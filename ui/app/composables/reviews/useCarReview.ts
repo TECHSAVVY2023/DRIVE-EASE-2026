@@ -71,8 +71,6 @@ export function useWriteReview() {
             return false
         }
 
-        console.log('file size:', file.size)
-
         if (file.size > MAX_FILE_SIZE) {
             $swal.close()
             await $swal.fire({
@@ -228,10 +226,6 @@ export function useCarReview(props?: { carId?: string }) {
                 totalReviews.value = res.total_reviews
                 avgRating.value = res.avg_rating
                 ratingBreakdown.value = res.rating_breakdown
-
-                console.log('Total reviews:', res.total_reviews)
-                console.log('Reviews on this page:', res.results.length)
-                console.log('Reviews:', res.results)
 
                 console.table(
                     res.results.map(review => ({

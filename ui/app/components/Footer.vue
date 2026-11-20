@@ -58,10 +58,10 @@
 
                     <ul class="flex flex-col gap-2">
 
-                        <li><a href="#" class="text-[#787878] text-sm hover:text-white transition-colors duration-200">Home</a></li>
-                        <li><a href="#" class="text-[#787878] text-sm hover:text-white transition-colors duration-200">Fleet</a></li>
-                        <li><a href="#" class="text-[#787878] text-sm hover:text-white transition-colors duration-200">Contact</a></li>
-                        <li><a href="#" class="text-[#787878] text-sm hover:text-white transition-colors duration-200">About us</a></li>
+                        <li><a href="/" class="text-[#787878] text-sm hover:text-white transition-colors duration-200">Home</a></li>
+                        <li><a href="/fleet" class="text-[#787878] text-sm hover:text-white transition-colors duration-200">Fleet</a></li>
+                        <li><a href="/contact" class="text-[#787878] text-sm hover:text-white transition-colors duration-200">Contact</a></li>
+                        <li><a href="/about" class="text-[#787878] text-sm hover:text-white transition-colors duration-200">About us</a></li>
                     
                     </ul>
 

@@ -59,7 +59,7 @@ import { computed } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import type { FlowConfig } from '@vuepic/vue-datepicker'
 import type { Car } from '~/utils/types/fleet'
-import { periodBlocksDate } from '~/composables/useCarRental'
+import { periodBlocksDate } from '~/composables/car/useCarRental'
 
 const props = defineProps<{
     form: any

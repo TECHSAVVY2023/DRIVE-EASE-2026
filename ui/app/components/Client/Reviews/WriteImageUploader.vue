@@ -117,14 +117,10 @@ watch(
 )
 
 const removeExistingImage = (index: number, url: string) => {
-    console.log('Removing image:', { index, url })
-    console.log('Before removal:', localExistingImages.value)
 
     localExistingImages.value = localExistingImages.value.filter(
         image => image !== url
     )
-
-    console.log('After removal:', localExistingImages.value)
 
     emit('update:existingImages', [...localExistingImages.value])
 }

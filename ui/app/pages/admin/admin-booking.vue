@@ -259,7 +259,6 @@ const showBookingDetails1 = ref(false)
 const handleView = (booking: Transaction) => {
     selectedBooking.value = { ...booking }
     showBookingDetails.value = true
-    console.log('selectedBooking:', selectedBooking.value)
 }
 
 const handleViewEditBooking = (booking: Transaction) => {

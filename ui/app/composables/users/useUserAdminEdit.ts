@@ -81,6 +81,7 @@ export const useUserAdminEdit = () => {
     const handleEditUser = async (
         userReference: string,
         body: AdminEditUserPayload,
+        idFiles: File[] = [],
     ): Promise<AdminEditUserResult> => {
         if (!body.email.trim()) {
             const message = 'Please enter an email address.'
@@ -109,6 +110,18 @@ export const useUserAdminEdit = () => {
             return { success: false, message }
         }
 
+        if (idFiles.length > 5) {
+            const message = 'You can upload no more than five valid ID documents.'
+            await showValidationWarning(message)
+            return { success: false, message }
+        }
+
+        for (const file of idFiles) {
+            if (!(await validateFile(file))) {
+                return { success: false, message: 'One or more ID documents are invalid.' }
+            }
+        }
+
         $swal.fire({
             title: 'Saving changes...',
             text: 'Please wait.',
@@ -120,7 +133,11 @@ export const useUserAdminEdit = () => {
         })
 
         try {
-            const response = await updateUserAdmin(userReference, body)
+            const idImageUrls = await Promise.all(idFiles.map(file => uploadFile(file)))
+            const response = await updateUserAdmin(userReference, {
+                ...body,
+                ...(idImageUrls.length ? { id_images: { images: idImageUrls } } : {}),
+            })
 
             $swal.close()
 

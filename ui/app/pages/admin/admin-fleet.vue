@@ -248,8 +248,6 @@ const handleEdit = (car: Car) => {
         thumbnail_url: car.meta?.primary_image ?? null,
     }
 
-    console.log('All car images:', car.meta?.images)
-    console.log('Thumbnail:', car.meta?.primary_image)
     showVehicleModal.value = true
 }
 

@@ -350,7 +350,7 @@ import type { User } from '~/utils/types/accounts'
 import { computed } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import type { FlowConfig } from '@vuepic/vue-datepicker'
-import { periodBlocksDate } from '~/composables/useCarRental'
+import { periodBlocksDate } from '~/composables/car/useCarRental'
 
 const open = defineModel<boolean>({ required: true })
 
@@ -540,7 +540,6 @@ function save() {
     emit('save', {
         ...booking 
     })
-    console.log('User booking:', booking)
 }
 
 const STATUSES = [

@@ -523,7 +523,6 @@ const handleTypeChange = (event: Event) => {
 
 const handleConditionChange = (event: Event) => {
     const target = event.target as HTMLSelectElement
-    console.log('Condition changed:', target.value)
     emit('update:selectedCondition', target.value)
 }
 

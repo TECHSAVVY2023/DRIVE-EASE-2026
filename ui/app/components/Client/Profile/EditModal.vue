@@ -213,8 +213,10 @@ watch(
 
 const saveChanges = async () => {
     try {
-        const removedImages = originalIdImages.value.filter(
-            (url) => !existingIdImages.value.includes(url)
+        // Only existing uploads can be deleted. Newly selected files are simply
+        // removed from `uploadedIdFiles` and are never sent to storage.
+        const removedImages: string[] = originalIdImages.value.filter(
+            (url: string) => !existingIdImages.value.includes(url)
         )
 
         // Validate total ID images first

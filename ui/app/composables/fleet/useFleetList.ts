@@ -74,9 +74,6 @@ export function useFleetList(prioritizeAvailable = false) {
     
     const fetchCars = async () => {
         loading.value = true
-        console.log("selectedStatus:", selectedStatus.value)
-        console.log('Car type filter:', selectedCarType.value)
-        console.log('Selected car type in parent:', selectedCarType.value)
 
         try {
             const res = await fetchFleet({
@@ -100,15 +97,9 @@ export function useFleetList(prioritizeAvailable = false) {
 
             carTypeOptions.value = res.filters.categories
 
-            console.log('Car type options:', carTypeOptions.value)
-            console.log('Car type ID:', fleet.value[0]?.car_type)
-
             transmissionOptions.value = res.filters.transmissions
             seatOptions.value = res.filters.seats
             fuelTypeOptions.value = res.filters.fuel
-
-            console.log('feature options:', featureOptions.value)
-            console.log('Filters:', res.filters)
 
             featureOptions.value = res.filters.features
 
@@ -139,10 +130,6 @@ export function useFleetList(prioritizeAvailable = false) {
             fetchCars()
         }
     )
-
-    watch(sortBy, (value) => {
-        console.log("sortBy changed:", value)
-    })
 
     watch([selectedCarType, selectedTransmission, selectedFuel, selectedSeat, selectedFeature, selectedStatus, maxPrice, sortBy], () => {
         currentPage.value = 1

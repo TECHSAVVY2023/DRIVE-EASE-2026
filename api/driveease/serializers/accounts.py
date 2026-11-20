@@ -118,6 +118,7 @@ class AdminEditAccountSerializer(serializers.ModelSerializer):
     id_removal_reason = serializers.CharField(
         required=False, allow_blank=True, write_only=True
     )
+    id_images = serializers.JSONField(required=False, write_only=True)
     role = serializers.ChoiceField(
         choices=ACCOUNT_ROLES,
         required=False,
@@ -129,7 +130,7 @@ class AdminEditAccountSerializer(serializers.ModelSerializer):
         fields = [
             "given_name", "family_name", "email", "contact_number", "address",
             "remove_profile_picture", "profile_removal_reason", "remove_id_images",
-            "id_removal_reason",
+            "id_removal_reason", "id_images",
             "role",
         ]
 
@@ -146,6 +147,7 @@ class AdminEditAccountSerializer(serializers.ModelSerializer):
         profile_reason = attrs.get("profile_removal_reason", "").strip()
         selected_ids = attrs.get("remove_id_images", [])
         id_reason = attrs.get("id_removal_reason", "").strip()
+        new_id_images = attrs.get("id_images")
 
         if remove_profile:
             if not self.instance.profile_picture:
@@ -175,6 +177,35 @@ class AdminEditAccountSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     "id_removal_reason": "A reason is required to remove ID images."
                 })
+
+        if new_id_images is not None:
+            new_images = new_id_images.get("images") if isinstance(new_id_images, dict) else None
+            if not isinstance(new_images, list):
+                raise serializers.ValidationError({
+                    "id_images": "ID documents must be provided as a list."
+                })
+            if len(new_images) != len(set(new_images)):
+                raise serializers.ValidationError({
+                    "id_images": "Duplicate ID documents are not allowed."
+                })
+
+            url_field = serializers.URLField()
+            try:
+                validated_new_images = [url_field.run_validation(url) for url in new_images]
+            except serializers.ValidationError:
+                raise serializers.ValidationError({
+                    "id_images": "Every ID document must contain a valid uploaded file URL."
+                })
+
+            current_images = (self.instance.id_images or {}).get("images", [])
+            retained_images = [
+                image for image in current_images if image not in selected_ids
+            ]
+            if len(retained_images) + len(validated_new_images) > 5:
+                raise serializers.ValidationError({
+                    "id_images": "A maximum of five ID documents is allowed."
+                })
+            attrs["id_images"] = {"images": validated_new_images}
         return attrs
 
     def update(self, instance, validated_data):
@@ -183,6 +214,7 @@ class AdminEditAccountSerializer(serializers.ModelSerializer):
         validated_data.pop("profile_removal_reason", None)
         selected_ids = validated_data.pop("remove_id_images", [])
         validated_data.pop("id_removal_reason", None)
+        new_id_images = validated_data.pop("id_images", None)
 
         if remove_profile:
             instance.profile_picture = None
@@ -192,6 +224,15 @@ class AdminEditAccountSerializer(serializers.ModelSerializer):
                 **id_images,
                 "images": [
                     image for image in id_images.get("images", []) if image not in selected_ids
+                ],
+            }
+        if new_id_images:
+            id_images = instance.id_images or {}
+            instance.id_images = {
+                **id_images,
+                "images": [
+                    *id_images.get("images", []),
+                    *new_id_images["images"],
                 ],
             }
         for field, value in validated_data.items():

@@ -35,6 +35,22 @@ from ..serializers import (
     FeatureSerializer,
 )
 
+
+def delete_car_uploads_from_storage(urls):
+    """Delete app-managed vehicle uploads from cloud storage."""
+    urls_to_delete = {url for url in urls if url}
+
+    if not urls_to_delete:
+        return
+
+    for upload in FileUploadModel.objects.exclude(file=""):
+        if upload.file.url not in urls_to_delete:
+            continue
+
+        upload.file.delete(save=False)
+        upload.delete()
+
+
 class CarListView(APIView):
     def get(self, request):
         cars = Cars.objects.all()
@@ -486,17 +502,32 @@ class CarUpdateView(APIView):
 class CarDeleteView(APIView):
     permission_classes = [IsAdminUser]
 
+    @transaction.atomic
     def delete(self, request, car_reference):
         car = get_object_or_404(Cars, car_reference=car_reference)
+        car_meta = car.meta or {}
+        uploaded_urls = list(dict.fromkeys(
+            url for url in [
+                car_meta.get("primary_image"),
+                *(car_meta.get("images") or []),
+            ] if url
+        ))
+        car_label = f"{car.brand} {car.model}"
+        car_reference = car.car_reference
 
         car.delete()
+
+        transaction.on_commit(
+            lambda urls=tuple(uploaded_urls): delete_car_uploads_from_storage(urls),
+            robust=True,
+        )
 
         AdminActivityLog.objects.create(
             admin=request.user,
             action="delete",
-            description=f"Deleted car {car.brand} {car.model}.",
+            description=f"Deleted car {car_label}.",
             target_type="car",
-            target_id=str(car.car_reference),
+            target_id=str(car_reference),
         )
 
         return Response(

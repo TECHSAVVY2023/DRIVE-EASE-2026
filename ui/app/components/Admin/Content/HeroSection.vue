@@ -48,16 +48,15 @@
                             <p class="truncate text-[11px] font-medium text-[#d0d0d0]">
                                 {{ currentImageName }} 
                             </p>
-                            <p class="mt-0.5 text-[9px] text-[#666]">PNG recommended</p>
+                            <p class="mt-0.5 text-[9px] text-[#666]">PNG required</p>
                         </div>
 
                     </div>
 
                     <div class="min-w-0 flex-1 sm:max-w-md">
                         <p class="text-[10px] leading-4 text-[#888]">
-                            Required:
-                            <span class="font-semibold text-[#bbb]">1536 × 1024 px</span>.
-                            Keep the entire car edges sit on the border of the image.
+                            Recommended: <span class="font-semibold text-[#bbb]">1536 × 1024 px</span>
+                            transparent PNG. Keep the full car visible; other sizes may appear smaller or softer.
                         </p>
                     </div>
 
@@ -122,8 +121,6 @@ const addFiles = async (files: File[]) => {
 
 const validateFile = async (file: File): Promise<boolean> => {
     const MAX_FILE_SIZE = 50 * 1024 * 1024
-    const REQUIRED_WIDTH = 1536
-    const REQUIRED_HEIGHT = 1024
 
     const extension = file.name.split('.').pop()?.toLowerCase()
 
@@ -150,46 +147,6 @@ const validateFile = async (file: File): Promise<boolean> => {
             icon: 'error',
             title: 'File Too Large',
             text: 'Image size must not exceed 50 MB.',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#C1121F',
-            background: '#1a1a1a',
-            color: '#ffffff'
-        })
-
-        return false
-    }
-
-    try {
-        const image = await createImageBitmap(file)
-
-        const isValidDimensions =
-            image.width === REQUIRED_WIDTH &&
-            image.height === REQUIRED_HEIGHT
-
-        image.close()
-
-        if (!isValidDimensions) {
-            $swal.close()
-
-            await $swal.fire({
-                icon: 'error',
-                title: 'Invalid Image Dimensions',
-                text: 'Image dimensions must be exactly 1536 × 1024 pixels.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#C1121F',
-                background: '#1a1a1a',
-                color: '#ffffff'
-            })
-
-            return false
-        }
-    } catch {
-        $swal.close()
-
-        await $swal.fire({
-            icon: 'error',
-            title: 'Invalid Image',
-            text: 'The selected file could not be read as an image.',
             confirmButtonText: 'OK',
             confirmButtonColor: '#C1121F',
             background: '#1a1a1a',

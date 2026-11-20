@@ -440,8 +440,6 @@ watch(
 
         if (!props.user) return
 
-        console.log('step one user:', props.user.family_name)
-
         Object.assign(form, {
             firstName: props.user.given_name,
             lastName: props.user.family_name,

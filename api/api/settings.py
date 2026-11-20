@@ -107,6 +107,7 @@ AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME', 'fpstorage')
 AWS_LOCATION = os.getenv("AWS_LOCATION", "www.driveease.com")
 AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL', 'https://sgp1.digitaloceanspaces.com') 
 AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'sgp1')
+UPLOAD_ENVIRONMENT = os.getenv("UPLOAD_ENVIRONMENT", "local").strip().lower()
 AWS_DEFAULT_ACL = 'public-read'
 AWS_QUERYSTRING_AUTH = False
 AWS_S3_FILE_OVERWRITE = False

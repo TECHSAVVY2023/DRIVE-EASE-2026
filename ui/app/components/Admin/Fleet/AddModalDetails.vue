@@ -475,10 +475,4 @@ watch(
     { immediate: true }
 )
 
-watchEffect(() => {
-    console.log('Form feature IDs:', props.form.features)
-    console.log('Available features:', features.value)
-    console.log('Selected features:', selectedFeatures.value)
-})
-
 </script>

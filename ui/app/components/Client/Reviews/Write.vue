@@ -198,10 +198,6 @@ const { form, hoverRating, uploadedImages,
         originalImages, deletedImages 
 } = props.reviewState
 
-watch(() => props.modelValue, (v) => {
-    console.log("modelValue:", v)
-})
-
 watch(
     () => props.myReview,
     (review) => {
@@ -210,9 +206,7 @@ watch(
         const images = (review.images || []).map(image => image.url)
 
         originalImages.value = [...images]
-        console.log('original images', originalImages.value)
         existingImages.value = [...images]
-        console.log('existing images', existingImages.value)
 
     },
     { immediate: true }

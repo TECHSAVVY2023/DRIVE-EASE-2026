@@ -413,6 +413,64 @@ class AdminAccountActionsTests(APITestCase):
         self.user.refresh_from_db()
         self.assertTrue(self.user.is_active)
 
+    def test_admin_can_add_id_documents(self):
+        self.user.id_images = {"images": ["https://example.com/original-id.jpg"]}
+        self.user.save(update_fields=["id_images"])
+
+        response = self.client.patch(
+            reverse(
+                "admin-edit-account",
+                kwargs={"user_reference": self.user.user_reference},
+            ),
+            {
+                "id_images": {
+                    "images": ["https://example.com/replacement-id.pdf"]
+                }
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertEqual(
+            self.user.id_images["images"],
+            [
+                "https://example.com/original-id.jpg",
+                "https://example.com/replacement-id.pdf",
+            ],
+        )
+        self.assertTrue(
+            AdminActivityLog.objects.filter(
+                admin=self.admin,
+                action="update",
+                target_id=self.user.user_reference,
+                description__startswith="Added 1 ID image",
+            ).exists()
+        )
+
+    def test_admin_can_replace_id_document(self):
+        original_id = "https://example.com/original-id.jpg"
+        replacement_id = "https://example.com/replacement-id.jpg"
+        self.user.id_images = {"images": [original_id]}
+        self.user.save(update_fields=["id_images"])
+
+        response = self.client.patch(
+            reverse(
+                "admin-edit-account",
+                kwargs={"user_reference": self.user.user_reference},
+            ),
+            {
+                "remove_id_images": [original_id],
+                "id_removal_reason": "Document is no longer readable.",
+                "id_images": {"images": [replacement_id]},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.id_images["images"], [replacement_id])
+
     def test_admin_can_delete_user(self):
         reference = self.user.user_reference
         response = self.client.delete(
@@ -476,6 +534,50 @@ class AdminAccountActionsTests(APITestCase):
         self.assertEqual(edit_response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(status_response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(delete_response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class CarDeleteCleanupTests(APITestCase):
+    def setUp(self):
+        self.admin = Accounts.objects.create_user(
+            username="fleet-admin@example.com",
+            email="fleet-admin@example.com",
+            password="test-password",
+            is_staff=True,
+        )
+        self.car_type = CarType.objects.create(name="Cleanup Sedan", slug="cleanup-sedan")
+        self.car = Cars.objects.create(
+            brand="Honda",
+            model="City",
+            year=2026,
+            car_type=self.car_type,
+            price_per_day=1800,
+            transmission="Automatic",
+            engine="1.5L",
+            fuel_type="Gasoline",
+            seats=5,
+            meta={
+                "primary_image": "https://example.com/cars/city-primary.jpg",
+                "images": [
+                    "https://example.com/cars/city-primary.jpg",
+                    "https://example.com/cars/city-side.jpg",
+                ],
+            },
+        )
+        self.client.force_authenticate(self.admin)
+
+    @patch("driveease.views.fleet.delete_car_uploads_from_storage")
+    def test_deleting_car_queues_its_uploaded_images_for_cleanup(self, delete_uploads):
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.delete(
+                reverse("car-delete", kwargs={"car_reference": self.car.car_reference})
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Cars.objects.filter(pk=self.car.pk).exists())
+        delete_uploads.assert_called_once_with((
+            "https://example.com/cars/city-primary.jpg",
+            "https://example.com/cars/city-side.jpg",
+        ))
 
 
 class ClientBookingAvailabilityTests(APITestCase):

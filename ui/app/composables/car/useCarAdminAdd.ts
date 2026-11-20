@@ -83,8 +83,6 @@ export const useCarAdminAdd = () => {
     }
 
     const handleCreateVehicle = async ( form: CarForm ): Promise<CreateCarResult> => {
-        console.log('Form before submission:', form)
-        console.log('Selected features:', form.features)
 
         const validation = validateForm(form)
 
@@ -164,9 +162,6 @@ export const useCarAdminAdd = () => {
                     images: imageUrls,
                 },
             }
-
-            console.log('Body before createCar:', body)
-            console.log('Features in body:', body.features)
 
             await createCar(body)
 

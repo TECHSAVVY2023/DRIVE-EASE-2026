@@ -452,8 +452,6 @@ class PayMongoWebhookView(APIView):
                 event_type = event_data.get("type")
                 event_resource = event_data.get("data", {})
 
-            print(f"PAYMONGO EVENT: {event_type}")
-
             # Handle successful Checkout v2 payment
             if event_type == "checkout_session.payment.paid":
 
@@ -481,13 +479,9 @@ class PayMongoWebhookView(APIView):
 
                 with transaction.atomic():
 
-                    print("CHECKOUT SESSION ID:", session_id)
-
                     payment = Payment.objects.filter(
                         checkout_session_id=session_id
                     ).select_related("booking").first()
-
-                    print("PAYMENT FOUND:", payment)
 
                     if not payment:
                         return Response(
@@ -659,10 +653,7 @@ class PayMongoWebhookView(APIView):
                         ).first()
 
                         if booking and booking.status != "cancelled":
-                            print(
-                                f"Updating Booking #{booking.id} -> payment_failed"
-                            )
-
+                            
                             booking.status = "payment_failed"
                             booking.save(update_fields=["status"])
 

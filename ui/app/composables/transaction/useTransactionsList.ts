@@ -47,8 +47,6 @@ export function useTransactionsList() {
                 sort: sortBy.value,
             })
 
-            console.log("Transactions:", res.results)
-
             transactions.value = res.results
 
             count.value = res.count

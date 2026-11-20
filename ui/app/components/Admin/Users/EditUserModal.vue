@@ -99,17 +99,37 @@
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                     <div>
                                         <p class="text-sm font-semibold text-white">Uploaded IDs</p>
-                                        <p class="mt-1 text-xs text-neutral-500">Sensitive image or PDF documents uploaded for verification</p>
+                                        <p class="mt-1 text-xs text-neutral-500">Add replacement JPG, JPEG, PNG, or PDF documents (up to 50 MB each)</p>
                                     </div>
-                                    <button
-                                        v-if="selectedIdFiles.length"
-                                        type="button"
-                                        :class="secondaryButtonClass"
-                                        @click="clearSelectedIdFiles"
-                                    >
-                                        Clear selection ({{ selectedIdFiles.length }})
-                                    </button>
+                                    <div class="flex shrink-0 gap-2">
+                                        <button v-if="selectedIdFiles.length" type="button" :class="secondaryButtonClass" @click="clearSelectedIdFiles">
+                                            Clear selection ({{ selectedIdFiles.length }})
+                                        </button>
+                                        <button v-if="remainingIdSlots" type="button" :class="secondaryButtonClass" @click="idInput?.click()">
+                                            Add documents
+                                        </button>
+                                    </div>
                                 </div>
+
+                                    <input
+                                        ref="idInput"
+                                        type="file"
+                                        accept="image/jpeg,image/png,.jpg,.jpeg,.png,.pdf,application/pdf"
+                                        multiple
+                                        class="hidden"
+                                        @change="handleIdChange"
+                                    >
+
+                                    <div v-if="newIdFiles.length" class="mt-4 space-y-2 border-t border-white/10 pt-4">
+                                        <p class="text-xs font-medium text-neutral-300">New documents to upload</p>
+                                        <div v-for="(file, index) in newIdFiles" :key="`${file.name}-${file.lastModified}`" class="flex items-center justify-between rounded-lg border border-[#303030] bg-[#0f0f0f] px-3 py-2">
+                                            <div class="min-w-0">
+                                                <p class="truncate text-xs font-medium text-white">{{ file.name }}</p>
+                                                <p class="mt-0.5 text-[10px] text-neutral-500">{{ formatFileSize(file.size) }}</p>
+                                            </div>
+                                            <button type="button" class="ml-3 text-xs text-[#f06a73] transition-colors hover:text-white" @click="removeNewIdFile(index)">Remove</button>
+                                        </div>
+                                    </div>
 
                                     <div v-if="idFiles.length" class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                                         <div
@@ -277,12 +297,14 @@ const props = defineProps<{
     canManageRoles: boolean
 }>()
 const emit = defineEmits<{
-    save: [payload: { userReference: string; body: AdminEditUserPayload }]
+    save: [payload: { userReference: string; body: AdminEditUserPayload; idFiles: File[] }]
 }>()
 const profileRemovalRequested = ref(false)
 const profileRemovalReason = ref('')
 const selectedIdFiles = ref<string[]>([])
 const idRemovalReason = ref('')
+const idInput = ref<HTMLInputElement | null>(null)
+const newIdFiles = ref<File[]>([])
 const viewerOpen = ref(false)
 const viewerFiles = ref<string[]>([])
 const activeFileIndex = ref(0)
@@ -303,6 +325,10 @@ const fullName = computed(() => `${form.given_name} ${form.family_name}`.trim())
 const initials = computed(() => `${form.given_name[0] ?? ''}${form.family_name[0] ?? ''}`.toUpperCase() || 'U')
 const idFiles = computed(() => props.user?.id_images?.images ?? [])
 const activeFile = computed(() => viewerFiles.value[activeFileIndex.value] ?? '')
+const remainingIdSlots = computed(() => Math.max(
+    5 - (idFiles.value.length - selectedIdFiles.value.length) - newIdFiles.value.length,
+    0,
+))
 const canSave = computed(() => Boolean(
     props.user &&
     form.email.trim() &&
@@ -339,6 +365,7 @@ watch(
         profileRemovalReason.value = ''
         selectedIdFiles.value = []
         idRemovalReason.value = ''
+        newIdFiles.value = []
         closeViewer()
     },
     { immediate: true },
@@ -372,7 +399,23 @@ function save() {
         body.id_removal_reason = idRemovalReason.value.trim()
     }
 
-    emit('save', { userReference: props.user.user_reference, body })
+    emit('save', {
+        userReference: props.user.user_reference,
+        body,
+        idFiles: [...newIdFiles.value],
+    })
+}
+
+function handleIdChange(event: Event) {
+    const input = event.target as HTMLInputElement
+    if (!input.files || !remainingIdSlots.value) return
+
+    newIdFiles.value.push(...Array.from(input.files).slice(0, remainingIdSlots.value))
+    input.value = ''
+}
+
+function removeNewIdFile(index: number) {
+    newIdFiles.value.splice(index, 1)
 }
 
 function viewFile(file: string, index: number, title: string, files: string[]) {
@@ -409,6 +452,12 @@ function toggleIdFileSelection(file: string) {
 function clearSelectedIdFiles() {
     selectedIdFiles.value = []
     idRemovalReason.value = ''
+}
+
+function formatFileSize(bytes: number) {
+    return bytes >= 1024 * 1024
+        ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+        : `${Math.max(1, Math.round(bytes / 1024))} KB`
 }
 
 function closeViewer() {

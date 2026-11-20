@@ -311,6 +311,12 @@ class AdminEditAccountView(APIView):
         id_reason = data.get(
             "id_removal_reason", ""
         ).strip()
+        new_id_images = data.get("id_images", {})
+        added_ids = (
+            new_id_images.get("images", [])
+            if isinstance(new_id_images, dict)
+            else []
+        )
         profile_picture_url = (
             account.profile_picture if remove_profile else None
         )
@@ -345,6 +351,18 @@ class AdminEditAccountView(APIView):
                 description=(
                     f"Changed {account_label}'s role from "
                     f"{old_role} to {new_role}."
+                ),
+                target_type="user",
+                target_id=account.user_reference,
+            )
+
+        if added_ids:
+            AdminActivityLog.objects.create(
+                admin=request.user,
+                action="update",
+                description=(
+                    f"Added {len(added_ids)} ID image(s) for "
+                    f"{account_label}."
                 ),
                 target_type="user",
                 target_id=account.user_reference,

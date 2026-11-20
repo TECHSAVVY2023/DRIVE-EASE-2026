@@ -85,6 +85,9 @@ export interface AdminEditUserPayload {
     profile_removal_reason?: string
     remove_id_images?: string[]
     id_removal_reason?: string
+    id_images?: {
+        images: string[]
+    }
     role?: UserRole
 }
 

@@ -45,8 +45,6 @@ export function useReviewsEdit() {
             return false
         }
 
-        console.log('file size:', file.size)
-
         if (file.size > MAX_FILE_SIZE) {
             $swal.close()
             await $swal.fire({

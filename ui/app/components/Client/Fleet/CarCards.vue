@@ -42,9 +42,22 @@
         <!-- Buttons -->
         <div class="px-4 pb-4 flex flex-col gap-2">
 
+            <!-- Under maintenance -->
+            <button
+                v-if="car.status === 'maintenance'"
+                type="button"
+                disabled
+                class="
+                    w-full bg-[#333] text-[#9E9090]
+                    py-2 text-xs font-semibold rounded-lg cursor-not-allowed
+                "
+            >
+                Under Maintenance
+            </button>
+
             <!-- Available -->
             <button
-                v-if="!useCurrentRental(car)"
+                v-else-if="isCarAvailable(car)"
                 @click="emit('book', car)"
                 class="
                     w-full bg-[#C1121F] hover:bg-[#9B0E18]
@@ -89,7 +102,7 @@
 
 <script setup lang="ts">
 import type { Car } from '~/utils/types/fleet'
-import { useCurrentRental } from '~/composables/useCarRental'
+import { useCurrentRental } from '~/composables/car/useCarRental'
 
 defineProps<{
     paginatedCars: Car[]
@@ -98,5 +111,10 @@ defineProps<{
 const emit = defineEmits<{
     book: [car: Car]
 }>()
+
+// A car is bookable only when fleet status is available and no rental has started.
+// `useCurrentRental` alone does not cover maintenance or other unavailable states.
+const isCarAvailable = (car: Car) =>
+    car.status === 'available' && !useCurrentRental(car)
 
 </script>

@@ -83,7 +83,7 @@
             <img
                 v-if="showImage"
                 :src="props.content.hero_image"
-                alt="Toyota Wigo"
+                alt="Featured car"
                 class="
                 absolute top-1/2 -translate-y-1/2
                 md:-left-20 lg:-left-40
@@ -111,11 +111,11 @@
             <Transition name="slide-right">
             <img
                 v-if="showImage"
-                src="~/assets/images/car1.png"
-                alt="Toyota Wigo"
+                :src="props.content.hero_image"
+                alt="Featured car"
                 class="
                 absolute bottom-2 left-1/2
-                w-[75%] -translate-x-1/2
+                h-auto max-h-[calc(100%-0.5rem)] w-[75%] -translate-x-1/2
                 object-contain drop-shadow-2xl z-10
             "
             />

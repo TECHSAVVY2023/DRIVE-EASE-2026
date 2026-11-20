@@ -1,10 +1,12 @@
 import os
 import uuid
 
+from django.conf import settings
+
 
 def unique_upload_path(instance, filename):
     extension = os.path.splitext(filename)[1].lower()
-    return f"app/uploads/{uuid.uuid4().hex}{extension}"
+    return f"app/{settings.UPLOAD_ENVIRONMENT}/uploads/{uuid.uuid4().hex}{extension}"
 
 
 def default_car_meta():

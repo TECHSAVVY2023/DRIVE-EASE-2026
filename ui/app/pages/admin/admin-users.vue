@@ -183,8 +183,8 @@ const handleCreateUser = async ({
     ])
 }
 
-const handleEditUser = async ({userReference, body}: { userReference: string, body: AdminEditUserPayload }) => {
-    const result = await editUser(userReference, body)
+const handleEditUser = async ({userReference, body, idFiles}: { userReference: string, body: AdminEditUserPayload, idFiles: File[] }) => {
+    const result = await editUser(userReference, body, idFiles)
 
     if (!result.success) return
 

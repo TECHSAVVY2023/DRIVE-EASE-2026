@@ -67,7 +67,7 @@
                         :class="!isCarUnavailable ? 'bg-[#123a1f] text-green-400' : 'bg-[#C1121F]/20 text-[#FF6161]'"
                     >
                         <span class="w-1.5 h-1.5 rounded-full" :class="!isCarUnavailable ? 'bg-green-400' : 'bg-[#FF6161]'"></span>
-                        {{ !isCarUnavailable ? 'AVAILABLE' : 'UNAVAILABLE' }}
+                        {{ isUnderMaintenance ? 'UNDER MAINTENANCE' : !isCarUnavailable ? 'AVAILABLE' : 'UNAVAILABLE' }}
                     </span>
                 </div>
     
@@ -121,8 +121,34 @@
                 <!-- CTAs -->
                 <div class="flex flex-col gap-3 mt-2">
 
+                    <!-- Under maintenance -->
+                    <template v-if="isUnderMaintenance">
+                        <button
+                            type="button"
+                            disabled
+                            class="
+                                w-full bg-[#333] text-[#9E9090]
+                                text-sm font-semibold py-3 rounded-lg cursor-not-allowed
+                            "
+                        >
+                            Under Maintenance
+                        </button>
+
+                        <button
+                            @click="scrollToOwnerNote"
+                            class="
+                                w-full border text-sm font-semibold py-3 rounded-lg
+                                flex items-center justify-center gap-2 transition-all duration-200
+                                cursor-pointer border-[#333333] text-[#8F8F8F]
+                                hover:text-[#C1121F] hover:border-[#C1121F]
+                            "
+                        >
+                            Owner's note
+                        </button>
+                    </template>
+
                     <!-- Available -->
-                    <template v-if="!currentRental">
+                    <template v-else-if="!currentRental">
                         <button
                             @click="emit('book')"
                             class="
@@ -315,6 +341,7 @@ const rentalTerms: RentalTerm[] = [
 ]
 
 const currentRental = computed(() => useCurrentRental(props.car))
+const isUnderMaintenance = computed(() => props.car.status === 'maintenance')
 const isCarUnavailable = computed(() =>
     props.car.status !== 'available' || Boolean(currentRental.value)
 )
