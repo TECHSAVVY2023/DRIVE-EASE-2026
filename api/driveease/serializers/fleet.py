@@ -32,6 +32,8 @@ class CarTypeSerializer(serializers.ModelSerializer):
 
 
 class FeatureSerializer(serializers.ModelSerializer):
+    slug = serializers.SlugField(read_only=True)
+
     class Meta:
         model = Feature
         fields = ["id", "name", "slug"]
