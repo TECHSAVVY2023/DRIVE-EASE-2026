@@ -130,27 +130,99 @@ class CarAvailabilityAlertTests(APITestCase):
             1,
         )
 
-    def test_alert_creates_one_notification_when_rental_ends(self):
+    def test_alert_waits_for_turnover_buffer_before_notifying(self):
         alert = CarAvailabilityAlert.objects.create(
             user=self.user,
             car=self.car,
         )
-        self.booking.status = "returned"
-        self.booking.save()
+        Booking.objects.filter(pk=self.booking.pk).update(
+            status="returned",
+            returned_at=timezone.now() - timedelta(minutes=59),
+        )
 
         created = create_due_car_availability_notifications(
             user=self.user,
         )
 
-        self.assertEqual(created, 1)
-        self.assertFalse(
-            CarAvailabilityAlert.objects.filter(pk=alert.pk).exists()
+        self.assertEqual(created, 0)
+        self.assertTrue(CarAvailabilityAlert.objects.filter(pk=alert.pk).exists())
+
+        Booking.objects.filter(pk=self.booking.pk).update(
+            returned_at=timezone.now() - timedelta(minutes=61),
         )
+
+        created = create_due_car_availability_notifications(user=self.user)
+
+        self.assertEqual(created, 1)
+        self.assertFalse(CarAvailabilityAlert.objects.filter(pk=alert.pk).exists())
         notification = Notification.objects.get(user=self.user)
         self.assertEqual(notification.title, "Car Now Available")
         self.assertEqual(
             notification.action_url,
             f"/client/car-details/{self.car.car_reference}",
+        )
+
+    def test_completed_booking_keeps_turnover_buffer_from_actual_return(self):
+        alert = CarAvailabilityAlert.objects.create(
+            user=self.user,
+            car=self.car,
+        )
+        Booking.objects.filter(pk=self.booking.pk).update(
+            status="completed",
+            returned_at=timezone.now() - timedelta(minutes=59),
+        )
+
+        created = create_due_car_availability_notifications(user=self.user)
+
+        self.assertEqual(created, 0)
+        self.assertTrue(CarAvailabilityAlert.objects.filter(pk=alert.pk).exists())
+
+        Booking.objects.filter(pk=self.booking.pk).update(
+            returned_at=timezone.now() - timedelta(minutes=61),
+        )
+
+        created = create_due_car_availability_notifications(user=self.user)
+
+        self.assertEqual(created, 1)
+        self.assertFalse(CarAvailabilityAlert.objects.filter(pk=alert.pk).exists())
+
+    def test_completing_booking_does_not_end_remaining_turnover_buffer(self):
+        admin = Accounts.objects.create_user(
+            username="availability-admin@example.com",
+            email="availability-admin@example.com",
+            password="test-password",
+            is_staff=True,
+        )
+        alert = CarAvailabilityAlert.objects.create(
+            user=self.user,
+            car=self.car,
+        )
+        returned_at = timezone.now() - timedelta(minutes=59)
+        Booking.objects.filter(pk=self.booking.pk).update(
+            status="returned",
+            returned_at=returned_at,
+        )
+        self.client.force_authenticate(admin)
+
+        response = self.client.patch(
+            reverse(
+                "admin-booking-update",
+                kwargs={"booking_reference": self.booking.booking_reference},
+            ),
+            {"status": "completed"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.booking.refresh_from_db()
+        self.assertEqual(self.booking.status, "completed")
+        self.assertEqual(self.booking.returned_at, returned_at)
+        self.assertTrue(CarAvailabilityAlert.objects.filter(pk=alert.pk).exists())
+        self.assertFalse(
+            Notification.objects.filter(
+                user=self.user,
+                title="Car Now Available",
+            ).exists()
         )
 
     def test_overdue_active_rental_does_not_send_availability_alert(self):

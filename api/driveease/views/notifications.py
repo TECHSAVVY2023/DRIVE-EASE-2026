@@ -13,8 +13,8 @@ from rest_framework.views import APIView
 from ..models import CarAvailabilityAlert, Cars, Notification
 from ..pagination import NotificationPagination
 from ..serializers import NotificationSerializer
+from ..utils.booking_availability import car_is_available_for_booking
 from ..utils.notifications import (
-    car_is_currently_rented,
     create_due_admin_notifications,
     create_due_car_availability_notifications,
 )
@@ -108,7 +108,7 @@ class CarAvailabilityAlertView(APIView):
     def post(self, request, car_reference):
         car = self.get_car(car_reference)
 
-        if car.status != "available" or not car_is_currently_rented(car):
+        if car_is_available_for_booking(car):
             return Response(
                 {"message": "This car is already available to book."},
                 status=status.HTTP_400_BAD_REQUEST,

@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from ..models import Booking, CarAvailabilityAlert, Cars, Notification
+from .booking_availability import car_is_available_for_booking
 
 
 User = get_user_model()
@@ -35,15 +36,6 @@ def create_notification(
     )
 
 
-def car_is_currently_rented(car):
-    """Match the current-rental rule used by the client car details page."""
-    now = timezone.now()
-    return car.bookings.filter(
-        status__in=["pending_approval", "confirmed", "picked_up"],
-        pickup_date__lte=now,
-    ).exists()
-
-
 def create_due_car_availability_notifications(*, user=None, car=None):
     """Resolve one-time alerts whose cars are now available.
 
@@ -59,9 +51,7 @@ def create_due_car_availability_notifications(*, user=None, car=None):
 
     notified = 0
     for alert in alerts:
-        if alert.car.status != "available":
-            continue
-        if car_is_currently_rented(alert.car):
+        if not car_is_available_for_booking(alert.car):
             continue
 
         Notification.objects.get_or_create(

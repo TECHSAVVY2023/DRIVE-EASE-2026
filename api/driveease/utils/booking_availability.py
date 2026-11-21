@@ -21,14 +21,36 @@ def booking_blocks_availability():
     payment_hold_cutoff = timezone.now() - timedelta(
         minutes=PAYMENT_HOLD_MINUTES,
     )
+    turnover_buffer_cutoff = timezone.now() - BOOKING_TURNAROUND_BUFFER
 
     return (
         Q(status__in=BOOKING_BLOCKING_STATUSES)
+        | Q(
+            status__in={"returned", "completed"},
+            returned_at__gte=turnover_buffer_cutoff,
+        )
+        | Q(
+            status__in={"returned", "completed"},
+            returned_at__isnull=True,
+            return_date__gte=turnover_buffer_cutoff,
+        )
         | Q(
             status="pending_payment",
             created_at__gte=payment_hold_cutoff,
         )
     )
+
+
+def car_is_available_for_booking(car, at=None):
+    """Return whether a car is free at a moment under the booking rules."""
+    at = at or timezone.now()
+
+    if car.status != "available":
+        return False
+
+    return not car.bookings.filter(
+        booking_conflicts_with_period(at, at),
+    ).exists()
 
 
 def booking_conflicts_with_period(pickup_date, return_date):

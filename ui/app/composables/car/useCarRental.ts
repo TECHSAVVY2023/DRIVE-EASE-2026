@@ -2,12 +2,6 @@ import type { Car, UnavailablePeriod } from '~/utils/types/fleet'
 
 export const DEFAULT_BOOKING_BUFFER_MINUTES = 60
 
-const unavailableStatuses = [
-    'pending_approval',
-    'confirmed',
-    'picked_up'
-]
-
 export function useCurrentRental(car: Car) {
     if (!car.unavailable_periods?.length) return null
 
@@ -17,11 +11,14 @@ export function useCurrentRental(car: Car) {
         .filter(period => {
             const pickup = new Date(period.pickup_date)
             const returnDate = new Date(period.return_date)
+            const bufferMilliseconds =
+                (car.availability_buffer_minutes ?? DEFAULT_BOOKING_BUFFER_MINUTES)
+                * 60 * 1000
 
             return (
-                unavailableStatuses.includes(period.status) &&
                 pickup <= now &&
-                (returnDate > now || period.is_overdue)
+                (returnDate.getTime() + bufferMilliseconds > now.getTime()
+                    || period.is_overdue)
             )
         })
         .sort(
