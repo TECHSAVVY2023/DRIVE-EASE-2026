@@ -74,19 +74,22 @@
             </p>
 
             <AdminCommonSidebarNavItem
-                v-for="item in menu.filter(i => i.section === 'main')"
+                v-for="item in mainMenuItems"
                 :key="item.key"
                 :item="item"
                 :active="activeItem === item.key"
                 :icon="icons[item.icon]"
             />
             
-            <p class="text-[#444] uppercase font-bold text-[10px] px-4 mb-1">
+            <p
+                v-if="reportMenuItems.length"
+                class="text-[#444] uppercase font-bold text-[10px] px-4 mb-1"
+            >
                 Report
             </p>
 
             <AdminCommonSidebarNavItem
-                v-for="item in menu.filter(i => i.section === 'report')"
+                v-for="item in reportMenuItems"
                 :key="item.key"
                 :item="item"
                 :active="activeItem === item.key"
@@ -107,6 +110,7 @@ const {
     unreadCount: unreadNotificationCount,
     fetchUnreadCount,
 } = useAdminNotifications()
+const { user } = useCurrentUser()
 
 defineProps<{
     sidebarOpen: boolean
@@ -224,6 +228,7 @@ const menu = computed(() => [
         label: 'Users',
         icon: 'users',
         section: 'main',
+        superAdminOnly: true,
         link: '/admin/admin-users'
     },
     {
@@ -231,6 +236,7 @@ const menu = computed(() => [
         label: 'Content',
         icon: 'document',
         section: 'main',
+        superAdminOnly: true,
         link: '/admin/admin-content'
     },
     {
@@ -238,6 +244,7 @@ const menu = computed(() => [
         label: 'Analytics',
         icon: 'chart',
         section: 'report',
+        superAdminOnly: true,
         link: '/admin/admin-analytics'    
     },
     {
@@ -245,12 +252,25 @@ const menu = computed(() => [
         label: 'Activity logs',
         icon: 'clock',
         section: 'report',
+        superAdminOnly: true,
         link: '/admin/admin-logs'
     }
 ])
 
+const visibleMenuItems = computed(() =>
+    menu.value.filter(
+        item => !item.superAdminOnly || user.value?.role === 'Super Admin'
+    )
+)
+const mainMenuItems = computed(() =>
+    visibleMenuItems.value.filter(item => item.section === 'main')
+)
+const reportMenuItems = computed(() =>
+    visibleMenuItems.value.filter(item => item.section === 'report')
+)
+
 const activeItem = computed(() => {
-    const match = menu.value.find(item => item.link === route.path)
+    const match = visibleMenuItems.value.find(item => item.link === route.path)
     return match?.key || 'dashboard'
 })
 
