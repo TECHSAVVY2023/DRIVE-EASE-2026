@@ -79,6 +79,7 @@ urlpatterns = [
     path("admin/logs/", views.AdminActivityLogListView.as_view(), name="admin-activity-logs"),
 
     path("payments/create-paymongo-payment/", views.CreatePayMongoPaymentView.as_view(), name="create-paymongo-payment"),
+    path("payments/cancel-paymongo-payment/", views.CancelPayMongoPaymentView.as_view(), name="cancel-paymongo-payment"),
     path("admin/bookings/<str:booking_reference>/refund/", views.AdminIssueRefundView.as_view(), name="admin-booking-refund"),
     path("payments/paymongo-webhook/", views.PayMongoWebhookView.as_view(), name="paymongo-webhook"),  # Commented out for development
 

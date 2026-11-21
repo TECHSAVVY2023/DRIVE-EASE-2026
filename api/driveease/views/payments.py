@@ -189,7 +189,7 @@ class CreatePayMongoPaymentView(APIView):
 
             cancel_url = (
                 f"{settings.FRONTEND_URL}/client/car-details/{car_reference}"
-                f"?payment=cancelled"
+                f"?payment=cancelled&booking_reference={booking.booking_reference}"
             )
 
             checkout_data = {
@@ -265,6 +265,54 @@ class CreatePayMongoPaymentView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class CancelPayMongoPaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        booking_reference = request.data.get("booking_reference")
+        if not booking_reference:
+            return Response(
+                {"error": "Booking reference is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with transaction.atomic():
+            booking = get_object_or_404(
+                Booking.objects.select_for_update(),
+                booking_reference=booking_reference,
+                user=request.user,
+            )
+            payment = Payment.objects.select_for_update().filter(
+                booking=booking,
+            ).first()
+
+            if booking.status == "cancelled":
+                return Response({"status": "cancelled"})
+
+            if (
+                not payment
+                or payment.status != "pending"
+                or booking.status not in {"pending_payment", "payment_failed"}
+            ):
+                return Response(
+                    {"error": "This payment session can no longer be cancelled."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+
+            booking.status = "cancelled"
+            booking.cancel_reason = "PayMongo payment session was cancelled by the customer."
+            booking.save(update_fields=[
+                "status",
+                "cancel_reason",
+                "updated_at",
+            ])
+
+            payment.status = "failed"
+            payment.save(update_fields=["status", "updated_at"])
+
+        return Response({"status": "cancelled"})
 
 
 class AdminIssueRefundView(APIView):
@@ -636,60 +684,71 @@ class PayMongoWebhookView(APIView):
                 if refund:
                     _apply_refund_provider_update(refund, refund_data)
 
-            # Handle failed payment
-            elif event_type == "payment.failed":
-
+            # A failed or cancelled Checkout session must release the booking.
+            elif event_type in {
+                "payment.failed",
+                "checkout_session.payment.failed",
+            }:
                 payment_data = event_resource.get("attributes", {})
+                booking_id = payment_data.get("metadata", {}).get("booking_id")
+                session_id = (
+                    event_resource.get("id")
+                    if event_type == "checkout_session.payment.failed"
+                    else None
+                )
 
-                metadata = payment_data.get("metadata", {})
-                booking_id = metadata.get("booking_id")
-
-                if booking_id:
-
-                    with transaction.atomic():
-
-                        booking = Booking.objects.filter(
-                            id=booking_id
+                with transaction.atomic():
+                    payments = Payment.objects.select_for_update().select_related(
+                        "booking"
+                    )
+                    if session_id:
+                        payment = payments.filter(
+                            checkout_session_id=session_id,
                         ).first()
+                    else:
+                        payment = payments.filter(booking_id=booking_id).first()
 
-                        if booking and booking.status != "cancelled":
-                            
-                            booking.status = "payment_failed"
-                            booking.save(update_fields=["status"])
+                    if (
+                        payment
+                        and payment.status == "pending"
+                        and payment.booking.status in {"pending_payment", "payment_failed"}
+                    ):
+                        booking = payment.booking
+                        booking.status = "cancelled"
+                        booking.cancel_reason = (
+                            "PayMongo payment session was cancelled or failed."
+                        )
+                        booking.save(update_fields=[
+                            "status",
+                            "cancel_reason",
+                            "updated_at",
+                        ])
 
-                            payment = Payment.objects.filter(
-                                booking_id=booking_id
-                            ).first()
+                        payment.status = "failed"
+                        payment.paymongo_response = request.data
+                        payment.save(update_fields=[
+                            "status",
+                            "paymongo_response",
+                            "updated_at",
+                        ])
 
-                            if payment and payment.status != "failed":
-
-                                payment.status = "failed"
-                                payment.paymongo_response = request.data
-
-                                payment.save(update_fields=[
-                                    "status",
-                                    "paymongo_response",
-                                    "updated_at",
-                                ])
-
-                                event_id = event_data.get("id") or booking_id
-
-                                transaction.on_commit(
-                                    lambda: create_admin_notifications(
-                                        notification_type="payment",
-                                        title="Payment failed",
-                                        message=(
-                                            f"Payment for booking "
-                                            f"{booking.booking_reference} failed "
-                                            "and may require follow-up."
-                                        ),
-                                        action_url="/admin/admin-booking",
-                                        booking=booking,
-                                        deduplication_key=(
-                                            f"payment-failed:{event_id}"
-                                        ),
-                                    )
-                                )
+                        event_id = event_data.get("id") or session_id or booking_id
+                        transaction.on_commit(
+                            lambda: create_admin_notifications(
+                                notification_type="payment",
+                                title="Payment session cancelled",
+                                message=(
+                                    f"Payment for booking "
+                                    f"{booking.booking_reference} was cancelled "
+                                    "or failed, so the booking was cancelled."
+                                ),
+                                action_url="/admin/admin-booking",
+                                booking=booking,
+                                deduplication_key=(
+                                    f"payment-failed:{event_id}"
+                                ),
+                            )
+                        )
 
             return Response(
                 {"status": "success"},

@@ -1494,7 +1494,7 @@ class AdminNotificationTests(APITestCase):
             2,
         )
 
-    def test_failed_payment_webhook_notifies_admins(self):
+    def test_failed_payment_webhook_cancels_booking_and_notifies_admins(self):
         car_type = CarType.objects.create(name="Pickup", slug="pickup")
         car = Cars.objects.create(
             brand="Ford",
@@ -1549,13 +1549,70 @@ class AdminNotificationTests(APITestCase):
         payment.refresh_from_db()
         booking.refresh_from_db()
         self.assertEqual(payment.status, "failed")
-        self.assertEqual(booking.status, "payment_failed")
+        self.assertEqual(booking.status, "cancelled")
+        self.assertEqual(
+            booking.cancel_reason,
+            "PayMongo payment session was cancelled or failed.",
+        )
+        self.assertIsNotNone(booking.cancelled_at)
         self.assertEqual(
             Notification.objects.filter(
                 deduplication_key="payment-failed:evt_failed_payment_test"
             ).count(),
             2,
         )
+
+    def test_customer_can_cancel_pending_paymongo_payment_session(self):
+        car_type = CarType.objects.create(
+            name="Payment Cancellation Sedan",
+            slug="payment-cancellation-sedan",
+        )
+        car = Cars.objects.create(
+            brand="Toyota",
+            model="Vios",
+            year=2026,
+            car_type=car_type,
+            price_per_day=2000,
+            transmission="Automatic",
+            engine="1.5L",
+            fuel_type="Gasoline",
+            seats=5,
+        )
+        booking = Booking.objects.create(
+            user=self.user,
+            car=car,
+            pickup_date=timezone.now() + timedelta(days=1),
+            return_date=timezone.now() + timedelta(days=2),
+            daily_rate=2000,
+            number_of_days=1,
+            subtotal=2000,
+            discount=0,
+            total_price=2000,
+        )
+        payment = Payment.objects.create(
+            booking=booking,
+            checkout_session_id="cs_customer_cancelled_test",
+            amount=2000,
+            status="pending",
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            reverse("cancel-paymongo-payment"),
+            {"booking_reference": booking.booking_reference},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        booking.refresh_from_db()
+        payment.refresh_from_db()
+        self.assertEqual(booking.status, "cancelled")
+        self.assertEqual(
+            booking.cancel_reason,
+            "PayMongo payment session was cancelled by the customer.",
+        )
+        self.assertIsNotNone(booking.cancelled_at)
+        self.assertEqual(payment.status, "failed")
 
     def test_checkout_v2_paid_webhook_marks_payment_as_paid(self):
         car_type = CarType.objects.create(name="Sedan", slug="webhook-sedan")

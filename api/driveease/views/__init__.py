@@ -68,6 +68,7 @@ from .bookings import (
 
 from .payments import (
     AdminIssueRefundView,
+    CancelPayMongoPaymentView,
     CreatePayMongoPaymentView,
     PayMongoWebhookView,
 )
@@ -155,6 +156,7 @@ __all__ = [
     'AdminCreateBookingView',
     'AdminUpdateBookingView',
     'AdminBookingDeleteView',
+    'CancelPayMongoPaymentView',
     'CreatePayMongoPaymentView',
     'AdminIssueRefundView',
     'PayMongoWebhookView',

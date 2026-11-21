@@ -353,6 +353,19 @@ onMounted(async () => {
     }
 
     if (route.query.payment === 'cancelled') {
+        const bookingReference = String(route.query.booking_reference || '')
+
+        if (bookingReference) {
+            try {
+                await apiFetch('/payments/cancel-paymongo-payment/', {
+                    method: 'POST',
+                    body: { booking_reference: bookingReference },
+                })
+            } catch (error) {
+                console.error('Could not cancel the payment session.', error)
+            }
+        }
+
         await $swal.fire({
         icon: 'info',
         title: 'Payment Cancelled',
