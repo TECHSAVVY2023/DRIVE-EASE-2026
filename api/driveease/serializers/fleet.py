@@ -2,7 +2,11 @@ from rest_framework import serializers
 from django.utils import timezone
 
 from ..models import Cars, CarType, Feature
-from ..utils.booking_availability import booking_blocks_availability
+from ..utils.booking_availability import (
+    BOOKING_BLOCKING_STATUSES,
+    BOOKING_TURNAROUND_BUFFER_MINUTES,
+    booking_blocks_availability,
+)
 
 
 class MiniCarSerializer(serializers.ModelSerializer):
@@ -41,6 +45,7 @@ class FeatureSerializer(serializers.ModelSerializer):
 
 class CarSerializer(serializers.ModelSerializer):
     unavailable_periods = serializers.SerializerMethodField()
+    availability_buffer_minutes = serializers.SerializerMethodField()
     rental_count = serializers.IntegerField(read_only=True)
     car_type = serializers.SlugRelatedField(read_only=True, slug_field="slug")
     features = serializers.SlugRelatedField(many=True, read_only=True, slug_field="slug")
@@ -54,21 +59,21 @@ class CarSerializer(serializers.ModelSerializer):
         now = timezone.now()
         return [
             {
+                "booking_reference": booking.booking_reference,
                 "pickup_date": booking.pickup_date,
                 "return_date": booking.return_date,
                 "status": booking.status,
                 "is_overdue": (
-                    booking.status in {
-                        "pending_approval",
-                        "confirmed",
-                        "picked_up",
-                    }
+                    booking.status in BOOKING_BLOCKING_STATUSES
                     and booking.pickup_date <= now
                     and booking.return_date <= now
                 ),
             }
             for booking in bookings
         ]
+
+    def get_availability_buffer_minutes(self, obj):
+        return BOOKING_TURNAROUND_BUFFER_MINUTES
 
 
 class CarCreateSerializer(serializers.ModelSerializer):

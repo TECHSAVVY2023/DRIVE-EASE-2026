@@ -233,7 +233,7 @@
 
                         <div class="flex flex-col gap-2 mt-4 mb-5 sm:mb-8 mx-4 sm:mx-6 flex-shrink-0">
                             <button
-                                @click="currentStep === steps.length ? confirmBooking() : nextStep(form, existingIdImages, uploadedIdFiles)"
+                                @click="currentStep === steps.length ? confirmBooking() : nextStep(form, existingIdImages, uploadedIdFiles, car)"
                                 :disabled="isSubmitting"
                                 class="w-full bg-[#C1121F] hover:bg-[#9B0E18] disabled:opacity-50 text-white text-sm font-bold py-3 rounded-lg transition-colors duration-200"
                             >

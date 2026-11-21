@@ -8,7 +8,8 @@ export function useBookingSteps(
     async function nextStep(
         form: any,
         existingIdImages: string[],
-        uploadedIdFiles: File[]
+        uploadedIdFiles: File[],
+        car: Car | null,
     ) {
         if (currentStep.value === 1) {
             const valid = await validateStepOne(
@@ -21,7 +22,7 @@ export function useBookingSteps(
         }
 
         if (currentStep.value === 2) {
-            const valid = await validateStepTwo(form)
+            const valid = await validateStepTwo(form, car)
 
             if (!valid) return false
         }
@@ -38,3 +39,4 @@ export function useBookingSteps(
         nextStep,
     }
 }
+import type { Car } from '~/utils/types/fleet'

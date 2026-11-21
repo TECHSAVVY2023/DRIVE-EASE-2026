@@ -5,6 +5,10 @@ from django.utils import timezone
 
 
 PAYMENT_HOLD_MINUTES = 15
+BOOKING_TURNAROUND_BUFFER_MINUTES = 60
+BOOKING_TURNAROUND_BUFFER = timedelta(
+    minutes=BOOKING_TURNAROUND_BUFFER_MINUTES,
+)
 BOOKING_BLOCKING_STATUSES = {
     "pending_approval",
     "confirmed",
@@ -28,7 +32,7 @@ def booking_blocks_availability():
 
 
 def booking_conflicts_with_period(pickup_date, return_date):
-    """Block overlapping reservations and unresolved overdue rentals.
+    """Block overlapping reservations, turnover time, and overdue rentals.
 
     Once an active booking is overdue, its real return time is unknown. It
     therefore blocks every future period until an admin moves it to a
@@ -36,8 +40,8 @@ def booking_conflicts_with_period(pickup_date, return_date):
     """
     now = timezone.now()
     overlaps_selected_period = Q(
-        pickup_date__lt=return_date,
-        return_date__gt=pickup_date,
+        pickup_date__lt=return_date + BOOKING_TURNAROUND_BUFFER,
+        return_date__gt=pickup_date - BOOKING_TURNAROUND_BUFFER,
     )
     unresolved_overdue_rental = Q(
         status__in=BOOKING_BLOCKING_STATUSES,

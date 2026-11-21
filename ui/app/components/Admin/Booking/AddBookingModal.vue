@@ -171,7 +171,6 @@
                                 :enable-time-picker="true"
                                 :flow="flow"
                                 :time-config="{ is24: false }"
-                                :disabled-dates="disabledDates"
                                 dark
                             />
                         </div>
@@ -202,7 +201,6 @@
                                 :enable-time-picker="true"
                                 :flow="flow"
                                 :time-config="{ is24: false }"
-                                :disabled-dates="disabledDates"
                                 dark
                             />
                         </div>
@@ -221,6 +219,12 @@
                         />
                     </div>
                 </div>
+
+                <AdminBookingAvailabilityNotice
+                    :car="selectedCar"
+                    :pickup-date="form.pickup_date"
+                    :return-date="form.return_date"
+                />
 
                 <!-- Discount -->
                 <p :class="section">Price</p>
@@ -350,7 +354,7 @@ import type { User } from '~/utils/types/accounts'
 import { computed } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import type { FlowConfig } from '@vuepic/vue-datepicker'
-import { periodBlocksDate } from '~/composables/car/useCarRental'
+import { getBookingConflict } from '~/composables/car/useCarRental'
 
 const open = defineModel<boolean>({ required: true })
 
@@ -482,11 +486,18 @@ const totalPrice = computed(() =>
 
 const hasValidDates = computed(() => rentalDays.value > 0)
 
-const disabledDates = (date: Date) => {
-    return selectedCar.value?.unavailable_periods?.some(
-        period => periodBlocksDate(period, date)
-    ) ?? false
-}
+const scheduleConflict = computed(() => {
+    if (!selectedCar.value || !form.value.pickup_date || !form.value.return_date) {
+        return false
+    }
+
+    return Boolean(getBookingConflict(
+        new Date(form.value.pickup_date),
+        new Date(form.value.return_date),
+        selectedCar.value.unavailable_periods ?? [],
+        selectedCar.value.availability_buffer_minutes,
+    ))
+})
 
 function blank(): BookingForm {
     return {
@@ -519,7 +530,8 @@ const formIsValid = computed(() => {
         form.value.return_date &&
         form.value.pickup_location.trim() &&
         form.value.return_location.trim() &&
-        hasValidDates.value
+        hasValidDates.value &&
+        !scheduleConflict.value
     )
 })
 
@@ -528,7 +540,7 @@ function close() {
 }
 
 function save() {
-    if (!formIsValid.value || !hasValidDates.value) return
+    if (!formIsValid.value) return
 
     form.value.daily_rate = dailyRate.value
     form.value.number_of_days = rentalDays.value

@@ -171,7 +171,6 @@
                                 :enable-time-picker="true"
                                 :flow="flow"
                                 :time-config="{ is24: false }"
-                                :disabled-dates="disabledDates"
                                 dark
                             />
                         </div>
@@ -202,7 +201,6 @@
                                 :enable-time-picker="true"
                                 :flow="flow"
                                 :time-config="{ is24: false }"
-                                :disabled-dates="disabledDates"
                                 dark
                             />
                         </div>
@@ -221,6 +219,13 @@
                         />
                     </div>
                 </div>
+
+                <AdminBookingAvailabilityNotice
+                    :car="selectedCar"
+                    :pickup-date="form.pickup_date"
+                    :return-date="form.return_date"
+                    :exclude-booking-reference="booking?.booking_reference"
+                />
 
                 <!-- Discount -->
                 <p :class="section">Price</p>
@@ -329,7 +334,7 @@
                 </button>
                 
                 <button
-                    :disabled="!hasValidDates"
+                    :disabled="!hasValidDates || scheduleConflict"
                     class="rounded-lg bg-[#c1121f] px-4 py-2 text-xs font-medium text-white hover:bg-[#9B0E18] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-50"
                     @click="save"
                 >
@@ -350,7 +355,7 @@ import type { Car } from '~/utils/types/fleet'
 import { computed } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import type { FlowConfig } from '@vuepic/vue-datepicker'
-import { periodBlocksDate } from '~/composables/car/useCarRental'
+import { getBookingConflict } from '~/composables/car/useCarRental'
 
 const open = defineModel<boolean>({ required: true })
 
@@ -445,11 +450,22 @@ const selectedCar = computed(() =>
     props.cars.find(car => car.car_reference === form.value.car_reference)
 )
 
-const disabledDates = (date: Date) => {
-    return selectedCar.value?.unavailable_periods?.some(
-        period => periodBlocksDate(period, date)
-    ) ?? false
-}
+const scheduleConflict = computed(() => {
+    if (!selectedCar.value || !form.value.pickup_date || !form.value.return_date) {
+        return false
+    }
+
+    const periods = (selectedCar.value.unavailable_periods ?? []).filter(
+        period => period.booking_reference !== props.booking?.booking_reference,
+    )
+
+    return Boolean(getBookingConflict(
+        new Date(form.value.pickup_date),
+        new Date(form.value.return_date),
+        periods,
+        selectedCar.value.availability_buffer_minutes,
+    ))
+})
 
 const STATUSES = [
     { value: 'pending_payment', label: 'Pending Payment', active: 'bg-[#c1121f] text-white' },
@@ -574,6 +590,8 @@ function close() {
 }
 
 function save() {
+    if (!hasValidDates.value || scheduleConflict.value) return
+
     const booking = toRaw(form.value)
 
     form.value.daily_rate = dailyRate.value

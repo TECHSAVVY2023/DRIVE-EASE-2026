@@ -109,8 +109,8 @@ class CreateBookingView(APIView):
             return Response(
                 {
                     "message": (
-                        "This car is unavailable or temporarily held during "
-                        "the selected period. Please choose different dates."
+                        "This car is unavailable, temporarily held, or within "
+                        "the one-hour turnover buffer. Please choose different times."
                     )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -553,8 +553,8 @@ class AdminCreateBookingView(APIView):
             return Response(
                 {
                     "message": (
-                        "This car is unavailable during the selected period. "
-                        "Resolve any active or overdue rental first."
+                        "This car is unavailable, temporarily held, or within "
+                        "the one-hour turnover buffer. Please choose different times."
                     )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -634,6 +634,37 @@ class AdminUpdateBookingView(APIView):
             partial=True,
         )
         serializer.is_valid(raise_exception=True)
+
+        submitted_car = serializer.validated_data.get("car", booking.car)
+        car = Cars.objects.select_for_update().get(pk=submitted_car.pk)
+
+        if car.status == "maintenance":
+            return Response(
+                {"message": "This car is currently under maintenance and cannot be booked."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        pickup_date = serializer.validated_data.get(
+            "pickup_date",
+            booking.pickup_date,
+        )
+        return_date = serializer.validated_data.get(
+            "return_date",
+            booking.return_date,
+        )
+
+        if Booking.objects.filter(car=car).exclude(pk=booking.pk).filter(
+            booking_conflicts_with_period(pickup_date, return_date)
+        ).exists():
+            return Response(
+                {
+                    "message": (
+                        "This car is unavailable, temporarily held, or within "
+                        "the one-hour turnover buffer. Please choose different times."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         booking = serializer.save()
 

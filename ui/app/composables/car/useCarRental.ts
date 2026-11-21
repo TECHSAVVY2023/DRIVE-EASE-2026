@@ -1,5 +1,7 @@
 import type { Car, UnavailablePeriod } from '~/utils/types/fleet'
 
+export const DEFAULT_BOOKING_BUFFER_MINUTES = 60
+
 const unavailableStatuses = [
     'pending_approval',
     'confirmed',
@@ -12,10 +14,16 @@ export function useCurrentRental(car: Car) {
     const now = new Date()
 
     return car.unavailable_periods
-        .filter(period =>
-            unavailableStatuses.includes(period.status) &&
-            new Date(period.pickup_date) <= now
-        )
+        .filter(period => {
+            const pickup = new Date(period.pickup_date)
+            const returnDate = new Date(period.return_date)
+
+            return (
+                unavailableStatuses.includes(period.status) &&
+                pickup <= now &&
+                (returnDate > now || period.is_overdue)
+            )
+        })
         .sort(
             (a, b) =>
                 new Date(a.return_date).getTime() -
@@ -31,4 +39,38 @@ export function periodBlocksDate(period: UnavailablePeriod, date: Date) {
     end.setHours(23, 59, 59, 999)
 
     return date >= start && (period.is_overdue || date <= end)
+}
+
+export function getBookingConflict(
+    pickupDate: Date,
+    returnDate: Date,
+    periods: UnavailablePeriod[],
+    bufferMinutes = DEFAULT_BOOKING_BUFFER_MINUTES,
+): UnavailablePeriod | null {
+    if (returnDate <= pickupDate) return null
+
+    const bufferMilliseconds = bufferMinutes * 60 * 1000
+
+    return periods.find(period => {
+        const existingPickup = new Date(period.pickup_date)
+        const existingReturn = period.is_overdue
+            ? Infinity
+            : new Date(period.return_date).getTime()
+
+        return (
+            pickupDate.getTime() < existingReturn + bufferMilliseconds &&
+            returnDate.getTime() > existingPickup.getTime() - bufferMilliseconds
+        )
+    }) ?? null
+}
+
+export function hasBookingConflict(
+    pickupDate: Date,
+    returnDate: Date,
+    periods: UnavailablePeriod[],
+    bufferMinutes = DEFAULT_BOOKING_BUFFER_MINUTES,
+): boolean {
+    return Boolean(
+        getBookingConflict(pickupDate, returnDate, periods, bufferMinutes),
+    )
 }

@@ -1,3 +1,6 @@
+import type { Car } from '~/utils/types/fleet'
+import { hasBookingConflict } from '~/composables/car/useCarRental'
+
 export function useBookingValidation() {
     const { $swal } = useNuxtApp()
 
@@ -47,7 +50,7 @@ export function useBookingValidation() {
         return true
     }
 
-    async function validateStepTwo(form: any): Promise<boolean> {
+    async function validateStepTwo(form: any, car: Car | null): Promise<boolean> {
         if (!form.pickupDate) {
             await showError('Please select a pickup date.')
             return false
@@ -55,6 +58,28 @@ export function useBookingValidation() {
 
         if (!form.returnDate) {
             await showError('Please select a return date.')
+            return false
+        }
+
+        const pickupDate = new Date(form.pickupDate)
+        const returnDate = new Date(form.returnDate)
+
+        if (returnDate <= pickupDate) {
+            await showError('Return time must be later than the pickup time.')
+            return false
+        }
+
+        if (
+            car && hasBookingConflict(
+                pickupDate,
+                returnDate,
+                car.unavailable_periods ?? [],
+                car.availability_buffer_minutes,
+            )
+        ) {
+            await showError(
+                'This time overlaps an existing booking or its one-hour turnover buffer. Please choose a different time.',
+            )
             return false
         }
 

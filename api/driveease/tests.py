@@ -676,6 +676,83 @@ class ClientBookingAvailabilityTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Booking.objects.filter(car=self.car).count(), 2)
 
+    def test_booking_within_one_hour_turnaround_buffer_is_rejected(self):
+        self.hold.status = "pending_approval"
+        self.hold.save(update_fields=["status"])
+        pickup_date = self.return_date + timedelta(minutes=59)
+        return_date = pickup_date + timedelta(days=1)
+        payload = self.booking_payload()
+        payload.update({
+            "pickup_date": pickup_date.isoformat(),
+            "return_date": return_date.isoformat(),
+        })
+
+        response = self.client.post(
+            reverse("create-booking"),
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("one-hour turnover buffer", response.data["message"])
+
+    def test_booking_at_exact_one_hour_turnaround_boundary_is_allowed(self):
+        self.hold.status = "pending_approval"
+        self.hold.save(update_fields=["status"])
+        pickup_date = self.return_date + timedelta(hours=1)
+        return_date = pickup_date + timedelta(days=1)
+        payload = self.booking_payload()
+        payload.update({
+            "pickup_date": pickup_date.isoformat(),
+            "return_date": return_date.isoformat(),
+        })
+
+        response = self.client.post(
+            reverse("create-booking"),
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_admin_edit_rejects_conflict_with_another_booking(self):
+        admin = Accounts.objects.create_user(
+            username="availability-admin@example.com",
+            email="availability-admin@example.com",
+            password="test-password",
+            is_staff=True,
+        )
+        editable_booking = Booking.objects.create(
+            user=self.first_customer,
+            car=self.car,
+            pickup_date=self.return_date + timedelta(days=2),
+            return_date=self.return_date + timedelta(days=3),
+            pickup_location="Cagayan de Oro",
+            return_location="Cagayan de Oro",
+            daily_rate=1800,
+            number_of_days=1,
+            subtotal=1800,
+            discount=0,
+            total_price=1800,
+            status="pending_approval",
+        )
+        self.client.force_authenticate(admin)
+
+        response = self.client.patch(
+            reverse(
+                "admin-booking-update",
+                kwargs={"booking_reference": editable_booking.booking_reference},
+            ),
+            {
+                "pickup_date": self.pickup_date.isoformat(),
+                "return_date": self.return_date.isoformat(),
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("one-hour turnover buffer", response.data["message"])
+
     def test_overdue_active_booking_blocks_future_dates(self):
         Booking.objects.filter(pk=self.hold.pk).update(
             created_at=timezone.now() - timedelta(minutes=16),

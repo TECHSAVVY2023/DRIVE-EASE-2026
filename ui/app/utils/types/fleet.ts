@@ -1,4 +1,5 @@
 export interface UnavailablePeriod {
+    booking_reference: string
     pickup_date: string
     return_date: string
     status: string
@@ -42,6 +43,7 @@ export interface Car {
         images: string[]
     }
     unavailable_periods: UnavailablePeriod[]
+    availability_buffer_minutes?: number
     rental_count: number
 }
 
