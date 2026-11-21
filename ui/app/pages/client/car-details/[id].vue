@@ -361,6 +361,7 @@ onMounted(async () => {
                     method: 'POST',
                     body: { booking_reference: bookingReference },
                 })
+                await getCar(carId.value, { force: true })
             } catch (error) {
                 console.error('Could not cancel the payment session.', error)
             }
